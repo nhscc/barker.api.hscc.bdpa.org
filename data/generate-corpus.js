@@ -129,9 +129,9 @@ fs.writeFileSync('corpus.json', JSON.stringify({ dialogs, usernames }));
 
 console.log('> corpus generated successfully');
 console.log(`
-> latest corpus stats:
->   ${numLines} total lines
->   ${usernames.length} generated usernames
+> latest corpus stats:  
+>   ${numLines} total lines  
+>   ${usernames.length} generated usernames  
 >
->   movie titles used:
->     ${filteredMovies.map((movie) => movie.title).join('\n>     ')}`);
+>   movie titles used:  
+>     ${filteredMovies.map((movie) => movie.title).join('  \n>     ')}`);
