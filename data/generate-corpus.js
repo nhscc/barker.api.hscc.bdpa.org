@@ -118,15 +118,20 @@ const convos = rawConvos
 
 console.log('> mapping movie dialog to desired movies...');
 
-filteredMovies.forEach((movie) => {
-  movie.dialogs = convos
+const dialogs = filteredMovies.map((movie) =>
+  convos
     .filter((convo) => convo.movieId == movie.id)
-    .reduce((result, { dialog }) => [...result, dialog], []);
-});
+    .reduce((result, { dialog }) => [...result, dialog], [])
+);
 
 const usernames = Array.from(names.values());
-fs.writeFileSync('corpus.json', JSON.stringify({ dialogs: filteredMovies, usernames }));
+fs.writeFileSync('corpus.json', JSON.stringify({ dialogs, usernames }));
 
-console.log(
-  `> corpus generated successfully (${numLines} total lines, ${usernames.length} generated usernames)`
-);
+console.log('> corpus generated successfully');
+console.log(`
+> latest corpus stats:
+>   ${numLines} total lines
+>   ${usernames.length} generated usernames
+>
+>   movie titles used:
+>     ${filteredMovies.map((movie) => movie.title).join('\n>     ')}`);
