@@ -10,47 +10,49 @@ movie scripts.
 If for some reason you want to regenerate the corpus, run
 [`node ./generate-corpus.js`](./generate-corpus.js).
 
-> latest corpus stats:  
->   7510 total lines  
->   5331 generated usernames  
->
->   movie titles used:  
->     the fifth element  
->     the bourne supremacy  
->     cast away  
->     godzilla  
->     ghostbusters  
->     gladiator  
->     i am legend  
->     independence day  
->     men in black  
->     minority report  
->     mighty morphin power rangers  
->     the mummy  
->     pirates of the caribbean  
->     signs  
->     the sixth sense  
->     spider-man  
->     the day the earth stood still  
->     the war of the worlds  
->     batman returns  
->     batman and robin  
->     batman forever  
->     batman  
->     the bourne identity  
->     contact  
->     fantastic voyage  
->     kafka  
->     the matrix  
->     planet of the apes  
->     supergirl  
->     superman iii  
->     superman ii  
->     superman iv: the quest for peace  
->     superman  
->     the x files  
->     titanic  
->     toy story  
->     tron  
->     unbreakable  
->     the wizard of oz
+Latest corpus stats:
+
+- 7510 total lines
+- 5331 generated usernames
+
+Movie titles Used:
+
+- The Fifth Element
+- The Bourne Supremacy
+- Cast Away
+- Godzilla
+- Ghostbusters
+- Gladiator
+- I Am Legend
+- Independence Day
+- Men In Black
+- Minority Report
+- Mighty Morphin Power Rangers
+- The Mummy
+- Pirates Of The Caribbean
+- Signs
+- The Sixth Sense
+- Spider-Man
+- The Day The Earth Stood Still
+- The War Of The Worlds
+- Batman Returns
+- Batman And Robin
+- Batman Forever
+- Batman
+- The Bourne Identity
+- Contact
+- Fantastic Voyage
+- Kafka
+- The Matrix
+- Planet Of The Apes
+- Supergirl
+- Superman III
+- Superman II
+- Superman IV: The Quest For Peace
+- Superman
+- The X Files
+- Titanic
+- Toy Story
+- Tron
+- Unbreakable
+- The Wizard Of Oz
