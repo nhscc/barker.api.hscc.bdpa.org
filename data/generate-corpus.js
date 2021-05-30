@@ -85,10 +85,12 @@ console.log('> joining and filtering conversation dialog...');
 
 // Lol
 const censor = (line) => {
-  return line.replace(
-    /(\b| )\S*(?:fuck|shit|bitch|dick|cunt|ass|rape)\S*( |\b)/gi,
-    '$1[naughty word]$2'
-  );
+  return line
+    .replace(
+      /(\b| )\S*(?:fuck|shit|bitch|dick|cunt|ass|rape)\S*( |\b)/gi,
+      '$1[naughty word]$2'
+    )
+    .replace(/(\S)\s\s+(\S)/gi, '$1 $2');
 };
 
 let numLines = 0;
