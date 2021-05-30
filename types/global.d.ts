@@ -160,7 +160,7 @@ export type InternalUser = {
      * Max percentage of the generated user base that will _eventually_ follow
      * this user.
      *
-     * @type number between 0 and 0.8
+     * @type number between 0 (~1%) and 1 (~75%)
      */
     followability: number;
     /**
