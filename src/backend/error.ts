@@ -2,13 +2,13 @@ import { AppError, makeNamedError } from 'named-app-errors';
 
 export * from 'named-app-errors';
 
-export class FlightGenerationError extends AppError {
+export class ActivityGenerationError extends AppError {
   constructor(message?: string) {
-    super(message || 'data upsert failed');
+    super(message || 'an unknown error occurred');
   }
 }
 
-makeNamedError(FlightGenerationError, 'FlightGenerationError');
+makeNamedError(ActivityGenerationError, 'ActivityGenerationError');
 
 export class IdTypeError<T = string | number> extends AppError {
   constructor(id?: T) {

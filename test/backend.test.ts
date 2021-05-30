@@ -10,7 +10,7 @@ import {
   convertIFlightToPFlight
 } from 'testverse/db';
 
-import { RequestLogEntry, LimitedLogEntry, InternalFlight } from 'types/global';
+import { RequestLogEntry, LimitedLogEntry } from 'types/global';
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -27,7 +27,7 @@ const PFlightKeys = [
   'ffms',
   'seats',
   'extras',
-  'flight_id',
+  'bark_id',
   'bookable',
   'departFromSender',
   'arriveAtReceiver',
@@ -199,7 +199,7 @@ describe('universe/backend', () => {
             ids: [flight2._id],
             key
           })
-        )[0].flight_id
+        )[0].bark_id
       ).toBe(flight2._id.toHexString());
     });
   });
@@ -208,28 +208,28 @@ describe('universe/backend', () => {
     it('throws if bad parameters', async () => {
       expect.hasAssertions();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights()).toReject();
+      await expect(Backend.searchBarks()).toReject();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights({})).toReject();
+      await expect(Backend.searchBarks({})).toReject();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights(getHydratedData().flights[0]._id)).toReject();
+      await expect(Backend.searchBarks(getHydratedData().flights[0]._id)).toReject();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights(null)).toReject();
+      await expect(Backend.searchBarks(null)).toReject();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights(undefined)).toReject();
+      await expect(Backend.searchBarks(undefined)).toReject();
       // @ts-expect-error: testing bad arguments
-      await expect(Backend.searchFlights(5)).toReject();
+      await expect(Backend.searchBarks(5)).toReject();
       // @ts-expect-error: testing bad arguments
       await expect(
-        Backend.searchFlights({ key, after: null, match: {}, regexMatch: {} })
+        Backend.searchBarks({ key, after: null, match: {}, regexMatch: {} })
       ).toReject();
       // @ts-expect-error: testing bad arguments
       await expect(
-        Backend.searchFlights({ key, after: null, sort: 'asc', match: {} })
+        Backend.searchBarks({ key, after: null, sort: 'asc', match: {} })
       ).toReject();
       // @ts-expect-error: testing bad arguments
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: 'bad',
           sort: 'asc',
@@ -239,7 +239,7 @@ describe('universe/backend', () => {
       ).toReject();
       // @ts-expect-error: testing bad arguments
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'bad',
@@ -249,7 +249,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -259,7 +259,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           // @ts-expect-error: testing bad arguments
           key,
           after: null,
@@ -271,7 +271,7 @@ describe('universe/backend', () => {
 
       // @ts-expect-error: testing bad arguments
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           after: null,
           sort: 'asc',
           match: {},
@@ -280,7 +280,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -290,7 +290,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -300,7 +300,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -310,7 +310,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -320,7 +320,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           // @ts-expect-error: testing bad arguments
           key,
           after: null,
@@ -331,7 +331,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -341,7 +341,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -351,7 +351,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           // @ts-expect-error: testing bad arguments
           key,
           after: null,
@@ -362,7 +362,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -372,7 +372,7 @@ describe('universe/backend', () => {
       ).toReject();
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           sort: 'asc',
@@ -386,7 +386,7 @@ describe('universe/backend', () => {
       expect.hasAssertions();
       const count = getEnv().RESULTS_PER_PAGE;
 
-      const result1 = await Backend.searchFlights({
+      const result1 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -394,7 +394,7 @@ describe('universe/backend', () => {
         sort: 'asc'
       });
 
-      const result2 = await Backend.searchFlights({
+      const result2 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -424,7 +424,7 @@ describe('universe/backend', () => {
       const totalRecords = count * EXPAND_RESULTS_BY_MULT;
       const expFlights = getHydratedData().flights;
 
-      const result1 = await Backend.searchFlights({
+      const result1 = await Backend.searchBarks({
         key,
         after: null,
         match: { type: 'arrival' },
@@ -442,9 +442,9 @@ describe('universe/backend', () => {
           .map(convertIFlightToPFlight)
       );
 
-      const result2 = await Backend.searchFlights({
+      const result2 = await Backend.searchBarks({
         key,
-        after: new ObjectId(result1[result1.length - 2].flight_id),
+        after: new ObjectId(result1[result1.length - 2].bark_id),
         match: { type: 'arrival' },
         regexMatch: {},
         sort: 'desc'
@@ -452,16 +452,16 @@ describe('universe/backend', () => {
 
       expect(result2).toHaveLength(totalRecords / 2 - count + 1);
       expect(result2.every((flight) => flight.type == 'arrival')).toBeTrue();
-      expect(result2[0].flight_id).toStrictEqual(result1[result1.length - 1].flight_id);
-      expect(result2.slice(-1)[0].flight_id).toStrictEqual(
+      expect(result2[0].bark_id).toStrictEqual(result1[result1.length - 1].bark_id);
+      expect(result2.slice(-1)[0].bark_id).toStrictEqual(
         expFlights
           .filter((flight) => flight.type == 'arrival')
           .reverse()
           .slice(-1)
-          .map(convertIFlightToPFlight)[0].flight_id
+          .map(convertIFlightToPFlight)[0].bark_id
       );
 
-      const result3 = await Backend.searchFlights({
+      const result3 = await Backend.searchBarks({
         key,
         after: expFlights.slice(-3)[0]._id,
         match: { type: 'arrival' },
@@ -471,14 +471,14 @@ describe('universe/backend', () => {
 
       expect(result3).toHaveLength(1);
       expect(result3.every((flight) => flight.type == 'arrival')).toBeTrue();
-      expect(result3[0].flight_id).toStrictEqual(
+      expect(result3[0].bark_id).toStrictEqual(
         expFlights
           .filter((flight) => flight.type == 'arrival')
           .slice(-1)
-          .map(convertIFlightToPFlight)[0].flight_id
+          .map(convertIFlightToPFlight)[0].bark_id
       );
 
-      const result3desc = await Backend.searchFlights({
+      const result3desc = await Backend.searchBarks({
         key,
         after: expFlights[2]._id,
         match: { type: 'arrival' },
@@ -487,15 +487,15 @@ describe('universe/backend', () => {
       });
 
       expect(result3desc).toHaveLength(1);
-      expect(result3desc[0].flight_id).toStrictEqual(
+      expect(result3desc[0].bark_id).toStrictEqual(
         expFlights
           .filter((flight) => flight.type == 'arrival')
           .reverse()
           .slice(-1)
-          .map(convertIFlightToPFlight)[0].flight_id
+          .map(convertIFlightToPFlight)[0].bark_id
       );
 
-      const result4 = await Backend.searchFlights({
+      const result4 = await Backend.searchBarks({
         key,
         after: expFlights[2]._id,
         match: {},
@@ -505,7 +505,7 @@ describe('universe/backend', () => {
 
       expect(result4).toHaveLength(2);
 
-      const result5 = await Backend.searchFlights({
+      const result5 = await Backend.searchBarks({
         key,
         after: expFlights.slice(-3)[0]._id,
         match: {},
@@ -515,7 +515,7 @@ describe('universe/backend', () => {
 
       expect(result5).toHaveLength(2);
 
-      const result6 = await Backend.searchFlights({
+      const result6 = await Backend.searchBarks({
         key,
         after: expFlights[2]._id,
         match: {},
@@ -527,7 +527,7 @@ describe('universe/backend', () => {
         expFlights.filter((flight) => flight.type == 'arrival').slice(0, 2).length
       );
 
-      const result6X = await Backend.searchFlights({
+      const result6X = await Backend.searchBarks({
         key,
         after: expFlights.slice(-2)[0]._id,
         match: {},
@@ -537,7 +537,7 @@ describe('universe/backend', () => {
 
       expect(result6X).toHaveLength(count);
 
-      const result7 = await Backend.searchFlights({
+      const result7 = await Backend.searchBarks({
         key,
         after: expFlights.slice(-1)[0]._id,
         match: {},
@@ -547,7 +547,7 @@ describe('universe/backend', () => {
 
       expect(result7).toHaveLength(0);
 
-      const result8 = await Backend.searchFlights({
+      const result8 = await Backend.searchBarks({
         key,
         after: null,
         match: { type: 'DNE' },
@@ -557,7 +557,7 @@ describe('universe/backend', () => {
 
       expect(result8).toHaveLength(0);
 
-      const result9 = await Backend.searchFlights({
+      const result9 = await Backend.searchBarks({
         key,
         after: null,
         match: { type: 'DNE' },
@@ -568,7 +568,7 @@ describe('universe/backend', () => {
       // ? regexMatch keys override match keys!
       expect(result9).toHaveLength(count);
 
-      const result9X = await Backend.searchFlights({
+      const result9X = await Backend.searchBarks({
         key,
         after: null,
         match: { type: 'arrival' },
@@ -578,7 +578,7 @@ describe('universe/backend', () => {
 
       expect(result9X).toHaveLength(0);
 
-      const result10 = await Backend.searchFlights({
+      const result10 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -588,7 +588,7 @@ describe('universe/backend', () => {
 
       expect(result10).toStrictEqual(result1);
 
-      const result11 = await Backend.searchFlights({
+      const result11 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -598,7 +598,7 @@ describe('universe/backend', () => {
 
       expect(result11).toStrictEqual(result1);
 
-      const result12 = await Backend.searchFlights({
+      const result12 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -609,7 +609,7 @@ describe('universe/backend', () => {
       expect(result12).toHaveLength(count);
       expect(result12.every((flight) => flight.type == 'departure')).toBeTrue();
 
-      const result13 = await Backend.searchFlights({
+      const result13 = await Backend.searchBarks({
         key,
         after: null,
         match: { ffms: { $gt: 1000000 } },
@@ -619,7 +619,7 @@ describe('universe/backend', () => {
 
       expect(result13).toHaveLength(1);
 
-      const result14 = await Backend.searchFlights({
+      const result14 = await Backend.searchBarks({
         key,
         after: null,
         match: { ffms: { $lt: 1000000 } },
@@ -629,7 +629,7 @@ describe('universe/backend', () => {
 
       expect(result14).toHaveLength(count);
 
-      const result15 = await Backend.searchFlights({
+      const result15 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -639,7 +639,7 @@ describe('universe/backend', () => {
 
       expect(result15).toHaveLength(1);
 
-      const result16 = await Backend.searchFlights({
+      const result16 = await Backend.searchBarks({
         key,
         after: null,
         match: { arriveAtReceiver: { $lt: 10000 } },
@@ -649,7 +649,7 @@ describe('universe/backend', () => {
 
       expect(result16).toHaveLength(1);
 
-      const result17 = await Backend.searchFlights({
+      const result17 = await Backend.searchBarks({
         key,
         after: null,
         match: { ffms: { $gte: 1000000 }, departFromSender: 500 },
@@ -659,9 +659,9 @@ describe('universe/backend', () => {
 
       expect(result17).toHaveLength(1);
 
-      const result18 = await Backend.searchFlights({
+      const result18 = await Backend.searchBarks({
         key,
-        after: new ObjectId(result17[0].flight_id),
+        after: new ObjectId(result17[0].bark_id),
         match: { ffms: { $gte: 1000000 }, departFromSender: 500 },
         regexMatch: { airline: 's.*t' },
         sort: 'desc'
@@ -669,7 +669,7 @@ describe('universe/backend', () => {
 
       expect(result18).toHaveLength(0);
 
-      const result19 = await Backend.searchFlights({
+      const result19 = await Backend.searchBarks({
         key,
         after: null,
         match: { status: 'past' },
@@ -684,7 +684,7 @@ describe('universe/backend', () => {
       expect.hasAssertions();
       const count = getEnv().RESULTS_PER_PAGE;
 
-      const result1 = await Backend.searchFlights({
+      const result1 = await Backend.searchBarks({
         key,
         after: null,
         match: { arriveAtReceiver: { $gte: Date.now() } },
@@ -692,7 +692,7 @@ describe('universe/backend', () => {
         sort: 'asc'
       });
 
-      const result2 = await Backend.searchFlights({
+      const result2 = await Backend.searchBarks({
         key,
         after: null,
         match: { arriveAtReceiver: { $gte: Date.now() } },
@@ -700,7 +700,7 @@ describe('universe/backend', () => {
         sort: 'desc'
       });
 
-      const result3 = await Backend.searchFlights({
+      const result3 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -708,7 +708,7 @@ describe('universe/backend', () => {
         sort: 'asc'
       });
 
-      const result4 = await Backend.searchFlights({
+      const result4 = await Backend.searchBarks({
         key,
         after: null,
         match: {},
@@ -753,7 +753,7 @@ describe('universe/backend', () => {
       await (await getDb()).collection('flights').deleteMany({});
 
       await expect(
-        Backend.searchFlights({
+        Backend.searchBarks({
           key,
           after: null,
           match: {},
@@ -763,28 +763,28 @@ describe('universe/backend', () => {
       ).not.toReject();
     });
 
-    it('searches by flight_id via match and regexMatch work as expected', async () => {
+    it('searches by bark_id via match and regexMatch work as expected', async () => {
       expect.hasAssertions();
       const expectedFlights = getHydratedData()
         .flights.slice(2, 4)
         .map(convertIFlightToPFlight);
 
       expect(
-        await Backend.searchFlights({
+        await Backend.searchBarks({
           key,
           after: null,
-          match: { flight_id: expectedFlights[0].flight_id },
+          match: { bark_id: expectedFlights[0].bark_id },
           regexMatch: {},
           sort: 'asc'
         })
       ).toStrictEqual([expectedFlights[0]]);
 
       expect(
-        await Backend.searchFlights({
+        await Backend.searchBarks({
           key,
           after: null,
           match: {},
-          regexMatch: { flight_id: expectedFlights.map((f) => f.flight_id).join('|') },
+          regexMatch: { bark_id: expectedFlights.map((f) => f.bark_id).join('|') },
           sort: 'asc'
         })
       ).toStrictEqual(expectedFlights);

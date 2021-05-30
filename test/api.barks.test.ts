@@ -63,14 +63,14 @@ describe('api/v1/flights', () => {
 
     const genUrl = (function* () {
       yield `/?after=`;
-      yield `/?after=${flights[0].flight_id}`;
-      yield `/?after=${flights[1].flight_id}`;
-      yield `/?after=${flights[10].flight_id}`;
-      yield `/?after=${flights[50].flight_id}`;
-      yield `/?after=${flights[100].flight_id}`;
-      yield `/?after=${flights[200].flight_id}`;
-      yield `/?after=${flights[248].flight_id}`;
-      yield `/?after=${flights[249].flight_id}`;
+      yield `/?after=${flights[0].bark_id}`;
+      yield `/?after=${flights[1].bark_id}`;
+      yield `/?after=${flights[10].bark_id}`;
+      yield `/?after=${flights[50].bark_id}`;
+      yield `/?after=${flights[100].bark_id}`;
+      yield `/?after=${flights[200].bark_id}`;
+      yield `/?after=${flights[248].bark_id}`;
+      yield `/?after=${flights[249].bark_id}`;
       yield `/?after=${new ObjectId()}`;
     })();
 
@@ -183,7 +183,7 @@ describe('api/v1/flights', () => {
 
     const genUrl = (function* () {
       yield `/?after=`;
-      yield `/?after=${flights[0].flight_id}`;
+      yield `/?after=${flights[0].bark_id}`;
       yield `/?after=${new ObjectId()}`;
     })();
 
@@ -422,10 +422,10 @@ describe('api/v1/flights', () => {
     const encode = (o: Record<string, unknown>) => encodeURIComponent(JSON.stringify(o));
 
     const genUrl = (function* () {
-      yield `/?sort=desc&after=${flights[249].flight_id}&match=${encode({
+      yield `/?sort=desc&after=${flights[249].bark_id}&match=${encode({
         ffms: { $gt: 1000000 }
       })}&regexMatch=${encode({ airline: 'spirit' })}`;
-      yield `/?sort=desc&after=${flights[0].flight_id}&match=${encode({
+      yield `/?sort=desc&after=${flights[0].bark_id}&match=${encode({
         ffms: { $gt: 1000000 }
       })}&regexMatch=${encode({ airline: 'spirit' })}`;
     })();
@@ -494,7 +494,7 @@ describe('api/v1/flights', () => {
           expect(responses.some((o) => !o?.success)).toBeFalse();
 
           expect(
-            responses.map((r) => r.flights.map((f: PublicFlight) => f.flight_id))
+            responses.map((r) => r.flights.map((f: PublicFlight) => f.bark_id))
           ).toIncludeSameMembers([
             [flightIds[0]],
             [flightIds[50]],
@@ -576,14 +576,14 @@ describe('api/v2/flights', () => {
 
     const genUrl = (function* () {
       yield `/?after=`;
-      yield `/?after=${flights[0].flight_id}`;
-      yield `/?after=${flights[1].flight_id}`;
-      yield `/?after=${flights[10].flight_id}`;
-      yield `/?after=${flights[50].flight_id}`;
-      yield `/?after=${flights[100].flight_id}`;
-      yield `/?after=${flights[200].flight_id}`;
-      yield `/?after=${flights[248].flight_id}`;
-      yield `/?after=${flights[249].flight_id}`;
+      yield `/?after=${flights[0].bark_id}`;
+      yield `/?after=${flights[1].bark_id}`;
+      yield `/?after=${flights[10].bark_id}`;
+      yield `/?after=${flights[50].bark_id}`;
+      yield `/?after=${flights[100].bark_id}`;
+      yield `/?after=${flights[200].bark_id}`;
+      yield `/?after=${flights[248].bark_id}`;
+      yield `/?after=${flights[249].bark_id}`;
       yield `/?after=${new ObjectId()}`;
     })();
 
@@ -696,7 +696,7 @@ describe('api/v2/flights', () => {
 
     const genUrl = (function* () {
       yield `/?after=`;
-      yield `/?after=${flights[0].flight_id}`;
+      yield `/?after=${flights[0].bark_id}`;
       yield `/?after=${new ObjectId()}`;
     })();
 
@@ -925,10 +925,10 @@ describe('api/v2/flights', () => {
     const encode = (o: Record<string, unknown>) => encodeURIComponent(JSON.stringify(o));
 
     const genUrl = (function* () {
-      yield `/?sort=desc&after=${flights[249].flight_id}&match=${encode({
+      yield `/?sort=desc&after=${flights[249].bark_id}&match=${encode({
         ffms: { $gt: 1000000 }
       })}&regexMatch=${encode({ airline: 'spirit' })}`;
-      yield `/?sort=desc&after=${flights[0].flight_id}&match=${encode({
+      yield `/?sort=desc&after=${flights[0].bark_id}&match=${encode({
         ffms: { $gt: 1000000 }
       })}&regexMatch=${encode({ airline: 'spirit' })}`;
     })();
@@ -955,12 +955,12 @@ describe('api/v2/flights', () => {
     });
   });
 
-  it('returns expected flights when searching by flight_id', async () => {
+  it('returns expected flights when searching by bark_id', async () => {
     expect.hasAssertions();
 
     const flightIds = getHydratedData().flights.map((flight) => flight._id.toHexString());
     const encode = (ids: string[]) =>
-      encodeURIComponent(JSON.stringify({ flight_id: ids.join('|') }));
+      encodeURIComponent(JSON.stringify({ bark_id: ids.join('|') }));
 
     const genUrl = (function* () {
       yield `/?regexMatch=${encode([flightIds[0]])}`;
@@ -994,7 +994,7 @@ describe('api/v2/flights', () => {
         expect(responses.some((o) => !o?.success)).toBeFalse();
 
         expect(
-          responses.map((r) => r.flights.map((f: PublicFlight) => f.flight_id))
+          responses.map((r) => r.flights.map((f: PublicFlight) => f.bark_id))
         ).toIncludeSameMembers([
           [flightIds[0]],
           [flightIds[50]],

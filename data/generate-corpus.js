@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 
 const fs = require('fs');
-const crypto = require('crypto');
 
 const DESIRED_MOVIES = [
   'm5',

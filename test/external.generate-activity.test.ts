@@ -1,28 +1,23 @@
 import { setClientAndDb } from 'universe/backend/db';
 import { setupJest } from 'testverse/db';
-import generateFlights from 'externals/generate-flights';
+import generateActivity from 'externals/generate-activity';
 
-import type { InternalFlight } from 'types/global';
 import { WithId } from 'mongodb';
 
 const { getDb, getNewClientAndDb } = setupJest();
 
-const getFlightsDb = async () =>
-  (await getDb()).collection<WithId<InternalFlight>>('flights');
-const getCount = async () => (await getFlightsDb()).countDocuments();
-
-describe('external-scripts/generate-flights', () => {
-  it('generates some flights', async () => {
+describe('external-scripts/generate-activity', () => {
+  it('generate some fake user activity', async () => {
     expect.hasAssertions();
 
-    await (await getFlightsDb()).deleteMany({});
+    // await (await getFlightsDb()).deleteMany({});
 
-    expect(await getCount()).toBe(0);
+    // expect(await getCount()).toBe(0);
 
-    process.env.FLIGHTS_GENERATE_DAYS = '1';
-    await generateFlights();
+    // process.env.FLIGHTS_GENERATE_DAYS = '1';
+    // await generateActivity();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getCount()).not.toBe(0);
+    // expect(await getCount()).not.toBe(0);
   });
 });

@@ -1,5 +1,5 @@
 import { handleEndpoint } from 'universe/backend/middleware';
-import { getFlightsById, convertPFlightToPFlightForV1Only } from 'universe/backend';
+import { getBarksById } from 'universe/backend';
 import { sendHttpOk } from 'multiverse/next-respond';
 import { ObjectId } from 'mongodb';
 
@@ -27,12 +27,10 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
           .filter((id): id is ObjectId => id != null);
 
         sendHttpOk(res, {
-          flights: (await getFlightsById({ key, ids })).map(
-            convertPFlightToPFlightForV1Only
-          )
+          barks: await getBarksById({ key, ids })
         });
       } catch (e) {
-        sendHttpOk(res, { flights: [] });
+        sendHttpOk(res, { barks: [] });
       }
     },
     { req, res, methods: ['GET'], apiVersion: 1 }

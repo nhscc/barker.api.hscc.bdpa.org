@@ -16,8 +16,8 @@ export async function getDb(params?: { external: true }) {
 
     if (params?.external) {
       uri = getEnv().EXTERNAL_SCRIPTS_MONGODB_URI;
-      // eslint-disable-next-line no-console
       getEnv().EXTERNAL_SCRIPTS_BE_VERBOSE &&
+        // eslint-disable-next-line no-console
         console.log(`[ connecting to mongo database at ${uri} ]`);
     }
 
@@ -65,15 +65,11 @@ export function setClientAndDb({ client, db }: { client: MongoClient; db: Db }) 
 export async function destroyDb(db: Db) {
   await Promise.allSettled([
     db.dropCollection('keys'),
-    db.dropCollection('tool-keys'),
     db.dropCollection('request-log'),
     db.dropCollection('limited-log-mview'),
-    db.dropCollection('flights'),
-    db.dropCollection('airports'),
-    db.dropCollection('airlines'),
-    db.dropCollection('no-fly-list'),
-    db.dropCollection('info'),
-    db.dropCollection('tool-overrides')
+    db.dropCollection('barks'),
+    db.dropCollection('users'),
+    db.dropCollection('info')
   ]);
 }
 
@@ -81,76 +77,19 @@ export async function destroyDb(db: Db) {
  * This function is idempotent and can be called without worry of data loss.
  */
 export async function initializeDb(db: Db) {
-  // TODO: Add validation rules during createCollection phase
-  // TODO: Pop stochastic states out of flight documents and make indices over
-  // TODO:    all time-related data. This will dramatically speed up searches!
-
   await Promise.all([
     db.createCollection('keys'),
-    db.createCollection('tool-keys'),
     db.createCollection('request-log'),
     db.createCollection('limited-log-mview'),
-    db.createCollection('flights'),
-    db.createCollection('airports'),
-    db.createCollection('airlines'),
-    db.createCollection('no-fly-list'),
-    db.createCollection('info'),
-    db.createCollection('tool-overrides')
+    db.createCollection('barks'),
+    db.createCollection('users'),
+    db.createCollection('info')
   ]);
 
-  const flights = db.collection('flights');
-
-  await Promise.all([
-    flights.createIndex({ type: 1 }),
-    flights.createIndex({ airline: 1 }),
-    flights.createIndex({ departingTo: 1 }),
-    flights.createIndex({ landingAt: 1 }),
-    flights.createIndex({ ffms: 1 })
-  ]);
+  // TODO:
+  // await Promise.all([
+  //   barks.createIndex({ x: 1 }),
+  //   barks.createIndex({ y: 1 }),
+  //   barks.createIndex({ z: 1 })
+  // ]);
 }
-
-export const pipelines = {
-  resolveFlightState: (key: string, removeId: boolean) => [
-    {
-      $addFields: {
-        state: {
-          $arrayElemAt: [
-            {
-              $filter: {
-                input: { $objectToArray: '$stochasticStates' },
-                as: 'st',
-                cond: { $lte: [{ $toLong: '$$st.k' }, { $toLong: '$$NOW' }] }
-              }
-            },
-            -1
-          ]
-        },
-        flight_id: { $toString: '$_id' },
-        bookable: {
-          $cond: {
-            if: {
-              $and: [{ $eq: ['$bookerKey', key] }, { $eq: ['$type', 'departure'] }]
-            },
-            then: true,
-            else: false
-          }
-        }
-      }
-    },
-    {
-      $replaceRoot: {
-        newRoot: {
-          $mergeObjects: ['$$ROOT', '$state.v']
-        }
-      }
-    },
-    {
-      $project: {
-        state: false,
-        ...(removeId ? { _id: false } : {}),
-        bookerKey: false,
-        stochasticStates: false
-      }
-    }
-  ]
-};

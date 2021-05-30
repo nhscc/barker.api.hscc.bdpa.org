@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { generateFlights } from 'universe/backend';
+import { generateActivity } from 'universe/backend';
 import { getDbClient, closeDb } from 'universe/backend/db';
 
 export default async function main(isCLI = false) {
@@ -9,9 +9,9 @@ export default async function main(isCLI = false) {
     // ? We call this here to ensure the external mongo connect URI is used
     await getDbClient({ external: true });
 
-    isCLI && console.log(`[ bootstrapping flight generation ]`);
+    isCLI && console.log(`[ bootstrapping activity generation ]`);
 
-    await generateFlights(!isCLI);
+    await generateActivity(!isCLI);
 
     isCLI && console.log('[ closing connection ]');
 

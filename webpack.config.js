@@ -17,7 +17,7 @@ module.exports = {
   entry: {
     'ban-hammer': `${__dirname}/external-scripts/ban-hammer.ts`,
     'prune-logs': `${__dirname}/external-scripts/prune-logs.ts`,
-    'generate-flights': `${__dirname}/external-scripts/generate-flights.ts`
+    'generate-activity': `${__dirname}/external-scripts/generate-activity.ts`
   },
 
   output: {

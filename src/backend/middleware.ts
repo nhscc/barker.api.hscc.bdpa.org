@@ -14,7 +14,7 @@ import {
   GuruMeditationError,
   NotFoundError,
   NotAuthorizedError,
-  FlightGenerationError,
+  ActivityGenerationError,
   IdTypeError,
   KeyTypeError,
   ValidationError,
@@ -22,7 +22,6 @@ import {
 } from 'universe/backend/error';
 
 import {
-  isToolKeyAuthentic,
   isKeyAuthentic,
   addToRequestLog,
   isDueForContrivedError,
@@ -33,13 +32,12 @@ import { getEnv } from 'universe/backend/env';
 import Cors from 'cors';
 
 import type { NextApiResponse } from 'next';
-import type { NextParamsRR } from 'types/global';
+import type { NextApiState } from 'types/global';
 
-export type AsyncHanCallback = (params: NextParamsRR) => Promise<void>;
-export type GenHanParams = NextParamsRR & {
+export type AsyncHanCallback = (params: NextApiState) => Promise<void>;
+export type GenHanParams = NextApiState & {
   apiVersion?: number;
   methods: string[];
-  adminOnly?: boolean;
 };
 
 const cors = Cors({ methods: ['GET', 'POST', 'PUT', 'DELETE'] });
@@ -74,7 +72,7 @@ export const config = {
  */
 export async function handleEndpoint(
   fn: AsyncHanCallback,
-  { req, res, methods, apiVersion, adminOnly }: GenHanParams
+  { req, res, methods, apiVersion }: GenHanParams
 ) {
   const resp = res as typeof res & { $send: typeof res.send };
   // ? This will let us know if the sent method was called
@@ -106,7 +104,7 @@ export async function handleEndpoint(
       else if (
         getEnv().LOCKOUT_ALL_KEYS ||
         typeof key != 'string' ||
-        !(await (adminOnly ? isToolKeyAuthentic(key) : isKeyAuthentic(key)))
+        !(await isKeyAuthentic(key))
       ) {
         sendHttpUnauthenticated(resp);
       } else if (
@@ -129,7 +127,7 @@ export async function handleEndpoint(
         error: 'sanity check failed: please report exactly what you did just now!'
       });
     else if (
-      error instanceof FlightGenerationError ||
+      error instanceof ActivityGenerationError ||
       error instanceof IdTypeError ||
       error instanceof KeyTypeError ||
       error instanceof ValidationError

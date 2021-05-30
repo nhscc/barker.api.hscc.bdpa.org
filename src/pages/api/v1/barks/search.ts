@@ -1,5 +1,5 @@
 import { sendHttpOk, sendHttpBadRequest } from 'multiverse/next-respond';
-import { searchFlights } from 'universe/backend';
+import { searchBarks } from 'universe/backend';
 import { NotFoundError } from 'universe/backend/error';
 import { handleEndpoint } from 'universe/backend/middleware';
 import { ObjectId } from 'mongodb';
@@ -38,7 +38,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         sendHttpBadRequest(res, { error: 'unrecognized sort option' });
       else {
         sendHttpOk(res, {
-          flights: await searchFlights({
+          barks: await searchBarks({
             key,
             after,
             // @ts-expect-error: validation is handled

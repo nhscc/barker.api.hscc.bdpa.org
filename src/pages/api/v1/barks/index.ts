@@ -1,5 +1,5 @@
 import { handleEndpoint } from 'universe/backend/middleware';
-import { searchFlights, convertPFlightToPFlightForV1Only } from 'universe/backend';
+import { searchBarks } from 'universe/backend';
 import { sendHttpOk } from 'multiverse/next-respond';
 import { NotFoundError } from 'universe/backend/error';
 import { ObjectId } from 'mongodb';
@@ -22,15 +22,12 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       }
 
       sendHttpOk(res, {
-        flights: (
-          await searchFlights({
-            key,
-            after,
-            match: {},
-            regexMatch: {},
-            sort: 'asc'
-          })
-        ).map(convertPFlightToPFlightForV1Only)
+        barks: await searchBarks({
+          key,
+          after,
+          match: {},
+          regexMatch: {}
+        })
       });
     },
     { req, res, methods: ['GET'], apiVersion: 1 }

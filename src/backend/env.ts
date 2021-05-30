@@ -13,11 +13,6 @@ export function getEnv(loud = false) {
     DISABLED_API_VERSIONS: !!process.env.DISABLED_API_VERSIONS
       ? process.env.DISABLED_API_VERSIONS.split(',')
       : [],
-    FLIGHTS_GENERATE_DAYS: Number(process.env.FLIGHTS_GENERATE_DAYS),
-    AIRPORT_NUM_OF_GATE_LETTERS: Number(process.env.AIRPORT_NUM_OF_GATE_LETTERS),
-    AIRPORT_GATE_NUMBERS_PER_LETTER: Number(process.env.AIRPORT_GATE_NUMBERS_PER_LETTER),
-    AIRPORT_PAIR_USED_PERCENT: Number(process.env.AIRPORT_PAIR_USED_PERCENT),
-    FLIGHT_HOUR_HAS_FLIGHTS_PERCENT: Number(process.env.FLIGHT_HOUR_HAS_FLIGHTS_PERCENT),
     RESULTS_PER_PAGE: Number(process.env.RESULTS_PER_PAGE),
     IGNORE_RATE_LIMITS:
       !!process.env.IGNORE_RATE_LIMITS && process.env.IGNORE_RATE_LIMITS !== 'false',
@@ -68,14 +63,7 @@ export function getEnv(loud = false) {
       /--debug|--inspect/.test(process.execArgv.join(' '))
   };
 
-  const onlyIfServer = (envVar: unknown) => (isServer() ? [envVar] : []);
-
   const _mustBeGtZero = [
-    env.FLIGHTS_GENERATE_DAYS,
-    env.AIRPORT_NUM_OF_GATE_LETTERS,
-    env.AIRPORT_GATE_NUMBERS_PER_LETTER,
-    ...onlyIfServer(env.AIRPORT_PAIR_USED_PERCENT),
-    ...onlyIfServer(env.FLIGHT_HOUR_HAS_FLIGHTS_PERCENT),
     env.RESULTS_PER_PAGE,
     env.REQUESTS_PER_CONTRIVED_ERROR,
     env.MAX_CONTENT_LENGTH_BYTES
@@ -107,15 +95,6 @@ export function getEnv(loud = false) {
     throw new AppError(`illegal environment detected:\n - ${errors.join('\n - ')}`);
 
   if (env.RESULTS_PER_PAGE < 15) throw new AppError(`RESULTS_PER_PAGE must be >= 15`);
-
-  if (env.AIRPORT_NUM_OF_GATE_LETTERS > 26)
-    throw new AppError(`AIRPORT_NUM_OF_GATE_LETTERS must be <= 26`);
-
-  if (isServer() && env.AIRPORT_PAIR_USED_PERCENT > 100)
-    throw new AppError(`AIRPORT_PAIR_USED_PERCENT must between 0 and 100`);
-
-  if (isServer() && env.FLIGHT_HOUR_HAS_FLIGHTS_PERCENT > 100)
-    throw new AppError(`FLIGHT_HOUR_HAS_FLIGHTS_PERCENT must between 0 and 100`);
 
   if (isServer() && env.MONGODB_MS_PORT && env.MONGODB_MS_PORT <= 1024)
     throw new AppError(`optional environment variable MONGODB_MS_PORT must be > 1024`);

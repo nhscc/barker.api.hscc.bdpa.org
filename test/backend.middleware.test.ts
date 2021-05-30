@@ -3,13 +3,12 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { DUMMY_KEY } from 'universe/backend';
 import * as Middleware from 'universe/backend/middleware';
 import { getEnv } from 'universe/backend/env';
-import { shuffle } from 'fast-shuffle';
 
 import {
   IdTypeError,
   KeyTypeError,
   ValidationError,
-  FlightGenerationError,
+  ActivityGenerationError,
   NotAuthorizedError,
   NotFoundError,
   AppError,
@@ -57,7 +56,8 @@ describe('universe/backend/middleware', () => {
       process.env.REQUESTS_PER_CONTRIVED_ERROR = '10';
 
       const expectedReqPerError = parseInt(process.env.REQUESTS_PER_CONTRIVED_ERROR);
-      const getMethod = () => shuffle(['GET', 'POST', 'PUT', 'DELETE'])[0];
+      const getMethod = () =>
+        ['GET', 'POST', 'PUT', 'DELETE'][Math.floor(Math.random() * 3.9)];
       const getStatus = async (res: Promise<Response>) => (await res).status;
 
       await testApiHandler({
@@ -265,7 +265,7 @@ describe('universe/backend/middleware', () => {
         yield new IdTypeError();
         yield new KeyTypeError();
         yield new ValidationError();
-        yield new FlightGenerationError();
+        yield new ActivityGenerationError();
         yield new NotAuthorizedError();
         yield new NotFoundError();
         yield new AppError();

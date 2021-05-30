@@ -21,9 +21,7 @@ import type {
   NoFlyListEntry,
   InternalAirline,
   RequestLogEntry,
-  LimitedLogEntry,
-  InternalInfo,
-  PublicFlight
+  LimitedLogEntry
 } from 'types/global';
 
 export const EXPAND_RESULTS_BY_MULT = 2.5;
@@ -47,7 +45,7 @@ export const convertIFlightToPFlight = (flight: WithId<InternalFlight>): PublicF
   const { _id, bookerKey, stochasticStates, ...flightData } = flight;
 
   return {
-    flight_id: _id.toHexString(),
+    bark_id: _id.toHexString(),
     bookable: flight.type == 'arrival' ? false : bookerKey == DUMMY_KEY,
     ...flightData,
     ...Object.entries(stochasticStates).reduce((prev, entry) => {
