@@ -1,5 +1,7 @@
 # Precomputed Barker Conversations
 
+> Latest corpus stats: 7510 total lines, 5331 generated usernames
+
 The complete corpus of conversations that (generated) users have with one
 another is stored [here](./corpus.json). This corpus was created with data from
 the
@@ -9,5 +11,3 @@ movie scripts.
 
 If for some reason you want to regenerate the corpus, run
 [`node ./generate-corpus.js`](./generate-corpus.js).
-
-> Latest corpus stats: 7510 total lines, 5331 generated usernames.
