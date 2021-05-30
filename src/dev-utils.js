@@ -8,33 +8,36 @@ const dotenv = require('dotenv');
 
 const expectedEnvVariables = pkg.expectedEnvVariables || [];
 
-if(!Array.isArray(expectedEnvVariables))
-    throw new Error('expectedEnvVariables in package.json must be an array');
+if (!Array.isArray(expectedEnvVariables))
+  throw new Error('expectedEnvVariables in package.json must be an array');
 
 /**
  * @param {string} variable
  */
-const throwEnvError = variable => {
-    throw new Error(
-        `${variable} is not defined. Copy the "dist.env" file to ".env" or define ${variable} in the environment.`
-    );
+const throwEnvError = (variable) => {
+  throw new Error(
+    `${variable} is not defined. Copy the "dist.env" file to ".env" or define ${variable} in the environment.`
+  );
 };
 
 module.exports = {
-    populateEnv() {
-        dotenv.config();
+  populateEnv() {
+    dotenv.config();
 
-        // ? Loop over the values in expectedEnvVariables from package.json to
-        // ? ensure they exist and are strings. If this is not the case, throw an
-        // ? error. There are two loops here to allow for "or syntax," i.e.
-        // ? var1|var2|var3 (see README)
-        expectedEnvVariables.forEach(variable =>
-            variable.split('|').every(subvar => typeof process.env[subvar] !== 'string') && throwEnvError(variable)
-        );
+    // ? Loop over the values in expectedEnvVariables from package.json to
+    // ? ensure they exist and are strings. If this is not the case, throw an
+    // ? error. There are two loops here to allow for "or syntax," i.e.
+    // ? var1|var2|var3 (see README)
+    expectedEnvVariables.forEach(
+      (variable) =>
+        variable.split('|').every((subvar) => typeof process.env[subvar] !== 'string') &&
+        throwEnvError(variable)
+    );
 
-        // ? Resolve the true node/application environment mode --> NODE_ENV
-        // ? Recognized values: development, test, production
-        // eslint-disable-next-line no-console
-        !process.env.NODE_ENV && console.warn(`warn  - process.env.NODE_ENV resolved to "${process.env.NODE_ENV}"!`);
-    }
+    // ? Resolve the true node/application environment mode --> NODE_ENV
+    // ? Recognized values: development, test, production
+    // eslint-disable-next-line no-console
+    !process.env.NODE_ENV &&
+      console.warn(`warn  - process.env.NODE_ENV resolved to "${process.env.NODE_ENV}"!`);
+  }
 };

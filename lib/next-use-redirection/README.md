@@ -3,13 +3,13 @@ version](https://badge.fury.io/js/next-use-redirection.svg)](https://badge.fury.
 
 # next-use-redirection
 
-`next-use-redirection` is a [React
-hook](https://reactjs.org/docs/hooks-intro.html) for
-[Next.js](https://nextjs.org/) that will use [isomorphic
-redirection](https://www.npmjs.com/package/next-isomorphic-redirect) to redirect
-the client to a specific URI if certain conditions are met.
+`next-use-redirection` is a
+[React hook](https://reactjs.org/docs/hooks-intro.html) for
+[Next.js](https://nextjs.org/) that will use
+[isomorphic redirection](https://www.npmjs.com/package/next-isomorphic-redirect)
+to redirect the client to a specific URI if certain conditions are met.
 
-TypeScript Types 
+TypeScript Types
 
 BEFORE next-use-redirection:
 
@@ -82,13 +82,13 @@ $ npm run dev -p `ap`
 # Same as: npm run dev -p `next-use-redirection shiny-new-react-app`
 ```
 
-`next-use-redirection` takes in an identifier (`id`) and spits out a mapped port number.
-Subsequent calls using the same `id` will get the same port number again and
-again. The only exception is when the originally mapped port is being used by
-another process, in which case `next-use-redirection` temporarily returns the next least
-unused port using [detect-port](https://github.com/node-modules/detect-port).
-Once the originally mapped port is no longer in use, later calls with the same
-`id` will return it.
+`next-use-redirection` takes in an identifier (`id`) and spits out a mapped port
+number. Subsequent calls using the same `id` will get the same port number again
+and again. The only exception is when the originally mapped port is being used
+by another process, in which case `next-use-redirection` temporarily returns the
+next least unused port using
+[detect-port](https://github.com/node-modules/detect-port). Once the originally
+mapped port is no longer in use, later calls with the same `id` will return it.
 
 Port numbers start at 3000. You can change/delete your port mappings and/or
 choose the next starting port in the `_portmap.json` configuration file found at
@@ -109,8 +109,8 @@ like so:
 }
 ```
 
-Or with npx, so users who don't have next-use-redirection installed globally can still
-call `npm run dev` without an issue:
+Or with npx, so users who don't have next-use-redirection installed globally can
+still call `npm run dev` without an issue:
 
 ```json
 {
@@ -121,9 +121,9 @@ call `npm run dev` without an issue:
 }
 ```
 
-> Note: using npx might add overhead to your program's start time. To make `npx
-> -q next-use-redirection` return instantaneously, ensure `next-use-redirection` is installed
-> globally.
+> Note: using npx might add overhead to your program's start time. To make
+> `npx -q next-use-redirection` return instantaneously, ensure
+> `next-use-redirection` is installed globally.
 
 ## Installation and Usage
 

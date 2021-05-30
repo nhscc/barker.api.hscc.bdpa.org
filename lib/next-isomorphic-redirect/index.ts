@@ -1,12 +1,12 @@
-import Router from 'next/router'
-import { isServer } from 'is-server-side'
+import Router from 'next/router';
+import { isServer } from 'is-server-side';
 
 import type {
-    HttpStatusCode,
-    FrontendRedirectConfig,
-    BackendRedirectConfig,
-    IsomorphicRedirectConfig
-} from './types'
+  HttpStatusCode,
+  FrontendRedirectConfig,
+  BackendRedirectConfig,
+  IsomorphicRedirectConfig
+} from './types';
 
 const DEFAULT_REDIRECT_STATUS: HttpStatusCode = 301;
 
@@ -22,10 +22,10 @@ const DEFAULT_REDIRECT_STATUS: HttpStatusCode = 301;
  * Router is bypassed and window.location will be used for a "hard" redirect.
  */
 export const frontendRedirect = (location: string, config?: FrontendRedirectConfig) => {
-    // ? Ensure we're not dealing with a network-path reference (https://stackoverflow.com/q/3583103/1367414)
-    (!config?.bypassRouter && location[0] == '/' && location[1] != '/')
-        ? void Router[config?.replace ? 'replace' : 'push'](location)
-        : window.location[config?.replace ? 'replace' : 'assign'](location);
+  // ? Ensure we're not dealing with a network-path reference (https://stackoverflow.com/q/3583103/1367414)
+  !config?.bypassRouter && location[0] == '/' && location[1] != '/'
+    ? void Router[config?.replace ? 'replace' : 'push'](location)
+    : window.location[config?.replace ? 'replace' : 'assign'](location);
 };
 
 /**
@@ -37,10 +37,13 @@ export const frontendRedirect = (location: string, config?: FrontendRedirectConf
  * immediately ending further processing of the response. It is false by
  * default.
  */
-export const backendRedirect = (location: string, { res, status = DEFAULT_REDIRECT_STATUS, immediate }: BackendRedirectConfig) => {
-    res.setHeader('Location', location);
-    res.statusCode = status;
-    immediate && res.end();
+export const backendRedirect = (
+  location: string,
+  { res, status = DEFAULT_REDIRECT_STATUS, immediate }: BackendRedirectConfig
+) => {
+  res.setHeader('Location', location);
+  res.statusCode = status;
+  immediate && res.end();
 };
 
 /**
@@ -52,8 +55,11 @@ export const backendRedirect = (location: string, { res, status = DEFAULT_REDIRE
  * be executing on the frontend. An Error will be thrown if this is not the
  * case.
  */
-export const isomorphicRedirect = (location: string, { res, status, immediate, replace }: IsomorphicRedirectConfig) => {
-    return isServer()
-        ? backendRedirect(location, { res, status, immediate })
-        : frontendRedirect(location, { replace });
+export const isomorphicRedirect = (
+  location: string,
+  { res, status, immediate, replace }: IsomorphicRedirectConfig
+) => {
+  return isServer()
+    ? backendRedirect(location, { res, status, immediate })
+    : frontendRedirect(location, { replace });
 };
