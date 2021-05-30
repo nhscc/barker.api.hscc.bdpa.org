@@ -71,7 +71,7 @@ const lines = rawLines.reduce((map, ln, ndx) => {
     throw new Error(`encountered duplicate line number ${lineNumber}`);
   }
 
-  if (actorName) names.add(actorName.toLowerCase());
+  if (actorName) names.add(actorName.toLowerCase().replace(/[^a-zA-Z0-9]+/gi, ''));
   if (DESIRED_MOVIES.includes(movieId)) map.set(lineNumber, { actorId, movieId, text });
 
   const x = Math.floor((ndx / rawLines.length) * 100).toString();
@@ -124,10 +124,7 @@ filteredMovies.forEach((movie) => {
     .reduce((result, { dialog }) => [...result, dialog], []);
 });
 
-const usernames = Array.from(names.values()).map((name) =>
-  name.replace(/[^a-zA-Z0-9]+/gi, '')
-);
-
+const usernames = Array.from(names.values());
 fs.writeFileSync('corpus.json', JSON.stringify({ dialogs: filteredMovies, usernames }));
 
 console.log(

@@ -10,4 +10,4 @@ movie scripts.
 If for some reason you want to regenerate the corpus, run
 [`node ./generate-corpus.js`](./generate-corpus.js).
 
-> Latest corpus stats: 7510 total lines, 5355 generated usernames.
+> Latest corpus stats: 7510 total lines, 5331 generated usernames.
