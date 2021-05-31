@@ -2,23 +2,17 @@ import { ObjectId } from 'mongodb';
 import { getEnv } from 'universe/backend/env';
 import { getDb } from 'universe/backend/db';
 import { getClientIp } from 'request-ip';
-import cloneDeep from 'clone-deep';
-import randomInt from 'random-int';
-import uniqueRandomArray from 'unique-random-array';
 import sha256 from 'crypto-js/sha256';
 
 import {
   IdTypeError,
   KeyTypeError,
-  ActivityGenerationError,
   GuruMeditationError,
-  ValidationError,
-  AppError
+  ValidationError
 } from 'universe/backend/error';
 
 import type { NextApiRequest } from 'next';
 import type { WithId } from 'mongodb';
-import { pseudoRandomBytes } from 'crypto';
 
 import type {
   RequestLogEntry,
@@ -202,7 +196,7 @@ export async function searchBarks(params: {
         .map((oid) => new ObjectId(oid));
       delete regexMatch.bark_id;
     }
-  } catch (e) {
+  } catch {
     throw new ValidationError('bad bark_id encountered');
   }
 
@@ -299,5 +293,6 @@ export async function searchBarks(params: {
 }
 
 export async function generateActivity(silent = false) {
-  const db = await getDb();
+  //const db = await getDb();
+  void silent;
 }

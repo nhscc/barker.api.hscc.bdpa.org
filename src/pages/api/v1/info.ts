@@ -1,4 +1,4 @@
-import { getSummaryData } from 'universe/backend';
+//import { getSummaryData } from 'universe/backend';
 import { sendHttpOk } from 'multiverse/next-respond';
 import { handleEndpoint } from 'universe/backend/middleware';
 
@@ -10,7 +10,7 @@ export { config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await handleEndpoint(
     async ({ res }) => {
-      sendHttpOk(res, await getSummaryData());
+      sendHttpOk(res /*await getSummaryData()*/);
     },
     { req, res, methods: ['GET'], apiVersion: 1 }
   );

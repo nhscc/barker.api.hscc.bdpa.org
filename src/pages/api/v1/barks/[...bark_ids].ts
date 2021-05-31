@@ -20,7 +20,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
           .map((id) => {
             try {
               return new ObjectId(id);
-            } catch (e) {
+            } catch {
               return null;
             }
           })
@@ -29,7 +29,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         sendHttpOk(res, {
           barks: await getBarksById({ key, ids })
         });
-      } catch (e) {
+      } catch {
         sendHttpOk(res, { barks: [] });
       }
     },

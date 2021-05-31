@@ -19,7 +19,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
       try {
         after = req.query.after ? new ObjectId(req.query.after.toString()) : null;
-      } catch (e) {
+      } catch {
         throw new NotFoundError(req.query.after.toString());
       }
 
