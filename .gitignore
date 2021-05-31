@@ -7,3 +7,5 @@ ignore.*
 /external-scripts/bin
 /node_modules
 /coverage
+
+.vercel

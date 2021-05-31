@@ -52,6 +52,9 @@ export default function Index({
 
   if (shouldHydrateDb) status = <span style={{ color: 'darkred' }}>hydrated</span>;
 
+  // TODO: remove me
+  console.log(`node runtime version ${process.version}`);
+
   return (
     <React.Fragment>
       <p>Psst: there is no web frontend for this API.</p>
