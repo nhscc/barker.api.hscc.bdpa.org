@@ -1,13 +1,11 @@
 [![npm
-version](https://badge.fury.io/js/next-use-redirection.svg)](https://badge.fury.io/js/next-use-redirection)
+version][2]][1]
 
 # next-use-redirection
 
-`next-use-redirection` is a
-[React hook](https://reactjs.org/docs/hooks-intro.html) for
-[Next.js](https://nextjs.org/) that will use
-[isomorphic redirection](https://www.npmjs.com/package/next-isomorphic-redirect)
-to redirect the client to a specific URI if certain conditions are met.
+`next-use-redirection` is a [React hook][3] for [Next.js][4] that will use
+[isomorphic redirection][5] to redirect the client to a specific URI if certain
+conditions are met.
 
 TypeScript Types
 
@@ -86,9 +84,8 @@ $ npm run dev -p `ap`
 number. Subsequent calls using the same `id` will get the same port number again
 and again. The only exception is when the originally mapped port is being used
 by another process, in which case `next-use-redirection` temporarily returns the
-next least unused port using
-[detect-port](https://github.com/node-modules/detect-port). Once the originally
-mapped port is no longer in use, later calls with the same `id` will return it.
+next least unused port using [detect-port][6]. Once the originally mapped port
+is no longer in use, later calls with the same `id` will return it.
 
 Port numbers start at 3000. You can change/delete your port mappings and/or
 choose the next starting port in the `_portmap.json` configuration file found at
@@ -142,3 +139,10 @@ $ echo `npx next-use-redirection ident`
 
 Though, this will add a few seconds to your program's start time. To avoid this,
 ensure `next-use-redirection` is installed globally.
+
+[1]: https://badge.fury.io/js/next-use-redirection
+[2]: https://badge.fury.io/js/next-use-redirection.svg
+[3]: https://reactjs.org/docs/hooks-intro.html
+[4]: https://nextjs.org/
+[5]: https://www.npmjs.com/package/next-isomorphic-redirect
+[6]: https://github.com/node-modules/detect-port

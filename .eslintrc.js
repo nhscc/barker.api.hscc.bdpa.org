@@ -1,8 +1,7 @@
+const debug = require('debug')(`${require('./package.json').name}:eslint-config`);
 const restrictedGlobals = require('confusing-browser-globals');
 
 module.exports = {
-  //preset: 'jest-puppeteer',
-  //setupFilesAfterEnv: [ './test/setup.ts' ],
   parser: '@typescript-eslint/parser',
   plugins: ['jest', '@typescript-eslint', 'import'],
   extends: [
@@ -21,6 +20,7 @@ module.exports = {
       experimentalObjectRestSpread: true,
       jsx: true
     },
+    extraFileExtensions: ['.mjs', '.cjs'],
     project: 'tsconfig.eslint.json'
   },
   env: {
@@ -35,9 +35,17 @@ module.exports = {
     'no-console': 'warn',
     'no-return-await': 'warn',
     'no-await-in-loop': 'warn',
-    'import/no-unresolved': ['error', { commonjs: true }],
+    'import/no-unresolved': [
+      'error',
+      {
+        commonjs: true
+        // ? Once Node 12 dies, these can be used safely
+        /*ignore: ['fs/promises', 'dns/promises']*/
+      }
+    ],
     'no-restricted-globals': ['warn'].concat(restrictedGlobals),
     'no-extra-boolean-cast': 'off',
+    'no-empty': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -80,7 +88,10 @@ module.exports = {
         'jest/require-to-throw-message': 'off',
         'jest/prefer-called-with': 'off',
         'jest/prefer-spy-on': 'off',
-        'jest/no-if': 'off'
+        'jest/no-if': 'off',
+        'jest/no-disabled-tests': 'warn',
+        'jest/no-commented-out-tests': 'warn',
+        'jest/no-alias-methods': 'off'
       }
     }
   ],
@@ -115,7 +126,7 @@ module.exports = {
       '.*/bin/.*'
     ]
   },
-  ignorePatterns: ['coverage', 'build', '/gulpfile.js', '/next.config.js', 'bin'],
+  ignorePatterns: ['coverage', 'dist', 'bin', 'build', '/next.config.js'],
   globals: {
     page: true,
     browser: true,
@@ -123,3 +134,5 @@ module.exports = {
     jestPuppeteer: true
   }
 };
+
+debug('exports: %O', module.exports);

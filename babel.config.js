@@ -1,8 +1,7 @@
 // * Every now and then, we adopt best practices from CRA
 // * https://tinyurl.com/yakv4ggx
 
-// ? https://nodejs.org/en/about/releases
-const NODE_OLDEST_LTS = '10.13.0';
+const debug = require('debug')(`${require('./package.json').name}:babel-config`);
 
 // ! This is pretty aggressive. It targets modern browsers only.
 // ? For some projects, less aggressive targets will make much more
@@ -45,7 +44,9 @@ module.exports = {
   plugins: [
     '@babel/plugin-proposal-export-default-from',
     '@babel/plugin-proposal-function-bind',
-    '@babel/plugin-transform-typescript'
+    '@babel/plugin-transform-typescript',
+    // ? Interoperable named CJS imports for free
+    'transform-default-named-imports'
   ],
   // ? Sub-keys under the "env" config key will augment the above
   // ? configuration depending on the value of NODE_ENV and friends. Default
@@ -59,9 +60,14 @@ module.exports = {
         '@babel/preset-react',
         ['@babel/preset-typescript', { allowDeclareFields: true }]
         // ? We don't care about minification
+      ],
+      plugins: [
+        // ? Only active when testing, the plugin solves the following problem:
+        // ? https://stackoverflow.com/q/40771520/1367414
+        'explicit-exports-references'
       ]
     },
-    // * Used by Vercel and `npm start`
+    // * Used by Vercel, `npm start`, and `npm run build`
     production: {
       // ? Source maps are handled by Next.js and Webpack
       presets: [nextBabelPreset]
@@ -75,23 +81,15 @@ module.exports = {
       plugins: ['@babel/plugin-transform-react-jsx-source']
       // ? We don't care about minification
     },
-    // * Used by `npm run generate` and `npm run regenerate`
-    generator: {
-      sourceMaps: 'inline',
-      comments: false,
-      presets: [
-        ['@babel/preset-env', { targets: { node: NODE_OLDEST_LTS } }],
-        ['@babel/preset-typescript', { allowDeclareFields: true }]
-        // ? We don't care about minification
-      ]
-    },
     // * Used by `npm run build-externals`
     external: {
       presets: [
-        ['@babel/preset-env', { targets: { node: NODE_OLDEST_LTS } }],
+        ['@babel/preset-env', { targets: { node: true } }],
         ['@babel/preset-typescript', { allowDeclareFields: true }]
         // ? Webpack will handle minification
       ]
     }
   }
 };
+
+debug('exports: %O', module.exports);
