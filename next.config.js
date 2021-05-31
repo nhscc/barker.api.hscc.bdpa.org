@@ -57,6 +57,22 @@ module.exports = () => {
           destination: '/api/v2/:path*'
         }
       ];
+    },
+
+    async headers() {
+      return [
+        {
+          // ? https://github.com/vercel/next.js/discussions/17991
+          source: '/(.*?)',
+          headers: [
+            {
+              // ! Prevents all SEO and hides site from search engines
+              key: 'X-Robots-Tag',
+              value: 'none'
+            }
+          ]
+        }
+      ];
     }
   });
 };
