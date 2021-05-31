@@ -9,29 +9,25 @@ import {
 } from 'universe/backend/db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import cloneDeep from 'clone-deep';
-import { nearFuture, farFuture } from 'relative-random-time';
 import { getEnv } from 'universe/backend/env';
 
 import type { Db, WithId } from 'mongodb';
 
 import type {
   ApiKey,
-  InternalFlight,
-  InternalAirport,
-  NoFlyListEntry,
-  InternalAirline,
   RequestLogEntry,
-  LimitedLogEntry
+  LimitedLogEntry,
+  InternalBark,
+  InternalUser,
+  InternalInfo
 } from 'types/global';
 
 export const EXPAND_RESULTS_BY_MULT = 2.5;
 
 export type DummyDbData = {
   keys: ApiKey[];
-  flights: InternalFlight[];
-  airports: InternalAirport[];
-  noFlyList: NoFlyListEntry[];
-  airlines: InternalAirline[];
+  barks: InternalBark[];
+  users: InternalUser[];
   info: InternalInfo;
 };
 
@@ -39,20 +35,6 @@ export type HydratedDummyDbData = {
   [P in keyof DummyDbData]: DummyDbData[P] extends Array<infer T> | undefined
     ? WithId<T>[]
     : WithId<DummyDbData[P]>;
-};
-
-export const convertIFlightToPFlight = (flight: WithId<InternalFlight>): PublicFlight => {
-  const { _id, bookerKey, stochasticStates, ...flightData } = flight;
-
-  return {
-    bark_id: _id.toHexString(),
-    bookable: flight.type == 'arrival' ? false : bookerKey == DUMMY_KEY,
-    ...flightData,
-    ...Object.entries(stochasticStates).reduce((prev, entry) => {
-      if (Number(entry[0]) <= Date.now()) return entry[1];
-      else return prev;
-    }, Object.values(stochasticStates)[0])
-  };
 };
 
 export const unhydratedDummyDbData: DummyDbData = {
@@ -74,301 +56,34 @@ export const unhydratedDummyDbData: DummyDbData = {
       key: 'h90wgbrd-294a-536h-9751-rydmjetgg'
     }
   ],
-  airports: [
-    {
-      name: 'First Chapter Airport',
-      shortName: 'F1A',
-      city: 'Los Angeles',
-      state: 'CA',
-      country: 'USA',
-      chapterKey: DUMMY_KEY
-    },
-    {
-      name: 'Second Chapter Airport',
-      shortName: 'SCA',
-      city: 'Chicago',
-      state: 'IL',
-      country: 'USA',
-      chapterKey: 'xyz4c4d3-294a-4086-9751-f3fce82da'
-    },
-    {
-      name: 'Third Chapter Airport',
-      shortName: 'TC3',
-      city: 'New York',
-      state: 'NY',
-      country: 'USA',
-      chapterKey: '35b6ny53-83a7-gf0r-b060-b4ywayrht'
-    },
-    {
-      name: 'Four Chapter Airport',
-      shortName: 'CHF',
-      city: 'Atlanta',
-      state: 'GA',
-      country: 'USA',
-      chapterKey: 'h90wgbrd-294a-536h-9751-rydmjetgg'
-    }
-  ],
-  airlines: [
-    {
-      name: 'Delta',
-      codePrefix: 'D'
-    },
-    {
-      name: 'American',
-      codePrefix: 'A'
-    },
-    {
-      name: 'United',
-      codePrefix: 'U'
-    },
-    {
-      name: 'Southwest',
-      codePrefix: 'S'
-    },
-    {
-      name: 'Frontier',
-      codePrefix: 'F'
-    },
-    {
-      name: 'Spirit',
-      codePrefix: 'P'
-    }
-  ],
-  noFlyList: [
-    {
-      name: {
-        first: 'Donald',
-        middle: 'John',
-        last: 'Trump'
-      },
-      sex: 'male',
-      birthdate: {
-        day: 14,
-        month: 6,
-        year: 1946
-      }
-    },
-    {
-      name: {
-        first: 'Restricted',
-        middle: 'User',
-        last: 'Flier'
-      },
-      sex: 'male',
-      birthdate: {
-        day: 25,
-        month: 12,
-        year: 1985
-      }
-    }
-  ],
-  // ! Note that dummy times here don't make sense; they're only for testing!
-  flights: [
-    {
-      bookerKey: DUMMY_KEY,
-      type: 'arrival',
-      airline: 'Delta',
-      comingFrom: 'SCA',
-      landingAt: 'F1A',
-      departingTo: 'TC3',
-      flightNumber: 'D8496',
-      baggage: {
-        checked: {
-          max: 2,
-          prices: [30, 50]
-        },
-        carry: {
-          max: 2,
-          prices: [0, 0]
-        }
-      },
-      ffms: 1500,
-      seats: {
-        economy: {
-          total: 100,
-          priceDollars: 250.0,
-          priceFfms: 3000
-        },
-        economyPlus: {
-          total: 20,
-          priceDollars: 350.0,
-          priceFfms: 5000
-        },
-        exitRow: {
-          total: 18,
-          priceDollars: 325.0,
-          priceFfms: 4000
-        },
-        firstClass: {
-          total: 30,
-          priceDollars: 1000.0,
-          priceFfms: 10000
-        }
-      },
-      extras: {
-        wifi: {
-          priceDollars: 15.99,
-          priceFfms: 500
-        },
-        'extra food': {
-          priceDollars: 24.5,
-          priceFfms: 800
-        }
-      },
-      stochasticStates: {
-        '0': {
-          departFromSender: nearFuture(),
-          arriveAtReceiver: nearFuture(),
-          departFromReceiver: null,
-          status: 'scheduled',
-          gate: null
-        },
-        [nearFuture().toString()]: {
-          departFromSender: nearFuture(),
-          arriveAtReceiver: nearFuture(),
-          departFromReceiver: null,
-          status: 'landed',
-          gate: 'A1'
-        }
-      }
-    },
-    {
-      bookerKey: null,
-      type: 'departure',
-      airline: 'United',
-      comingFrom: 'CHF',
-      landingAt: 'TC3',
-      departingTo: null,
-      flightNumber: 'U1234',
-      baggage: {
-        checked: {
-          max: 4,
-          prices: [35, 50, 100, 100]
-        },
-        carry: {
-          max: 3,
-          prices: [0, 25, 100]
-        }
-      },
-      ffms: 5000,
-      seats: {
-        economy: {
-          total: 75,
-          priceDollars: 370.0,
-          priceFfms: 30000
-        },
-        economyPlus: {
-          total: 30,
-          priceDollars: 400.0,
-          priceFfms: 50000
-        },
-        exitRow: {
-          total: 10,
-          priceDollars: 420.0,
-          priceFfms: 40000
-        },
-        firstClass: {
-          total: 15,
-          priceDollars: 1250.57,
-          priceFfms: 100000
-        }
-      },
-      extras: {
-        wifi: {
-          priceDollars: 8.99,
-          priceFfms: 600
-        },
-        blanket: {
-          priceDollars: 2.99,
-          priceFfms: 100
-        },
-        pillow: {
-          priceDollars: 2.99,
-          priceFfms: 100
-        }
-      },
-      stochasticStates: {
-        '0': {
-          departFromSender: farFuture(),
-          arriveAtReceiver: farFuture(),
-          departFromReceiver: farFuture(),
-          status: 'boarding',
-          gate: 'B2'
-        },
-        [Date.now().toString()]: {
-          departFromSender: farFuture(),
-          arriveAtReceiver: farFuture(),
-          departFromReceiver: farFuture(),
-          status: 'departed',
-          gate: 'C3'
-        }
-      }
-    }
-  ],
-  info: {
-    // !! => order is important!! => From cheapest to most expensive => !!
-    seatClasses: ['economy', 'exit row', 'economy plus', 'first class'],
-    // !! => order is important!! => From cheapest to most expensive => !!
-    allExtras: ['pillow', 'blanket', 'headphones', 'wifi', 'extra food']
-  }
+  barks: [],
+  users: [],
+  info: { totalBarks: 100, totalUsers: 10 }
 };
-
-const count = getEnv().RESULTS_PER_PAGE * EXPAND_RESULTS_BY_MULT;
-const specialFlightIndex = count - 2;
-
-// ? Rapidly add a bunch of flights for testing purposes
-unhydratedDummyDbData.flights = [...Array(Math.floor(count))].map((_, ndx) => {
-  const flight = cloneDeep(
-    unhydratedDummyDbData.flights[ndx % unhydratedDummyDbData.flights.length]
-  );
-
-  if (ndx == specialFlightIndex) {
-    flight.airline = 'Spirit';
-    flight.ffms = 100000000;
-    flight.stochasticStates = {
-      '0': {
-        departFromSender: farFuture(),
-        arriveAtReceiver: farFuture(),
-        departFromReceiver: farFuture(),
-        status: 'boarding',
-        gate: 'B2'
-      },
-      '1': {
-        departFromSender: 500,
-        arriveAtReceiver: 700,
-        departFromReceiver: 1000,
-        status: 'past',
-        gate: null
-      }
-    };
-  }
-
-  return flight;
-});
 
 export async function hydrateDb(db: Db, data: DummyDbData) {
   const newData = cloneDeep(data);
 
   await Promise.all([
     ...[newData.keys.length ? db.collection('keys').insertMany(newData.keys) : null],
-    ...[
-      newData.airports.length
-        ? db.collection('airports').insertMany(newData.airports)
-        : null
-    ],
-    ...[
-      newData.airlines.length
-        ? db.collection('airlines').insertMany(newData.airlines)
-        : null
-    ],
-    ...[
-      newData.noFlyList.length
-        ? db.collection('no-fly-list').insertMany(newData.noFlyList)
-        : null
-    ],
-    ...[
-      newData.flights.length ? db.collection('flights').insertMany(newData.flights) : null
-    ],
+    // ...[
+    //   newData.airports.length
+    //     ? db.collection('airports').insertMany(newData.airports)
+    //     : null
+    // ],
+    // ...[
+    //   newData.airlines.length
+    //     ? db.collection('airlines').insertMany(newData.airlines)
+    //     : null
+    // ],
+    // ...[
+    //   newData.noFlyList.length
+    //     ? db.collection('no-fly-list').insertMany(newData.noFlyList)
+    //     : null
+    // ],
+    // ...[
+    //   newData.flights.length ? db.collection('flights').insertMany(newData.flights) : null
+    // ],
     ...[newData.info ? db.collection('info').insertMany([newData.info]) : null],
 
     db.collection<WithId<RequestLogEntry>>('request-log').insertMany(
