@@ -7,6 +7,11 @@ module.exports = () => {
   return withBundleAnalyzer({
     enabled: process.env.ANALYZE === 'true'
   })({
+    // ? https://nextjs.org/docs/messages/webpack5
+    future: {
+      webpack5: true
+    },
+
     // ? Renames the build dir "build" instead of ".next"
     distDir: 'build',
 
