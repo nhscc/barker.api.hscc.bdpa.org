@@ -110,12 +110,12 @@ Defined in: [src/backend/middleware.ts:53][12]
 [6]: src_backend_middleware.md#sendhttpcontrivederror
 [7]: types_global.md#nextapistate
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/middleware.ts#L37
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L37
 [9]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/middleware.ts#L38
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L38
 [10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/middleware.ts#L64
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L64
 [11]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/middleware.ts#L73
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L73
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/middleware.ts#L53
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L53

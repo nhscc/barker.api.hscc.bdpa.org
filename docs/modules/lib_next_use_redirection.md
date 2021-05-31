@@ -52,4 +52,4 @@ Defined in: [lib/next-use-redirection/index.ts:18][4]
 [2]: lib_next_use_redirection.md#useredirection
 [3]: lib_next_isomorphic_redirect_types.md#frontendredirectconfig
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-use-redirection/index.ts#L18
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-use-redirection/index.ts#L18

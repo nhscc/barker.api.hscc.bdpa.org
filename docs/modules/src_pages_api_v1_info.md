@@ -40,4 +40,4 @@ Defined in: [src/pages/api/v1/info.ts:8][5]
 [3]: src_pages_api_v1_info.md#default
 [4]: src_backend_middleware.md#config
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/pages/api/v1/info.ts#L8
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/api/v1/info.ts#L8

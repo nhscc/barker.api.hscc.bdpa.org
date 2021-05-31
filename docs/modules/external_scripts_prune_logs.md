@@ -27,4 +27,4 @@ Defined in: [external-scripts/prune-logs.ts:9][3]
 [1]: ../README.md
 [2]: external_scripts_prune_logs.md#default
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/external-scripts/prune-logs.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/external-scripts/prune-logs.ts#L9

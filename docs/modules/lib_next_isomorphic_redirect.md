@@ -94,10 +94,10 @@ Defined in: [lib/next-isomorphic-redirect/index.ts:58][10]
 [4]: lib_next_isomorphic_redirect.md#isomorphicredirect
 [5]: lib_next_isomorphic_redirect_types.md#backendredirectconfig
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/index.ts#L40
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/index.ts#L40
 [7]: lib_next_isomorphic_redirect_types.md#frontendredirectconfig
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/index.ts#L24
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/index.ts#L24
 [9]: lib_next_isomorphic_redirect_types.md#isomorphicredirectconfig
 [10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/index.ts#L58
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/index.ts#L58

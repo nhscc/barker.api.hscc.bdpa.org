@@ -42,6 +42,6 @@ Defined in: [src/pages/index.tsx:15][5]
 [2]: src_pages.md#default
 [3]: src_pages.md#getserversideprops
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/pages/index.tsx#L39
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/index.tsx#L39
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/pages/index.tsx#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/index.tsx#L15

@@ -83,14 +83,14 @@ export type InternalBark = {
    */
   meta: {
     /**
-     * User Influence * 0.15 + Bark Likeability * 0.25 + .1 Pack Bonus = percent
+     * User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent
      * chance of a generated follower liking a specific Bark from this user.
      *
      * @type number between 0 and 1
      */
     likeability: number;
     /**
-     * User Influence * 0.10 + Bark "Rebarkability" * 0.20 + .1 Pack Bonus =
+     * User Influence × 0.10 + Bark "Rebarkability" × 0.20 + .1 Pack Bonus =
      * percent chance of a generated follower liking a specific Bark from this
      * user.
      *
@@ -98,7 +98,7 @@ export type InternalBark = {
      */
     rebarkability: number;
     /**
-     * User Influence * 0.10 + Bark "Barkbackability" * 0.15 + .15 Pack Bonus =
+     * User Influence × 0.10 + Bark "Barkbackability" × 0.15 + .15 Pack Bonus =
      * percent chance of a generated follower liking a specific Bark from this
      * user.
      *
@@ -160,11 +160,11 @@ export type InternalUser = {
      * Max percentage of the generated user base that will _eventually_ follow
      * this user.
      *
-     * @type number between 0 (~1%) and 1 (~75%)
+     * @type number between 0 (~1% of user base) and 1 (~75% of user base)
      */
     followability: number;
     /**
-     * User Influence * 0.15 + Bark Likeability * 0.25 + .1 Pack Bonus = percent
+     * User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent
      * chance of a generated follower liking a specific Bark from this user.
      *
      * @type number between 0 and 1

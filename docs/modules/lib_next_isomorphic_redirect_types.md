@@ -73,8 +73,8 @@ Defined in: [lib/next-isomorphic-redirect/types.ts:15][8]
 [4]: lib_next_isomorphic_redirect_types.md#httpstatuscode
 [5]: lib_next_isomorphic_redirect_types.md#isomorphicredirectconfig
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/types.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L9
 [7]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/types.ts#L4
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L4
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-isomorphic-redirect/types.ts#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L15

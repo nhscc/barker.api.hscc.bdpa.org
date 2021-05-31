@@ -40,4 +40,4 @@ Defined in: [src/pages/api/v1/barks/search.ts:10][5]
 [3]: src_pages_api_v1_barks_search.md#default
 [4]: src_backend_middleware.md#config
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/pages/api/v1/barks/search.ts#L10
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/api/v1/barks/search.ts#L10

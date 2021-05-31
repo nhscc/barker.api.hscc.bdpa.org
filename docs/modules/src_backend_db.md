@@ -130,14 +130,14 @@ Defined in: [src/backend/db.ts:55][13]
 [6]: src_backend_db.md#initializedb
 [7]: src_backend_db.md#setclientanddb
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L47
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L47
 [9]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L65
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L65
 [10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L11
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L11
 [11]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L38
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L38
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L79
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L79
 [13]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/db.ts#L55
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/db.ts#L55

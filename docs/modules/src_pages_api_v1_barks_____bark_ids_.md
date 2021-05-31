@@ -41,4 +41,4 @@ Defined in: [src/pages/api/v1/barks/\[...bark_ids\].ts:9][5]
 [4]: src_backend_middleware.md#config
 
 [5]:
-https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/pages/api/v1/barks/[...bark_ids].ts#L9
+https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/api/v1/barks/[...bark_ids].ts#L9

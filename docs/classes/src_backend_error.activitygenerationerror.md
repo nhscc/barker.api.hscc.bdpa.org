@@ -149,7 +149,7 @@ Defined in: node_modules/@types/node/globals.d.ts:4
 [10]: src_backend_error.activitygenerationerror.md#capturestacktrace
 [11]: src_backend_error.activitygenerationerror.md
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/src/backend/error.ts#L5
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/error.ts#L5
 [13]: src_backend_error.apperror.md#message
 [14]: src_backend_error.apperror.md#name
 [15]: src_backend_error.apperror.md#stack

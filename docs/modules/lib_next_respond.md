@@ -275,30 +275,30 @@ Defined in: [lib/next-respond/index.ts:116][30]
 [14]: lib_next_respond.md#sendnotimplementederror
 [15]: lib_next_isomorphic_redirect_types.md#httpstatuscode
 [16]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L4
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L4
 [17]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L76
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L76
 [18]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L36
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L36
 [19]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L106
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L106
 [20]: lib_next_respond_types.md#errorjsonresponse
 [21]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L22
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L22
 [22]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L66
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L66
 [23]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L32
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L32
 [24]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L96
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L96
 [25]: lib_next_respond_types.md#successjsonresponse
 [26]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L12
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L12
 [27]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L86
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L86
 [28]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L46
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L46
 [29]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L56
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L56
 [30]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/08a500c/lib/next-respond/index.ts#L116
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/index.ts#L116
