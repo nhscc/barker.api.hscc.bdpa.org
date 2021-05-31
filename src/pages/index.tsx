@@ -53,6 +53,7 @@ export default function Index({
   if (shouldHydrateDb) status = <span style={{ color: 'darkred' }}>hydrated</span>;
 
   // TODO: remove me
+  // eslint-disable-next-line no-console
   console.log(`node runtime version ${process.version}`);
 
   return (
