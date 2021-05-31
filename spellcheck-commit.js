@@ -41,7 +41,7 @@ const isAllCaps = (w) => /^[^a-z]+$/.test(w);
 const splitOutWords = (phrase) =>
   [...phrase.split(/[^a-zA-Z]+/g), phrase].filter(Boolean);
 
-const keys = (obj) => Object.keys(obj).map(splitOutWords);
+const keys = (obj) => (obj ? Object.keys(obj).map(splitOutWords) : []);
 
 (async () => {
   const lastCommitMsg = (await read('./.git/COMMIT_EDITMSG')).toString('utf-8');
