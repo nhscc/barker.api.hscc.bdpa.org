@@ -3,9 +3,8 @@
 ignore.*
 /build
 /.vscode
+/.vercel
 /.env
 /external-scripts/bin
 /node_modules
 /coverage
-
-.vercel
