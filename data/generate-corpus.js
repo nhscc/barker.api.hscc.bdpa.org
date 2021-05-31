@@ -120,11 +120,13 @@ const convos = rawConvos
 
 console.log('> mapping movie dialog to desired movies...');
 
-const dialogs = filteredMovies.map((movie) =>
-  convos
-    .filter((convo) => convo.movieId == movie.id)
-    .reduce((result, { dialog }) => [...result, dialog], [])
-);
+const dialogs = filteredMovies
+  .map((movie) =>
+    convos
+      .filter((convo) => convo.movieId == movie.id)
+      .reduce((result, { dialog }) => [...result, dialog], [])
+  )
+  .flat();
 
 const usernames = Array.from(names.values());
 fs.writeFileSync('corpus.json', JSON.stringify({ dialogs, usernames }));
