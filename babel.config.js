@@ -44,9 +44,7 @@ module.exports = {
   plugins: [
     '@babel/plugin-proposal-export-default-from',
     '@babel/plugin-proposal-function-bind',
-    '@babel/plugin-transform-typescript',
-    // ? Interoperable named CJS imports for free
-    'transform-default-named-imports'
+    '@babel/plugin-transform-typescript'
   ],
   // ? Sub-keys under the "env" config key will augment the above
   // ? configuration depending on the value of NODE_ENV and friends. Default

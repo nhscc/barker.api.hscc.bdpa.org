@@ -1,6 +1,7 @@
 const withBundleAnalyzer = require('@next/bundle-analyzer');
+const { verifyEnvironment } = require('./expect-env');
 
-require('./src/dev-utils').populateEnv();
+verifyEnvironment();
 
 module.exports = () => {
   return withBundleAnalyzer({
