@@ -4,13 +4,7 @@ import { getDb, initializeDb, destroyDb } from 'universe/backend/db';
 import { hydrateDb, unhydratedDummyDbData } from 'testverse/db';
 
 import type { GetServerSidePropsContext } from 'next';
-
-type Props = {
-  previouslyHydratedDb: boolean;
-  shouldHydrateDb: boolean;
-  isInProduction: boolean;
-  nodeEnv: string;
-};
+import { Awaited } from '@ergodark/types';
 
 let previouslyHydratedDb = false;
 
@@ -24,7 +18,8 @@ export async function getServerSideProps({ query }: GetServerSidePropsContext) {
     isInProduction: env.NODE_ENV == 'production',
     shouldHydrateDb,
     previouslyHydratedDb,
-    nodeEnv: env.NODE_ENV
+    nodeEnv: env.NODE_ENV,
+    nodeVersion: process.version
   };
 
   if (shouldHydrateDb) {
@@ -43,8 +38,9 @@ export default function Index({
   previouslyHydratedDb,
   shouldHydrateDb,
   isInProduction,
-  nodeEnv
-}: Props) {
+  nodeEnv,
+  nodeVersion
+}: Awaited<ReturnType<typeof getServerSideProps>>['props']) {
   let status = <span style={{ color: 'gray' }}>unchanged</span>;
 
   if (previouslyHydratedDb)
@@ -52,9 +48,8 @@ export default function Index({
 
   if (shouldHydrateDb) status = <span style={{ color: 'darkred' }}>hydrated</span>;
 
-  // TODO: remove me
   // eslint-disable-next-line no-console
-  console.log(`node runtime version ${process.version}`);
+  console.log(`serverless node runtime: ${nodeVersion}`);
 
   return (
     <React.Fragment>
