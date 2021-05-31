@@ -3,6 +3,8 @@ import { getEnv } from 'universe/backend/env';
 import { getDb, initializeDb, destroyDb } from 'universe/backend/db';
 import { hydrateDb, unhydratedDummyDbData } from 'testverse/db';
 
+import type { GetServerSidePropsContext } from 'next';
+
 type Props = {
   previouslyHydratedDb: boolean;
   shouldHydrateDb: boolean;
@@ -12,10 +14,11 @@ type Props = {
 
 let previouslyHydratedDb = false;
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ query }: GetServerSidePropsContext) {
   const env = getEnv();
   const shouldHydrateDb =
-    env.NODE_ENV == 'development' && !previouslyHydratedDb && env.HYDRATE_DB_ON_STARTUP;
+    env.NODE_ENV == 'development' &&
+    ((!previouslyHydratedDb && env.HYDRATE_DB_ON_STARTUP) || query.hydrate !== undefined);
 
   const props = {
     isInProduction: env.NODE_ENV == 'production',
