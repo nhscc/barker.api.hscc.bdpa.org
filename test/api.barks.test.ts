@@ -51,7 +51,7 @@ process.env.DISABLED_API_VERSIONS = '';
 
 describe('api/v1/barks', () => {
   describe('/ [GET]', () => {
-    it('returns expected number of barks by default in LIFO order', async () => {
+    it('returns expected bark in LIFO order', async () => {
       expect.hasAssertions();
 
       const results = dummyDbData.barks.slice(0, getEnv().RESULTS_PER_PAGE);
@@ -69,7 +69,7 @@ describe('api/v1/barks', () => {
       });
     });
 
-    it('returns expected number of barks by default in LIFO order respecting offset', async () => {
+    it('returns expected bark with respect to offset', async () => {
       expect.hasAssertions();
 
       process.env.RESULTS_PER_PAGE = '15';
@@ -88,10 +88,18 @@ describe('api/v1/barks', () => {
         }
       });
     });
+
+    it('does the right thing when garbage offsets are provided', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not throw when no barks in the system', async () => {
+      expect.hasAssertions();
+    });
   });
 
   describe('/ [POST]', () => {
-    it('creates and returns new Barks', async () => {
+    it('creates and returns new barks', async () => {
       expect.hasAssertions();
 
       const yieldItems: NewBark[] = [
@@ -165,6 +173,10 @@ describe('api/v1/barks', () => {
             ])
           );
         }
+      });
+
+      it('system metadata is updated', async () => {
+        expect.hasAssertions();
       });
     });
 
@@ -249,78 +261,130 @@ describe('api/v1/barks', () => {
         }
       });
     });
-
-    it('errors if query parameters are provided', async () => {
-      expect.hasAssertions();
-
-      const yieldCount = 2;
-      const genUrl = (function* () {
-        yield `/?limit=1`;
-        yield `/?after=${new ObjectId()}`;
-      })();
-
-      await testApiHandler({
-        requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
-        handler: api.barks,
-        test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({ method: 'POST', headers: { KEY } }).then(async (r) => [
-                r.status,
-                ((await r.json()) as ErrorJsonResponse).error
-              ])
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_) => [
-              400,
-              'query parameters can only be used with GET requests'
-            ])
-          );
-        }
-      });
-    });
   });
 
   describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [GET]', () => {
-    it('creates and returns new Barks', async () => {
+    it('returns one Bark by ID', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns many barks by ID', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if one or more IDs not found', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [DELETE]', () => {
-    it('creates and returns new Barks', async () => {
+    it('deletes one or more barks', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if one or more IDs not found', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<bark_id>/likes [GET]', () => {
-    it('creates and returns new Barks', async () => {
+    it('returns expected users in LIFO order', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected users with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not throw when bark has no likes', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<bark_id>/likes/<user_id> [GET]', () => {
-    it('creates and returns new Barks', async () => {
+    it('succeeds if the user has liked the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if the user has not liked the bark', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<bark_id>/likes/<user_id> [DELETE]', () => {
-    it('creates and returns new Barks', async () => {
+    it('the user "unlikes" the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata (bark and user) is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user has not liked the bark', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<bark_id>/likes/<user_id> [PUT]', () => {
-    it('creates and returns new Barks', async () => {
+    it('the user "likes" the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata (bark and user) is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user has already liked the bark', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/search [GET]', () => {
-    it('creates and returns new Barks', async () => {
+    it('returns expected barks in LIFO order with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not throw when there are no barks in the system', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns same barks as GET /barks if no query params given', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected barks with respect to match', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected barks with respect to regexMatch', async () => {
+      expect.hasAssertions();
+    });
+
+    it('regexMatch errors properly with bad inputs', async () => {
+      expect.hasAssertions();
+    });
+
+    it('ensure meta, totalLikes/totalRebarks/totalBarkbacks (unproxied), likes (non-numeric), and bark_id/_id cannot be matched against', async () => {
+      expect.hasAssertions();
+    });
+
+    it('ensure numerical matches against likes (totalLikes), rebarks (totalRebarks), and barkbacks (totalBarkbacks) are properly proxied', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected barks with respect to all possible query params simultaneously', async () => {
       expect.hasAssertions();
     });
   });

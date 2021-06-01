@@ -87,7 +87,7 @@ process.env.DISABLED_API_VERSIONS = '';
 
 describe('api/v1/users', () => {
   describe('/ [GET]', () => {
-    it('returns expected number of users by default in LIFO order', async () => {
+    it('returns expected users in LIFO order', async () => {
       expect.hasAssertions();
 
       const results = dummyDbData.users.slice(0, getEnv().RESULTS_PER_PAGE);
@@ -105,7 +105,7 @@ describe('api/v1/users', () => {
       });
     });
 
-    it('returns expected number of public users by default in LIFO order respecting offset', async () => {
+    it('returns expected users with respect to offset', async () => {
       expect.hasAssertions();
 
       process.env.RESULTS_PER_PAGE = '15';
@@ -124,10 +124,18 @@ describe('api/v1/users', () => {
         }
       });
     });
+
+    it('does the right thing when garbage offsets are provided', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not throw when there are no users in the system', async () => {
+      expect.hasAssertions();
+    });
   });
 
   describe('/ [POST]', () => {
-    it('creates and returns new Users', async () => {
+    it('creates and returns new users', async () => {
       expect.hasAssertions();
 
       const yieldItems: NewUser[] = [
@@ -201,6 +209,10 @@ describe('api/v1/users', () => {
             ])
           );
         }
+      });
+
+      it('system metadata is updated', async () => {
+        expect.hasAssertions();
       });
     });
 
@@ -285,138 +297,222 @@ describe('api/v1/users', () => {
         }
       });
     });
-
-    it('errors if query parameters are provided', async () => {
-      expect.hasAssertions();
-
-      const yieldCount = 2;
-      const genUrl = (function* () {
-        yield `/?limit=1`;
-        yield `/?after=${new ObjectId()}`;
-      })();
-
-      await testApiHandler({
-        requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
-        handler: api.users,
-        test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({ method: 'POST', headers: { KEY } }).then(async (r) => [
-                r.status,
-                ((await r.json()) as ErrorJsonResponse).error
-              ])
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_) => [
-              400,
-              'query parameters can only be used with GET requests'
-            ])
-          );
-        }
-      });
-    });
   });
 
   describe('/<user_id> [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('returns user by ID', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if ID not found', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id> [DELETE]', () => {
-    it('creates and returns new Users', async () => {
+    it('deletes user by ID', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if ID not found', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id> [PUT]', () => {
-    it('creates and returns new Users', async () => {
+    it('updates user by ID', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if ID not found', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if request body is invalid', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/liked [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('returns expected barks in LIFO order', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected barks with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/liked/<bark_id> [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('succeeds if the user has liked the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if the user has not liked the bark', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/following [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('returns expected users in LIFO order', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected users with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/following/<followed_id> [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('succeeds if the user is a follower', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if the user is not a follower', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/following/<followed_id> [DELETE]', () => {
-    it('creates and returns new Users', async () => {
+    it('the user "unfollows" the formerly followed user', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user is not a follower', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/following/<followed_id> [PUT]', () => {
-    it('creates and returns new Users', async () => {
+    it('the user "follows" the other user', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user is already follower', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/pack [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('returns expected users in LIFO order', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected users with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/pack/<packmate_id> [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('succeeds if the user is a packmate', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if the user is not a packmate', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/pack/<packmate_id> [DELETE]', () => {
-    it('creates and returns new Users', async () => {
+    it('removes the target user from the pack', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user is not a packmate', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/pack/<packmate_id> [PUT]', () => {
-    it('creates and returns new Users', async () => {
+    it('adds the target user to pack', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the user is already a packmate', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/bookmarks [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('returns expected barks in LIFO order', async () => {
+      expect.hasAssertions();
+    });
+
+    it('returns expected barks with respect to offset', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/bookmarks/<bark_id> [GET]', () => {
-    it('creates and returns new Users', async () => {
+    it('succeeds if the user has bookmarked the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('errors if the user has not bookmarked the bark', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/bookmarks/<bark_id> [DELETE]', () => {
-    it('creates and returns new Users', async () => {
+    it('the user "unbookmarks" the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the bark already is not bookmarked', async () => {
       expect.hasAssertions();
     });
   });
 
   describe('/<user_id>/bookmarks/<bark_id> [PUT]', () => {
-    it('creates and returns new Users', async () => {
+    it('the user "bookmarks" the bark', async () => {
+      expect.hasAssertions();
+    });
+
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+    });
+
+    it('does not error if the bark is already bookmarked', async () => {
       expect.hasAssertions();
     });
   });
