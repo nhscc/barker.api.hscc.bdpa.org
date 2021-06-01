@@ -321,7 +321,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [GET]', () => {
+  describe('/:bark_id1/:bark_id2/.../:bark_idN [GET]', () => {
     it('returns one or many Barks by ID', async () => {
       expect.hasAssertions();
 
@@ -398,7 +398,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [DELETE]', () => {
+  describe('/:bark_id1/:bark_id2/.../:bark_idN [DELETE]', () => {
     it('deletes one or more barks', async () => {
       expect.hasAssertions();
 
