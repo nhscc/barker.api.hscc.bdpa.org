@@ -2,6 +2,7 @@
 // compile executables, etc
 
 const { EnvironmentPlugin, DefinePlugin, BannerPlugin } = require('webpack');
+const { ThreadsPlugin } = require('threads-plugin');
 const { verifyEnvironment } = require('./expect-env');
 const nodeExternals = require('webpack-node-externals');
 const debug = require('debug')(`${require('./package.json').name}:webpack-config`);
@@ -117,7 +118,9 @@ const externalsConfig = {
   plugins: [
     ...envPlugins,
     // * ▼ For non-bundled externals, make entry file executable w/ shebang
-    new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true, entryOnly: true })
+    new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true, entryOnly: true }),
+    // * ▼ For threads.js support @ https://threads.js.org/getting-started
+    new ThreadsPlugin()
   ]
 };
 

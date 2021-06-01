@@ -29,7 +29,7 @@ describe('external-scripts/prune-logs', () => {
     expect(await getCount(await getDb())).toBe(1);
   });
 
-  it('only deletes log entriess if necessary', async () => {
+  it('only deletes log entries if necessary', async () => {
     expect.hasAssertions();
 
     expect(await getCount(await getDb())).toBe(22);

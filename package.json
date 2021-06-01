@@ -171,5 +171,9 @@
     "DISALLOWED_METHODS",
     "REQUESTS_PER_CONTRIVED_ERROR",
     "MAX_CONTENT_LENGTH_BYTES"
-  ]
+  ],
+  "devDependencies": {
+    "threads": "^1.6.4",
+    "threads-plugin": "^1.4.0"
+  }
 }

@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { version as pkgVersion } from '../../package.json';
 import { getEnv } from 'universe/backend/env';
 import { getDb, initializeDb, destroyDb } from 'universe/backend/db';
-import { hydrateDb, unhydratedDummyDbData } from 'testverse/db';
+import { hydrateDb, dummyDbData } from 'testverse/db';
 
 import type { GetServerSidePropsContext } from 'next';
 import { Awaited } from '@ergodark/types';
@@ -27,7 +28,7 @@ export async function getServerSideProps({ query }: GetServerSidePropsContext) {
 
     await destroyDb(db);
     await initializeDb(db);
-    await hydrateDb(db, unhydratedDummyDbData);
+    await hydrateDb(db, dummyDbData);
     previouslyHydratedDb = true;
   }
 
@@ -50,6 +51,8 @@ export default function Index({
 
   // eslint-disable-next-line no-console
   console.log(`serverless node runtime: ${nodeVersion}`);
+  // eslint-disable-next-line no-console
+  console.log(`barker runtime: v${pkgVersion}`);
 
   return (
     <React.Fragment>
