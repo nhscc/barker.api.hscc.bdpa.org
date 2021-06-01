@@ -129,7 +129,7 @@ describe('api/v1/users', () => {
       expect.hasAssertions();
     });
 
-    it('does not throw when there are no users in the system', async () => {
+    it('functions normally when there are no users in the system', async () => {
       expect.hasAssertions();
     });
   });
@@ -210,10 +210,10 @@ describe('api/v1/users', () => {
           );
         }
       });
+    });
 
-      it('system metadata is updated', async () => {
-        expect.hasAssertions();
-      });
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
     });
 
     it('errors if request body is invalid', async () => {

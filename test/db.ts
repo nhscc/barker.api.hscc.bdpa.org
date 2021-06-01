@@ -85,25 +85,45 @@ let lastRandomMoment = Math.floor(Date.now() / (Math.random() * 10000000));
 const getRandomMoment = () =>
   (lastRandomMoment += Math.floor((Math.random() * (Date.now() - lastRandomMoment)) / 2));
 
-dummyDbData.barks = Array.from({ length: 100 }).map<WithId<InternalBark>>((_, ndx) => {
-  return {
-    _id: new ObjectId(),
-    owner: dummyDbData.users[ndx % 10]._id,
-    content: `#${ndx} bark contents`,
-    createdAt: getRandomMoment(),
-    likes: randomInt(300),
-    rebarks: randomInt(200),
-    barkbacks: randomInt(100),
-    deleted: randomInt(100) <= 10,
-    private: randomInt(100) <= 10,
-    barkbackTo: ndx % 10 == 0 ? new ObjectId() : null,
-    rebarkOf: ndx && ndx % 11 == 0 ? new ObjectId() : null,
-    meta: {
-      barkbackability: Math.random(),
-      likeability: Math.random(),
-      rebarkability: Math.random()
-    }
-  };
+dummyDbData.barks = Array.from({ length: 100 }).map<WithId<InternalBark>>((_, ndx) => ({
+  _id: new ObjectId(),
+  owner: dummyDbData.users[ndx % 10]._id,
+  content: `#${ndx} bark contents`,
+  createdAt: getRandomMoment(),
+  likes: [],
+  totalLikes: randomInt(300),
+  totalRebarks: randomInt(200),
+  totalBarkbacks: randomInt(100),
+  deleted: randomInt(100) <= 10,
+  private: randomInt(100) <= 10,
+  barkbackTo: ndx % 10 == 0 ? new ObjectId() : null,
+  rebarkOf: ndx && ndx % 11 == 0 ? new ObjectId() : null,
+  meta: {
+    barkbackability: Math.random(),
+    likeability: Math.random(),
+    rebarkability: Math.random()
+  }
+}));
+
+dummyDbData.users.forEach((user, ndx, arr) => {
+  user.following = arr
+    .slice((ndx + 1) % arr.length, (ndx + (ndx % 2 == 0 ? 2 : 3)) % arr.length)
+    .map((internal) => internal._id);
+
+  user.packmates = [user.following[0]];
+
+  user.liked = dummyDbData.barks
+    .slice(
+      (ndx + 1) % dummyDbData.barks.length,
+      (ndx + (ndx % 2 == 0 ? 12 : 24)) % dummyDbData.barks.length
+    )
+    .map((internal) => internal._id);
+
+  dummyDbData.barks
+    .filter((bark) => user.liked.includes(bark._id))
+    .forEach((bark) => bark.likes.push(user._id));
+
+  user.bookmarked = [user.liked[5]];
 });
 
 export async function hydrateDb(db: Db, data: DummyDbData) {

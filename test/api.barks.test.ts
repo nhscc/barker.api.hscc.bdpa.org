@@ -18,10 +18,9 @@ import { DUMMY_KEY as KEY } from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
 import { ObjectId } from 'mongodb';
 
-import type { NewBark, PublicBark } from 'types/global';
-import { ErrorJsonResponse } from 'multiverse/next-respond/types';
+import { InternalInfo, NewBark, PublicBark } from 'types/global';
+import { ErrorJsonResponse, SuccessJsonResponse } from 'multiverse/next-respond/types';
 
-const RESULT_SIZE = getEnv().RESULTS_PER_PAGE;
 const { getDb } = setupJest();
 
 const api = {
@@ -91,10 +90,48 @@ describe('api/v1/barks', () => {
 
     it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
+
+      const genUrl = (function* () {
+        yield `/?after=-5`;
+        yield `/?after=a`;
+        yield `/?after=@($)`;
+        yield `/?after=xyz`;
+        yield `/?after=123`;
+        yield `/?after=(*$)`;
+        yield `/?dne=123`;
+      })();
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
+        handler: api.barks,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: 7 }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([400, 400, 400, 400, 400, 400, 200]);
+        }
+      });
     });
 
-    it('does not throw when no barks in the system', async () => {
+    it('functions when no barks in the system', async () => {
       expect.hasAssertions();
+
+      await (await getDb()).collection('barks').deleteMany({});
+
+      await testApiHandler({
+        handler: api.barks,
+        test: async ({ fetch }) => {
+          const response = await fetch({ headers: { KEY } });
+          const json = await response.json();
+
+          expect(response.status).toBe(200);
+          expect((await response.json()).success).toBe(true);
+          expect(json.barks).toStrictEqual([]);
+        }
+      });
     });
   });
 
@@ -174,9 +211,30 @@ describe('api/v1/barks', () => {
           );
         }
       });
+    });
 
-      it('system metadata is updated', async () => {
-        expect.hasAssertions();
+    it('system metadata is updated', async () => {
+      expect.hasAssertions();
+
+      await testApiHandler({
+        handler: api.barks,
+        test: async ({ fetch }) => {
+          await fetch({
+            method: 'POST',
+            headers: { KEY, 'content-type': 'application/json' },
+            body: JSON.stringify({
+              owner: dummyDbData.users[0]._id,
+              content: '1',
+              private: false,
+              barkbackTo: null,
+              rebarkOf: null
+            })
+          });
+
+          expect(await (await getDb()).collection('info').findOne({})).toStrictEqual(
+            expect.objectContaining({ totalBarks: dummyDbData.info.totalBarks + 1 })
+          );
+        }
       });
     });
 
@@ -264,48 +322,305 @@ describe('api/v1/barks', () => {
   });
 
   describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [GET]', () => {
-    it('returns one Bark by ID', async () => {
+    it('returns one or many Barks by ID', async () => {
       expect.hasAssertions();
-    });
 
-    it('returns many barks by ID', async () => {
-      expect.hasAssertions();
+      const yieldItems = [
+        [dummyDbData.barks[0]._id],
+        [dummyDbData.barks[99]._id],
+        [dummyDbData.barks[5]._id, dummyDbData.barks[50]._id],
+        dummyDbData.barks.slice(0, 50).map((b) => b._id),
+        dummyDbData.barks.slice(45, 95).map((b) => b._id)
+      ];
+      const yieldCount = yieldItems.length;
+      const genParams = (function* () {
+        yield yieldItems.shift();
+      })();
+
+      const params = { bark_ids: genParams.next().value };
+
+      await testApiHandler({
+        params,
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all<
+            SuccessJsonResponse & { barks: PublicBark[] }
+          >(
+            Array.from({ length: yieldCount }).map(async () => {
+              const result = await fetch({ headers: { KEY } }).then((r) =>
+                r.ok ? r.json() : null
+              );
+              params.bark_ids = genParams.next().value;
+              return result;
+            })
+          );
+
+          expect(responses.some((o) => !o?.success)).toBeFalse();
+
+          expect(
+            responses.map((r) => r.barks.map((b) => b.bark_id))
+          ).toIncludeSameMembers(yieldItems);
+        }
+      });
     });
 
     it('errors if one or more IDs not found', async () => {
       expect.hasAssertions();
+
+      const yieldItems = [
+        [new ObjectId().toHexString()],
+        [dummyDbData.barks[99]._id, new ObjectId().toHexString()]
+      ];
+      const yieldCount = yieldItems.length;
+      const genParams = (function* () {
+        yield yieldItems.shift();
+      })();
+
+      const params = { bark_ids: genParams.next().value };
+
+      await testApiHandler({
+        params,
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all<
+            SuccessJsonResponse & { barks: PublicBark[] }
+          >(
+            Array.from({ length: yieldCount }).map(async () => {
+              const result = await fetch({ headers: { KEY } }).then((r) => r.json());
+              params.bark_ids = genParams.next().value;
+              return result;
+            })
+          );
+
+          expect(responses.some((o) => o?.success)).toBeFalse();
+        }
+      });
     });
   });
 
   describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [DELETE]', () => {
     it('deletes one or more barks', async () => {
       expect.hasAssertions();
+
+      const yieldItems = [
+        [dummyDbData.barks[0]._id],
+        [dummyDbData.barks[99]._id],
+        [dummyDbData.barks[5]._id, dummyDbData.barks[50]._id],
+        dummyDbData.barks.slice(45, 95).map((b) => b._id)
+      ];
+      const yieldCount = yieldItems.length;
+      const genParams = (function* () {
+        yield yieldItems.shift();
+      })();
+
+      const params = { bark_ids: genParams.next().value };
+
+      await testApiHandler({
+        params,
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all<
+            SuccessJsonResponse & { barks: PublicBark[] }
+          >(
+            Array.from({ length: yieldCount }).map(async () => {
+              const result = await fetch({ method: 'DELETE', headers: { KEY } }).then(
+                (r) => (r.ok ? r.json() : null)
+              );
+              params.bark_ids = genParams.next().value;
+              return result;
+            })
+          );
+
+          expect(responses.some((o) => !o?.success)).toBeFalse();
+
+          expect(
+            await (
+              await getDb()
+            )
+              .collection('barks')
+              .aggregate([
+                { $match: { _id: { $in: yieldItems.flat() } } },
+                { $project: { deleted: 1 } }
+              ])
+              .toArray()
+          ).toStrictEqual(
+            Array.from({ length: yieldCount }).map((_) =>
+              expect.objectContaining({ deleted: true })
+            )
+          );
+
+          expect(
+            await (
+              await getDb()
+            )
+              .collection('barks')
+              .aggregate([
+                { $match: { _id: dummyDbData.barks[1]._id } },
+                { $project: { deleted: 1 } }
+              ])
+              .toArray()
+          ).toStrictEqual(expect.objectContaining({ deleted: false }));
+        }
+      });
     });
 
     it('system metadata is updated', async () => {
       expect.hasAssertions();
+
+      await testApiHandler({
+        params: { bark_ids: [dummyDbData.barks[0]._id] },
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          await fetch({ method: 'DELETE', headers: { KEY } });
+
+          expect(await (await getDb()).collection('info').findOne({})).toStrictEqual(
+            expect.objectContaining({ totalBarks: dummyDbData.info.totalBarks - 1 })
+          );
+        }
+      });
     });
 
     it('does not error if one or more IDs not found', async () => {
       expect.hasAssertions();
+
+      const yieldItems = [
+        [new ObjectId().toHexString()],
+        [dummyDbData.barks[99]._id, new ObjectId().toHexString()]
+      ];
+      const yieldCount = yieldItems.length;
+      const genParams = (function* () {
+        yield yieldItems.shift();
+      })();
+
+      const params = { bark_ids: genParams.next().value };
+
+      await testApiHandler({
+        params,
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all<
+            SuccessJsonResponse & { barks: PublicBark[] }
+          >(
+            Array.from({ length: yieldCount }).map(async () => {
+              const result = await fetch({ headers: { KEY } }).then((r) => r.json());
+              params.bark_ids = genParams.next().value;
+              return result;
+            })
+          );
+
+          expect(responses.some((o) => !o?.success)).toBeFalse();
+        }
+      });
     });
   });
 
   describe('/<bark_id>/likes [GET]', () => {
     it('returns expected users in LIFO order', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id },
+        handler: api.barksIdLikes,
+        test: async ({ fetch }) => {
+          const response = await fetch({ headers: { KEY } });
+          const json = await response.json();
+
+          expect(response.status).toBe(200);
+          expect(json.success).toBe(true);
+          expect(json.users).toStrictEqual(
+            targetBark.likes.map((id) => id.toHexString()).reverse()
+          );
+        }
+      });
     });
 
     it('returns expected users with respect to offset', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+      const targetBarkLikes = [
+        ...targetBark.likes,
+        ...Array.from({ length: 115 }).map(() => new ObjectId())
+      ];
+
+      await (await getDb()).collection('barks').updateOne(
+        { _id: targetBark._id },
+        {
+          $push: {
+            likes: { $each: targetBarkLikes }
+          }
+        }
+      );
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id },
+        requestPatcher: (req) => (req.url = `/?after=${targetBarkLikes[10]}`),
+        handler: api.barksIdLikes,
+        test: async ({ fetch }) => {
+          const response = await fetch({ headers: { KEY } });
+          const json = await response.json();
+
+          expect(response.status).toBe(200);
+          expect(json.success).toBe(true);
+          expect(json.barks).toStrictEqual(
+            targetBarkLikes.slice(10, getEnv().RESULTS_PER_PAGE + 10)
+          );
+        }
+      });
     });
 
     it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
+
+      const genUrl = (function* () {
+        yield `/?after=-5`;
+        yield `/?after=a`;
+        yield `/?after=@($)`;
+        yield `/?after=xyz`;
+        yield `/?after=123`;
+        yield `/?after=(*$)`;
+        yield `/?dne=123`;
+      })();
+
+      await testApiHandler({
+        params: { bark_id: dummyDbData.barks[0]._id },
+        requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
+        handler: api.barksIdLikes,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: 7 }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([400, 400, 400, 400, 400, 400, 200]);
+        }
+      });
     });
 
-    it('does not throw when bark has no likes', async () => {
+    it('functions when bark has no likes', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await (await getDb())
+        .collection('barks')
+        .updateOne({ _id: targetBark._id }, { $set: { likes: [] } });
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id },
+        handler: api.barksIdLikes,
+        test: async ({ fetch }) => {
+          const response = await fetch({ headers: { KEY } });
+          const json = await response.json();
+
+          expect(response.status).toBe(200);
+          expect(json.success).toBe(true);
+          expect(json.barks).toStrictEqual([]);
+        }
+      });
     });
   });
 
@@ -356,7 +671,7 @@ describe('api/v1/barks', () => {
       expect.hasAssertions();
     });
 
-    it('does not throw when there are no barks in the system', async () => {
+    it('functions when there are no barks in the system', async () => {
       expect.hasAssertions();
     });
 
