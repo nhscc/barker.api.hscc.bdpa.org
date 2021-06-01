@@ -45,17 +45,24 @@ export type InternalBark = {
    */
   createdAt: UnixEpochMs;
   /**
-   * Integer number of likes this Bark has received.
+   * A list of user IDs that liked this Bark.
    */
-  likes: number;
+  likes: UserId[];
   /**
-   * Integer number of rebarks this Bark has received.
+   * Integer number of likes this Bark has received. We'll cache this data
+   * instead of calculating it via the aggregation for performance reasons.
    */
-  rebarks: number;
+  totalLikes: number;
   /**
-   * Integer number of barkbacks this Bark has received.
+   * Integer number of rebarks this Bark has received. We'll cache this data
+   * instead of calculating it via the aggregation for performance reasons.
    */
-  barkbacks: number;
+  totalRebarks: number;
+  /**
+   * Integer number of barkbacks this Bark has received. We'll cache this data
+   * instead of calculating it via the aggregation for performance reasons.
+   */
+  totalBarkbacks: number;
   /**
    * If `true`, the user is for all intents and purposes non-existent in the
    * system.
@@ -129,13 +136,13 @@ export type InternalUser = {
    */
   username: string;
   /**
-   * A list of user IDs this user is following.
-   */
-  following: UserId[];
-  /**
    * A list of user IDs in this user's pack.
    */
   packmates: UserId[];
+  /**
+   * A list of user IDs this user is following.
+   */
+  following: UserId[];
   /**
    * A list of Bark IDs bookmarked by this user.
    */
@@ -172,6 +179,51 @@ export type InternalUser = {
     influence: number;
   };
 };
+
+/**
+ * The shape of a publicly available Bark.
+ */
+export type PublicBark = Pick<
+  InternalBark,
+  'owner' | 'content' | 'createdAt' | 'deleted' | 'private' | 'barkbackTo' | 'rebarkOf'
+> & {
+  bark_id: string;
+  likes: InternalBark['totalLikes'];
+  rebarks: InternalBark['totalRebarks'];
+  barkbacks: InternalBark['totalBarkbacks'];
+};
+
+/**
+ * The shape of a publicly available user.
+ */
+export type PublicUser = Pick<
+  InternalBark,
+  'name' | 'email' | 'phone' | 'username' | 'deleted'
+> & {
+  user_id: string;
+  packmates: number;
+  following: number;
+  bookmarked: number;
+  liked: number;
+};
+
+/**
+ * The shape of a newly received Bark.
+ */
+export type NewBark = Pick<
+  InternalBark,
+  'owner' | 'content' | 'private' | 'barkbackTo' | 'rebarkOf'
+>;
+
+/**
+ * The shape of a newly received user.
+ */
+export type NewUser = Pick<InternalBark, 'name' | 'email' | 'phone' | 'username'>;
+
+/**
+ * The shape of a received update to an existing user.
+ */
+export type PatchUser = Pick<InternalBark, 'name' | 'email' | 'phone'>;
 
 /**
  * The shape of an API key.

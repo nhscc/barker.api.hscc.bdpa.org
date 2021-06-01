@@ -8,7 +8,7 @@ barker.api.hscc.bdpa.org
 
 - [external-scripts/ban-hammer][1]
 - [external-scripts/generate-activity][2]
-- [external-scripts/prune-logs][3]
+- [external-scripts/prune-data][3]
 - [lib/next-isomorphic-redirect][4]
 - [lib/next-isomorphic-redirect/types][5]
 - [lib/next-respond][6]
@@ -43,7 +43,7 @@ barker.api.hscc.bdpa.org
 
 [1]: modules/external_scripts_ban_hammer.md
 [2]: modules/external_scripts_generate_activity.md
-[3]: modules/external_scripts_prune_logs.md
+[3]: modules/external_scripts_prune_data.md
 [4]: modules/lib_next_isomorphic_redirect.md
 [5]: modules/lib_next_isomorphic_redirect_types.md
 [6]: modules/lib_next_respond.md

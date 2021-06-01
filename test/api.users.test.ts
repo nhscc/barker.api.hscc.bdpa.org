@@ -1,16 +1,31 @@
-import EndpointBarks, { config as ConfigBarks } from 'universe/pages/api/v1/barks';
-import EndpointBarksIds, {
-  config as ConfigBarksIds
-} from 'universe/pages/api/v1/barks/[...bark_ids]';
-import EndpointBarksSearch, {
-  config as ConfigBarksSearch
-} from 'universe/pages/api/v1/barks/search';
-import EndpointBarksIdLikes, {
-  config as ConfigBarksIdLikes
-} from 'universe/pages/api/v1/barks/[bark_id]/likes';
-import EndpointBarksIdLikesId, {
-  config as ConfigBarksIdLikesId
-} from 'universe/pages/api/v1/barks/[bark_id]/likes/[user_id]';
+import EndpointUsers, { config as ConfigUsers } from 'universe/pages/api/v1/users';
+import EndpointUsersId, {
+  config as ConfigUsersId
+} from 'universe/pages/api/v1/users/[user_id]';
+import EndpointUsersIdLiked, {
+  config as ConfigUsersIdLiked
+} from 'universe/pages/api/v1/users/[user_id]/liked';
+import EndpointUsersIdLikedId, {
+  config as ConfigUsersIdLikedId
+} from 'universe/pages/api/v1/users/[user_id]/liked/[bark_id]';
+import EndpointUsersIdFollowing, {
+  config as ConfigUsersIdFollowing
+} from 'universe/pages/api/v1/users/[user_id]/following';
+import EndpointUsersIdFollowingId, {
+  config as ConfigUsersIdFollowingId
+} from 'universe/pages/api/v1/users/[user_id]/following/[followed_id]';
+import EndpointUsersIdPack, {
+  config as ConfigUsersIdPack
+} from 'universe/pages/api/v1/users/[user_id]/pack';
+import EndpointUsersIdPackId, {
+  config as ConfigUsersIdPackId
+} from 'universe/pages/api/v1/users/[user_id]/pack/[packmate_id]';
+import EndpointUsersIdBookmarks, {
+  config as ConfigUsersIdBookmarks
+} from 'universe/pages/api/v1/users/[user_id]/bookmarks';
+import EndpointUsersIdBookmarksId, {
+  config as ConfigUsersIdBookmarksId
+} from 'universe/pages/api/v1/users/[user_id]/bookmarks/[bark_id]';
 
 import { dummyDbData, setupJest } from 'testverse/db';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -18,83 +33,104 @@ import { DUMMY_KEY as KEY } from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
 import { ObjectId } from 'mongodb';
 
-import type { NewBark, PublicBark } from 'types/global';
+import type { WithId } from 'mongodb';
+import type { NewUser, PublicUser } from 'types/global';
 import { ErrorJsonResponse } from 'multiverse/next-respond/types';
 
 const RESULT_SIZE = getEnv().RESULTS_PER_PAGE;
 const { getDb } = setupJest();
 
 const api = {
-  barks: EndpointBarks as typeof EndpointBarks & { config?: typeof ConfigBarks },
-  barksIds: EndpointBarksIds as typeof EndpointBarksIds & {
-    config?: typeof ConfigBarksIds;
+  users: EndpointUsers as typeof EndpointUsers & { config?: typeof ConfigUsers },
+  usersId: EndpointUsersId as typeof EndpointUsersId & {
+    config?: typeof ConfigUsersId;
   },
-  barksSearch: EndpointBarksSearch as typeof EndpointBarksSearch & {
-    config?: typeof ConfigBarksSearch;
+  usersIdLiked: EndpointUsersIdLiked as typeof EndpointUsersIdLiked & {
+    config?: typeof ConfigUsersIdLiked;
   },
-  barksIdLikes: EndpointBarksIdLikes as typeof EndpointBarksIdLikes & {
-    config?: typeof ConfigBarksIdLikes;
+  usersIdLikedId: EndpointUsersIdLikedId as typeof EndpointUsersIdLikedId & {
+    config?: typeof ConfigUsersIdLikedId;
   },
-  barksIdLikesId: EndpointBarksIdLikesId as typeof EndpointBarksIdLikesId & {
-    config?: typeof ConfigBarksIdLikesId;
+  usersIdFollowing: EndpointUsersIdFollowing as typeof EndpointUsersIdFollowing & {
+    config?: typeof ConfigUsersIdFollowing;
+  },
+  usersIdFollowingId: EndpointUsersIdFollowingId as typeof EndpointUsersIdFollowingId & {
+    config?: typeof ConfigUsersIdFollowingId;
+  },
+  usersIdPack: EndpointUsersIdPack as typeof EndpointUsersIdPack & {
+    config?: typeof ConfigUsersIdPack;
+  },
+  usersIdPackId: EndpointUsersIdPackId as typeof EndpointUsersIdPackId & {
+    config?: typeof ConfigUsersIdPackId;
+  },
+  usersIdBookmarks: EndpointUsersIdBookmarks as typeof EndpointUsersIdBookmarks & {
+    config?: typeof ConfigUsersIdBookmarks;
+  },
+  usersIdBookmarksId: EndpointUsersIdBookmarksId as typeof EndpointUsersIdBookmarksId & {
+    config?: typeof ConfigUsersIdBookmarksId;
   }
 };
 
-api.barks.config = ConfigBarks;
-api.barksIds.config = ConfigBarksIds;
-api.barksSearch.config = ConfigBarksSearch;
-api.barksIdLikes.config = ConfigBarksIdLikes;
-api.barksIdLikesId.config = ConfigBarksIdLikesId;
+api.users.config = ConfigUsers;
+api.usersId.config = ConfigUsersId;
+api.usersIdLiked.config = ConfigUsersIdLiked;
+api.usersIdLikedId.config = ConfigUsersIdLikedId;
+api.usersIdFollowing.config = ConfigUsersIdFollowing;
+api.usersIdFollowingId.config = ConfigUsersIdFollowingId;
+api.usersIdPack.config = ConfigUsersIdPack;
+api.usersIdPackId.config = ConfigUsersIdPackId;
+api.usersIdBookmarks.config = ConfigUsersIdBookmarks;
+api.usersIdBookmarksId.config = ConfigUsersIdBookmarksId;
 
 process.env.REQUESTS_PER_CONTRIVED_ERROR = '0';
 process.env.DISABLED_API_VERSIONS = '';
 
-describe('api/v1/barks', () => {
+describe('api/v1/users', () => {
   describe('/ [GET]', () => {
-    it('returns expected number of barks by default in LIFO order', async () => {
+    it('returns expected number of users by default in LIFO order', async () => {
       expect.hasAssertions();
 
-      const results = dummyDbData.barks.slice(0, getEnv().RESULTS_PER_PAGE);
+      const results = dummyDbData.users.slice(0, getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
-        handler: api.barks,
+        handler: api.users,
         test: async ({ fetch }) => {
           const response = await fetch({ headers: { KEY } });
           const json = await response.json();
 
           expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual(results);
+          expect(json.users).toStrictEqual(results);
         }
       });
     });
 
-    it('returns expected number of barks by default in LIFO order respecting offset', async () => {
+    it('returns expected number of public users by default in LIFO order respecting offset', async () => {
       expect.hasAssertions();
 
       process.env.RESULTS_PER_PAGE = '15';
-      const results = dummyDbData.barks.slice(2, 2 + getEnv().RESULTS_PER_PAGE);
+      const results = dummyDbData.users.slice(2, 2 + getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
-        requestPatcher: (req) => (req.url = `/?after=${dummyDbData.barks[1]._id}`),
-        handler: api.barks,
+        requestPatcher: (req) => (req.url = `/?after=${dummyDbData.users[1]._id}`),
+        handler: api.users,
         test: async ({ fetch }) => {
           const response = await fetch({ headers: { KEY } });
           const json = await response.json();
 
           expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual(results);
+          expect(json.users).toStrictEqual(results);
         }
       });
     });
   });
 
   describe('/ [POST]', () => {
-    it('creates and returns new Barks', async () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
 
-      const yieldItems: NewBark[] = [
+      const yieldItems: NewUser[] = [
         {
           owner: dummyDbData.users[0]._id,
           content: '1',
@@ -113,7 +149,7 @@ describe('api/v1/barks', () => {
           owner: dummyDbData.users[0]._id,
           content: '3',
           private: false,
-          barkbackTo: dummyDbData.barks[0]._id,
+          barkbackTo: dummyDbData.users[0]._id,
           rebarkOf: null
         },
         {
@@ -121,7 +157,7 @@ describe('api/v1/barks', () => {
           content: '4',
           private: false,
           barkbackTo: null,
-          rebarkOf: dummyDbData.barks[0]._id
+          rebarkOf: dummyDbData.users[0]._id
         },
         {
           owner: dummyDbData.users[0]._id,
@@ -138,7 +174,7 @@ describe('api/v1/barks', () => {
       })();
 
       await testApiHandler({
-        handler: api.barks,
+        handler: api.users,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
             Array.from({ length: yieldCount }).map((_) =>
@@ -155,13 +191,13 @@ describe('api/v1/barks', () => {
               200,
               {
                 ...yieldItems[ndx],
-                bark_id: expect.any(String),
+                user_id: expect.any(String),
                 createdAt: expect.any(Number),
                 likes: expect.any(Number),
-                rebarks: expect.any(Number),
+                reusers: expect.any(Number),
                 barkbacks: expect.any(Number),
                 deleted: false
-              } as PublicBark
+              } as PublicUser
             ])
           );
         }
@@ -225,13 +261,13 @@ describe('api/v1/barks', () => {
           owner: dummyDbData.users[0]._id,
           content: 'xyz',
           private: false,
-          barkbackTo: dummyDbData.barks[0]._id,
-          rebarkOf: dummyDbData.barks[1]._id
-        } as NewBark;
+          barkbackTo: dummyDbData.users[0]._id,
+          rebarkOf: dummyDbData.users[1]._id
+        } as NewUser;
       })();
 
       await testApiHandler({
-        handler: api.barks,
+        handler: api.users,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
             Array.from({ length: yieldCount }).map((_) =>
@@ -261,7 +297,7 @@ describe('api/v1/barks', () => {
 
       await testApiHandler({
         requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
-        handler: api.barks,
+        handler: api.users,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
             Array.from({ length: yieldCount }).map((_) =>
@@ -283,44 +319,104 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [GET]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id> [GET]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/<bark_id1>/<bark_id2>/<...>/<bark_idN> [DELETE]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id> [DELETE]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/<bark_id>/likes [GET]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id> [PUT]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [GET]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id>/liked [GET]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [DELETE]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id>/liked/<bark_id> [GET]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [PUT]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id>/following [GET]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });
 
-  describe('/search [GET]', () => {
-    it('creates and returns new Barks', async () => {
+  describe('/<user_id>/following/<followed_id> [GET]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/following/<followed_id> [DELETE]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/following/<followed_id> [PUT]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/pack [GET]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/pack/<packmate_id> [GET]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/pack/<packmate_id> [DELETE]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/pack/<packmate_id> [PUT]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/bookmarks [GET]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/bookmarks/<bark_id> [GET]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/bookmarks/<bark_id> [DELETE]', () => {
+    it('creates and returns new Users', async () => {
+      expect.hasAssertions();
+    });
+  });
+
+  describe('/<user_id>/bookmarks/<bark_id> [PUT]', () => {
+    it('creates and returns new Users', async () => {
       expect.hasAssertions();
     });
   });

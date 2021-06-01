@@ -51,8 +51,8 @@ export function getEnv(loud = false) {
       .BAN_HAMMER_RECIDIVISM_PUNISH_MULTIPLIER
       ? Number(process.env.BAN_HAMMER_RECIDIVISM_PUNISH_MULTIPLIER)
       : null,
-    PRUNE_LOGS_MAX_LOGS: !!process.env.PRUNE_LOGS_MAX_LOGS
-      ? Number(process.env.PRUNE_LOGS_MAX_LOGS)
+    PRUNE_DATA_MAX_LOGS: !!process.env.PRUNE_DATA_MAX_LOGS
+      ? Number(process.env.PRUNE_DATA_MAX_LOGS)
       : null,
     HYDRATE_DB_ON_STARTUP:
       !!process.env.HYDRATE_DB_ON_STARTUP &&

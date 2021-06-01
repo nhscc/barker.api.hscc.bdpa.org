@@ -1,6 +1,6 @@
-[barker.api.hscc.bdpa.org][1] / external-scripts/prune-logs
+[barker.api.hscc.bdpa.org][1] / external-scripts/prune-data
 
-# Module: external-scripts/prune-logs
+# Module: external-scripts/prune-data
 
 ## Table of contents
 
@@ -22,9 +22,9 @@
 
 **Returns:** _Promise_\<void>
 
-Defined in: [external-scripts/prune-logs.ts:9][3]
+Defined in: [external-scripts/prune-data.ts:9][3]
 
 [1]: ../README.md
-[2]: external_scripts_prune_logs.md#default
+[2]: external_scripts_prune_data.md#default
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/external-scripts/prune-logs.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/external-scripts/prune-data.ts#L9

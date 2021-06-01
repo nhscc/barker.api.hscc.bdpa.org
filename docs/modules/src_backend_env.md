@@ -42,7 +42,7 @@
 | `MONGODB_MS_PORT`                         | `null` \| _number_ |
 | `MONGODB_URI`                             | _string_           |
 | `NODE_ENV`                                | _string_           |
-| `PRUNE_LOGS_MAX_LOGS`                     | `null` \| _number_ |
+| `PRUNE_DATA_MAX_LOGS`                     | `null` \| _number_ |
 | `REQUESTS_PER_CONTRIVED_ERROR`            | _number_           |
 | `RESULTS_PER_PAGE`                        | _number_           |
 

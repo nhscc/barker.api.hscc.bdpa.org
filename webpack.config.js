@@ -76,8 +76,9 @@ const externalsConfig = {
 
   entry: {
     'ban-hammer': `${__dirname}/external-scripts/ban-hammer.ts`,
-    'prune-logs': `${__dirname}/external-scripts/prune-logs.ts`,
-    'generate-activity': `${__dirname}/external-scripts/generate-activity.ts`
+    'prune-data': `${__dirname}/external-scripts/prune-data.ts`,
+    'generate-activity': `${__dirname}/external-scripts/generate-activity.ts`,
+    'simulate-activity': `${__dirname}/external-scripts/simulate-activity.ts`
   },
 
   output: {
