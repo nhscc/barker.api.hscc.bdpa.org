@@ -514,7 +514,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id>/likes [GET]', () => {
+  describe('/:bark_id/likes [GET]', () => {
     it('returns expected users in LIFO order', async () => {
       expect.hasAssertions();
 
@@ -624,7 +624,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [GET]', () => {
+  describe('/:bark_id/likes/:user_id [GET]', () => {
     it('succeeds if the user has liked the bark', async () => {
       expect.hasAssertions();
     });
@@ -634,7 +634,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [DELETE]', () => {
+  describe('/:bark_id/likes/:user_id [DELETE]', () => {
     it('the user "unlikes" the bark', async () => {
       expect.hasAssertions();
     });
@@ -648,7 +648,7 @@ describe('api/v1/barks', () => {
     });
   });
 
-  describe('/<bark_id>/likes/<user_id> [PUT]', () => {
+  describe('/:bark_id/likes/:user_id [PUT]', () => {
     it('the user "likes" the bark', async () => {
       expect.hasAssertions();
     });

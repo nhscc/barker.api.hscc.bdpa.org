@@ -299,7 +299,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id> [GET]', () => {
+  describe('/:user_id [GET]', () => {
     it('returns user by ID', async () => {
       expect.hasAssertions();
     });
@@ -309,7 +309,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id> [DELETE]', () => {
+  describe('/:user_id [DELETE]', () => {
     it('deletes user by ID', async () => {
       expect.hasAssertions();
     });
@@ -323,7 +323,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id> [PUT]', () => {
+  describe('/:user_id [PUT]', () => {
     it('updates user by ID', async () => {
       expect.hasAssertions();
     });
@@ -337,7 +337,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/liked [GET]', () => {
+  describe('/:user_id/liked [GET]', () => {
     it('returns expected barks in LIFO order', async () => {
       expect.hasAssertions();
     });
@@ -351,7 +351,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/liked/<bark_id> [GET]', () => {
+  describe('/:user_id/liked/:bark_id [GET]', () => {
     it('succeeds if the user has liked the bark', async () => {
       expect.hasAssertions();
     });
@@ -361,7 +361,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/following [GET]', () => {
+  describe('/:user_id/following [GET]', () => {
     it('returns expected users in LIFO order', async () => {
       expect.hasAssertions();
     });
@@ -375,7 +375,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/following/<followed_id> [GET]', () => {
+  describe('/:user_id/following/:followed_id [GET]', () => {
     it('succeeds if the user is a follower', async () => {
       expect.hasAssertions();
     });
@@ -385,7 +385,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/following/<followed_id> [DELETE]', () => {
+  describe('/:user_id/following/:followed_id [DELETE]', () => {
     it('the user "unfollows" the formerly followed user', async () => {
       expect.hasAssertions();
     });
@@ -399,7 +399,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/following/<followed_id> [PUT]', () => {
+  describe('/:user_id/following/:followed_id [PUT]', () => {
     it('the user "follows" the other user', async () => {
       expect.hasAssertions();
     });
@@ -413,7 +413,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/pack [GET]', () => {
+  describe('/:user_id/pack [GET]', () => {
     it('returns expected users in LIFO order', async () => {
       expect.hasAssertions();
     });
@@ -427,7 +427,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/pack/<packmate_id> [GET]', () => {
+  describe('/:user_id/pack/:packmate_id [GET]', () => {
     it('succeeds if the user is a packmate', async () => {
       expect.hasAssertions();
     });
@@ -437,7 +437,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/pack/<packmate_id> [DELETE]', () => {
+  describe('/:user_id/pack/:packmate_id [DELETE]', () => {
     it('removes the target user from the pack', async () => {
       expect.hasAssertions();
     });
@@ -451,7 +451,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/pack/<packmate_id> [PUT]', () => {
+  describe('/:user_id/pack/:packmate_id [PUT]', () => {
     it('adds the target user to pack', async () => {
       expect.hasAssertions();
     });
@@ -465,7 +465,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/bookmarks [GET]', () => {
+  describe('/:user_id/bookmarks [GET]', () => {
     it('returns expected barks in LIFO order', async () => {
       expect.hasAssertions();
     });
@@ -479,7 +479,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/bookmarks/<bark_id> [GET]', () => {
+  describe('/:user_id/bookmarks/:bark_id [GET]', () => {
     it('succeeds if the user has bookmarked the bark', async () => {
       expect.hasAssertions();
     });
@@ -489,7 +489,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/bookmarks/<bark_id> [DELETE]', () => {
+  describe('/:user_id/bookmarks/:bark_id [DELETE]', () => {
     it('the user "unbookmarks" the bark', async () => {
       expect.hasAssertions();
     });
@@ -503,7 +503,7 @@ describe('api/v1/users', () => {
     });
   });
 
-  describe('/<user_id>/bookmarks/<bark_id> [PUT]', () => {
+  describe('/:user_id/bookmarks/:bark_id [PUT]', () => {
     it('the user "bookmarks" the bark', async () => {
       expect.hasAssertions();
     });
