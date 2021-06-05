@@ -1,4 +1,4 @@
-//import { getSummaryData } from 'universe/backend';
+import { getSystemInfo } from 'universe/backend';
 import { sendHttpOk } from 'multiverse/next-respond';
 import { wrapHandler } from 'universe/backend/middleware';
 
@@ -10,7 +10,7 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ res }) => {
-      sendHttpOk(res /*await getSummaryData()*/);
+      sendHttpOk(res, await getSystemInfo({ key: req.headers.key?.toString() || '' }));
     },
     { req, res, methods: ['GET'], apiVersion: 1 }
   );

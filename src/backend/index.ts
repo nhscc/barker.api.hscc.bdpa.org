@@ -23,7 +23,8 @@ import type {
   NewBark,
   PublicUser,
   PatchUser,
-  NewUser
+  NewUser,
+  InternalInfo
 } from 'types/global';
 
 const isObject = (object: unknown) =>
@@ -130,6 +131,8 @@ export async function getApiKeys() {
 }
 
 // TODO: env variables are respected (like contrived error)
+
+export async function getSystemInfo(params: { key: string }): Promise<InternalInfo> {}
 
 export async function getBarks(params: {
   key: string;

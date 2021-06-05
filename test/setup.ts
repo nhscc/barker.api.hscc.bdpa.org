@@ -9,13 +9,14 @@ import uniqueFilename from 'unique-filename';
 import debugFactory from 'debug';
 import gitFactory from 'simple-git';
 import { toss } from 'toss-expression';
+import { AppError } from 'universe/backend/error';
 import 'jest-extended';
 
 import type { ExecaReturnValue } from 'execa';
-import type { AnyFunction, AnyVoid } from '@ergodark/types';
+import type { AnyFunction, AnyVoid, HttpStatusCode } from '@ergodark/types';
 import type { Debugger } from 'debug';
 import type { SimpleGit } from 'simple-git';
-import { AppError } from 'universe/backend/error';
+import { sendHttpErrorResponse } from 'multiverse/next-respond';
 
 const { writeFile, access: accessFile } = fs;
 const debug = debugFactory(`${pkgName}:jest-setup`);
@@ -35,7 +36,27 @@ try {
 
 verifyEnvironment();
 
-// TODO: XXX: add this brand new tool to where it's supposed to be!
+// TODO: XXX: add these brand new tools to where they're supposed to be!
+
+export function asMockedNextApiMiddleware(
+  wrapHandler: typeof import('universe/backend/middleware')['wrapHandler']
+) {
+  asMockedFunction(wrapHandler).mockImplementation(async (fn, { req, res }) => {
+    const spy = jest.spyOn(res, 'send');
+
+    try {
+      fn && (await fn({ req, res }));
+    } finally {
+      // ! This must happen or jest tests will hang and mongomemserv will choke.
+      // ! Also note that this isn't a NextApiResponse but a ServerResponse!
+      if (!spy.mock.calls.length) {
+        sendHttpErrorResponse(res, 600 as unknown as HttpStatusCode, {
+          error: 'there was a (perhaps unexpected) problem with the mocked middleware'
+        });
+      }
+    }
+  });
+}
 
 export class FactoryExhaustionError extends AppError {}
 export function itemFactory<T>(testItems: T[]) {

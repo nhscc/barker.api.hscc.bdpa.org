@@ -1,8 +1,13 @@
 /* eslint-disable no-await-in-loop */
 import { wrapHandler } from 'universe/backend/middleware';
-import { asMockedFunction, itemFactory } from 'testverse/setup';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { ObjectId } from 'mongodb';
+
+import {
+  asMockedFunction,
+  asMockedNextApiMiddleware,
+  itemFactory
+} from 'testverse/setup';
 
 import {
   DUMMY_KEY as KEY,
@@ -29,7 +34,6 @@ import EndpointBarksIdLikesId, {
 } from 'universe/pages/api/v1/barks/[bark_id]/likes/[user_id]';
 
 import type { PublicBark } from 'types/global';
-import { sendNotImplementedError } from 'multiverse/next-respond';
 
 jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
@@ -64,18 +68,7 @@ api.barksIdLikes.config = ConfigBarksIdLikes;
 api.barksIdLikesId.config = ConfigBarksIdLikesId;
 
 beforeEach(() => {
-  asMockedFunction(wrapHandler).mockImplementation(async (fn, { req, res }) => {
-    const spy = jest.spyOn(res, 'send');
-
-    try {
-      fn && (await fn({ req, res }));
-    } finally {
-      // ! This must happen or jest tests will hang and mongomemserv will choke.
-      // ! Also note that this isn't a NextApiResponse but a ServerResponse!
-      if (!spy.mock.calls.length) sendNotImplementedError(res);
-    }
-  });
-
+  asMockedNextApiMiddleware(wrapHandler);
   mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
   mockedGetBarks.mockReturnValue(Promise.resolve([]));
   mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
