@@ -88,7 +88,6 @@ describe('api/v1/barks', () => {
 
           expect(json.success).toBe(true);
           expect(json.barks).toBeArray();
-          expect(mockedSearchBarks).toBeCalled();
         }
       });
     });
@@ -104,9 +103,6 @@ describe('api/v1/barks', () => {
 
           expect(json.success).toBe(true);
           expect(json.barks).toBeArray();
-          expect(mockedSearchBarks).toBeCalledWith(
-            expect.objectContaining({ after: expect.anything() })
-          );
         }
       });
     });

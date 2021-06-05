@@ -1,3 +1,31 @@
+import { wrapHandler } from 'universe/backend/middleware';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { ObjectId } from 'mongodb';
+
+import {
+  asMockedFunction,
+  asMockedNextApiMiddleware,
+  itemFactory
+} from 'testverse/setup';
+
+import {
+  DUMMY_KEY as KEY,
+  getUser,
+  getUsers,
+  deleteUser,
+  getUserLikedBarkIds,
+  getBarkLikesUserIds,
+  getPackmateUserIds,
+  getFollowingUserIds,
+  isUserFollowing,
+  isUserPackmate,
+  isBarkBookmarked,
+  isBarkLiked,
+  createUser,
+  addPackmate,
+  removePackmate
+} from 'universe/backend';
+
 import EndpointUsers, { config as ConfigUsers } from 'universe/pages/api/v1/users';
 import EndpointUsersId, {
   config as ConfigUsersId
@@ -27,25 +55,12 @@ import EndpointUsersIdBookmarksId, {
   config as ConfigUsersIdBookmarksId
 } from 'universe/pages/api/v1/users/[user_id]/bookmarks/[bark_id]';
 
-import { testApiHandler } from 'next-test-api-route-handler';
-import { DUMMY_KEY as KEY } from 'universe/backend';
-import { ObjectId } from 'mongodb';
-
-import type { WithId } from 'mongodb';
 import type { NewUser, PublicUser } from 'types/global';
-import { ErrorJsonResponse } from 'multiverse/next-respond/types';
-import { asMockedFunction, itemFactory, mockEnvFactory } from 'testverse/setup';
 
-const withMockedEnv = mockEnvFactory(
-  {
-    REQUESTS_PER_CONTRIVED_ERROR: '0',
-    DISABLED_API_VERSIONS: ''
-  },
-  { replace: false }
-);
+jest.mock('universe/backend');
+jest.mock('universe/backend/middleware');
 
-const RESULT_SIZE = getEnv().RESULTS_PER_PAGE;
-const { getDb } = setupJest();
+const mockedGetBarks = asMockedFunction(getBarks);
 
 const api = {
   users: EndpointUsers as typeof EndpointUsers & { config?: typeof ConfigUsers },
@@ -88,6 +103,15 @@ api.usersIdPack.config = ConfigUsersIdPack;
 api.usersIdPackId.config = ConfigUsersIdPackId;
 api.usersIdBookmarks.config = ConfigUsersIdBookmarks;
 api.usersIdBookmarksId.config = ConfigUsersIdBookmarksId;
+
+beforeEach(() => {
+  asMockedNextApiMiddleware(wrapHandler);
+  mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
+  mockedGetBarks.mockReturnValue(Promise.resolve([]));
+  mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
+  mockedSearchBarks.mockReturnValue(Promise.resolve([]));
+  mockedCreateBark.mockReturnValue(Promise.resolve({} as unknown as PublicBark));
+});
 
 describe('api/v1/users', () => {
   describe('/ [GET]', () => {
