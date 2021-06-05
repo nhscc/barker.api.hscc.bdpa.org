@@ -1,7 +1,9 @@
 module.exports = {
-  collectCoverageFrom: ['src/**/*.ts?(x)', 'external-scripts/**/*.ts?(x)'],
+  restoreMocks: true,
+  resetMocks: true,
   testEnvironment: 'node',
   testRunner: 'jest-circus/runner',
+  testTimeout: 60000,
   verbose: false,
   testPathIgnorePatterns: ['/node_modules/'],
   // ! If changed, also update these aliases in tsconfig.json,
@@ -13,5 +15,6 @@ module.exports = {
     '^externals/(.*)$': '<rootDir>/external-scripts/$1',
     '^types/(.*)$': '<rootDir>/types/$1'
   },
-  setupFilesAfterEnv: ['./test/setup.ts']
+  setupFilesAfterEnv: ['./test/setup.ts'],
+  collectCoverageFrom: ['src/**/*.ts?(x)', 'external-scripts/**/*.ts?(x)']
 };
