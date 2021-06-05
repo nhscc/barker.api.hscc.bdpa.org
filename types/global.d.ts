@@ -15,9 +15,9 @@ export interface UnixEpochMs extends number {}
 /**
  * A type combining NextApiRequest and NextApiResponse.
  */
-export type NextApiState<Payload = unknown> = {
+export type NextApiState<T = unknown> = {
   req: NextApiRequest;
-  res: NextApiResponse<Payload>;
+  res: NextApiResponse<T>;
 };
 
 /**
