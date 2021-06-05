@@ -78,12 +78,12 @@ export const dummyDbData: DummyDbData = {
   }
 };
 
-let lastRandomMoment = Math.floor(Date.now() / (Math.random() * 10000000));
+let lastRandomMoment = Math.floor(Date.now() / randomInt(10000000));
 
 // ? Monotonically increasing moments occurring after one another but not
 // ? bunching up at the end
 const getRandomMoment = () =>
-  (lastRandomMoment += Math.floor((Math.random() * (Date.now() - lastRandomMoment)) / 2));
+  (lastRandomMoment += Math.floor(randomInt(Date.now() - lastRandomMoment) / 2));
 
 dummyDbData.barks = Array.from({ length: 100 }).map<WithId<InternalBark>>((_, ndx) => ({
   _id: new ObjectId(),
@@ -170,7 +170,6 @@ export function setupJest() {
   });
 
   let uri: string;
-  let oldEnv: typeof process.env;
 
   /**
    * Similar to getDb except it creates a new MongoClient connection before
@@ -191,14 +190,12 @@ export function setupJest() {
   });
 
   beforeEach(async () => {
-    oldEnv = process.env;
     const db = await getDb();
     await initializeDb(db);
     await hydrateDb(db, dummyDbData);
   });
 
   afterEach(async () => {
-    process.env = oldEnv;
     const db = await getDb();
     await destroyDb(db);
   });
