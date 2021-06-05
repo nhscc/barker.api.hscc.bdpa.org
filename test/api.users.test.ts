@@ -27,10 +27,8 @@ import EndpointUsersIdBookmarksId, {
   config as ConfigUsersIdBookmarksId
 } from 'universe/pages/api/v1/users/[user_id]/bookmarks/[bark_id]';
 
-import { dummyDbData, setupJest } from 'testverse/db';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { DUMMY_KEY as KEY } from 'universe/backend';
-import { getEnv } from 'universe/backend/env';
 import { ObjectId } from 'mongodb';
 
 import type { WithId } from 'mongodb';

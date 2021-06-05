@@ -1,6 +1,7 @@
 import { WithId /* ObjectId */ } from 'mongodb';
 import * as Backend from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
+import { asMockedFunction, itemFactory, mockEnvFactory } from 'testverse/setup';
 //import sha256 from 'crypto-js/sha256';
 
 import {
@@ -12,6 +13,154 @@ import { RequestLogEntry, LimitedLogEntry } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const { /* getHydratedData, */ getDb } = setupJest();
+const withMockedEnv = mockEnvFactory(
+  {
+    REQUESTS_PER_CONTRIVED_ERROR: '0',
+    DISABLED_API_VERSIONS: ''
+  },
+  { replace: false }
+);
+
+it('functions when there are no barks in the system', async () => {
+  expect.hasAssertions();
+});
+
+it('returns expected barks with respect to match', async () => {
+  expect.hasAssertions();
+});
+
+it('returns expected barks with respect to regexMatch', async () => {
+  expect.hasAssertions();
+});
+
+it('regexMatch errors properly with bad inputs', async () => {
+  expect.hasAssertions();
+});
+
+it('ensure meta, totalLikes/totalRebarks/totalBarkbacks (unproxied), likes (non-numeric), and bark_id/_id cannot be matched against', async () => {
+  expect.hasAssertions();
+});
+
+it('returns same barks as GET /barks if no query params given', async () => {
+  expect.hasAssertions();
+});
+
+it('ensure numerical matches against likes (totalLikes), rebarks (totalRebarks), and barkbacks (totalBarkbacks) are properly proxied', async () => {
+  expect.hasAssertions();
+});
+
+it('returns expected barks with respect to all possible query params simultaneously', async () => {
+  expect.hasAssertions();
+});
+
+it('does not error if the user has already liked the bark', async () => {
+  expect.hasAssertions();
+
+  await testApiHandler({
+    params: {
+      bark_id: new ObjectId().toString(),
+      user_id: new ObjectId().toString()
+    },
+    handler: api.barksIdLikesId,
+    test: async ({ fetch }) => {
+      expect(await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)).toBe(
+        200
+      );
+    }
+  });
+});
+
+it('does not error if the user has not liked the bark', async () => {
+  expect.hasAssertions();
+
+  await testApiHandler({
+    params: {
+      bark_id: new ObjectId().toString(),
+      user_id: new ObjectId().toString()
+    },
+    handler: api.barksIdLikesId,
+    test: async ({ fetch }) => {
+      expect(
+        await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
+      ).toBe(200);
+    }
+  });
+});
+
+it('system metadata (bark and user) is updated', async () => {
+  expect.hasAssertions();
+
+  const targetBark = dummyDbData.barks[99];
+
+  expect(dummyDbData.users[0].liked).not.toContain(new ObjectId().toString());
+
+  await testApiHandler({
+    params: { bark_id: new ObjectId().toString(), user_id: dummyDbData.users[0]._id },
+    handler: api.barksIdLikesId,
+    test: async ({ fetch }) => {
+      await fetch({ method: 'PUT', headers: { KEY } });
+
+      expect(
+        await (await getDb())
+          .collection('barks')
+          .findOne({ _id: new ObjectId().toString() })
+      ).toStrictEqual(
+        expect.objectContaining({
+          bark_id: new ObjectId().toString(),
+          likes: expect.not.arrayContaining([new ObjectId().toString()])
+        })
+      );
+
+      expect(
+        await (await getDb())
+          .collection('users')
+          .findOne({ _id: dummyDbData.users[0]._id })
+      ).toStrictEqual(
+        expect.objectContaining({
+          user_id: dummyDbData.users[0]._id,
+          liked: expect.not.arrayContaining([new ObjectId().toString()])
+        })
+      );
+    }
+  });
+});
+
+it('system metadata (bark and user) is updated', async () => {
+  expect.hasAssertions();
+
+  await testApiHandler({
+    params: {
+      bark_id: new ObjectId().toString(),
+      user_id: new ObjectId().toString()
+    },
+    handler: api.barksIdLikesId,
+    test: async ({ fetch }) => {
+      await fetch({ method: 'DELETE', headers: { KEY } });
+
+      expect(
+        await (await getDb())
+          .collection('barks')
+          .findOne({ _id: new ObjectId().toString() })
+      ).toStrictEqual(
+        expect.objectContaining({
+          bark_id: new ObjectId().toString(),
+          likes: expect.not.arrayContaining([new ObjectId().toString()])
+        })
+      );
+
+      expect(
+        await (await getDb())
+          .collection('users')
+          .findOne({ _id: new ObjectId().toString() })
+      ).toStrictEqual(
+        expect.objectContaining({
+          user_id: new ObjectId().toString(),
+          liked: expect.not.arrayContaining([new ObjectId().toString()])
+        })
+      );
+    }
+  });
+});
 
 //const key = Backend.DUMMY_KEY;
 

@@ -54,8 +54,10 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
                 : sendHttpNotFound(res);
             } else if (req.method == 'DELETE') {
               await unlikeBark({ key, bark_id, user_id });
+              sendHttpOk(res);
             } else {
               await likeBark({ key, bark_id, user_id });
+              sendHttpOk(res);
             }
           }
         }

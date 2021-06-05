@@ -287,7 +287,7 @@ describe('::handleEndpoint', () => {
         wrapHandler(() => toss(expectedError), { req, res, methods: ['GET'] })
       ),
       test: async ({ fetch }) => {
-        for await (const item of factory) {
+        for (const item of factory) {
           [expectedError, expectedStatus] = item;
           const res = await fetch();
           expect(res.status).toBe(expectedStatus);

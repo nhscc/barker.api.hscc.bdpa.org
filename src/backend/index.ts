@@ -5,8 +5,8 @@ import { getClientIp } from 'request-ip';
 import sha256 from 'crypto-js/sha256';
 
 import {
-  IdTypeError,
-  KeyTypeError,
+  InvalidIdError,
+  InvalidKeyError,
   GuruMeditationError,
   ValidationError
 } from 'universe/backend/error';
@@ -18,7 +18,12 @@ import type {
   RequestLogEntry,
   LimitedLogEntry,
   ApiKey,
-  NextApiState
+  NextApiState,
+  PublicBark,
+  NewBark,
+  PublicUser,
+  PatchUser,
+  NewUser
 } from 'types/global';
 
 const isObject = (object: unknown) =>
@@ -29,52 +34,23 @@ let requestCounter = 0;
 export const NULL_KEY = '00000000-0000-0000-0000-000000000000';
 export const DUMMY_KEY = '12349b61-83a7-4036-b060-213784b491';
 
-const primaryMatchTargets = [
-  'type',
-  'airline',
-  'comingFrom',
-  'landingAt',
-  'departingTo',
-  'flightNumber',
-  'ffms',
-  'seats.economy.priceDollars',
-  '_id'
+const matchableStrings = [
+  'owner',
+  'content',
+  'createdAt',
+  'totalLikes',
+  'totalRebarks',
+  'totalBarkbacks',
+  'deleted',
+  'private',
+  'barkbackTo',
+  'rebarkOf'
 ];
-
-const secondaryMatchTargets = [
-  'departFromSender',
-  'arriveAtReceiver',
-  'departFromReceiver',
-  'status',
-  'gate'
-];
-
-const matchableStrings = [...primaryMatchTargets, ...secondaryMatchTargets];
 
 const matchableSubStrings = ['$gt', '$lt', '$gte', '$lte'];
 
-export async function getBarksById(params: { ids: ObjectId[]; key: string }) {
-  const { ids, key } = params;
-
-  if (!Array.isArray(ids)) throw new IdTypeError();
-
-  if (ids.length > getEnv().RESULTS_PER_PAGE)
-    throw new ValidationError('too many bark_ids specified');
-
-  if (!ids.every((id) => id instanceof ObjectId)) throw new IdTypeError();
-
-  if (!key || typeof key != 'string') throw new KeyTypeError();
-
-  if (!ids.length) return [];
-
-  // return (await getDb()).collection<WithId<InternalFlight>>('flights').aggregate<PublicFlight>([
-  //     { $match: { _id: { $in: ids }}},
-  //     ...pipelines.resolveFlightState(key, /*removeId=*/true)
-  // ]).toArray();
-}
-
 export async function isKeyAuthentic(key: string) {
-  if (!key || typeof key != 'string') throw new KeyTypeError();
+  if (!key || typeof key != 'string') throw new InvalidKeyError();
 
   return !!(await (await getDb())
     .collection<WithId<ApiKey>>('keys')
@@ -153,6 +129,161 @@ export async function getApiKeys() {
   ).map((apiKey) => ({ ...apiKey, key: sha256(apiKey.key).toString() }));
 }
 
+// TODO: env variables are respected (like contrived error)
+
+export async function getBarks(params: {
+  key: string;
+  bark_ids: ObjectId[];
+}): Promise<PublicBark[]> {
+  // const { ids, key } = params;
+  // if (!Array.isArray(ids)) throw new IdTypeError();
+  // if (ids.length > getEnv().RESULTS_PER_PAGE)
+  //   throw new ValidationError('too many bark_ids specified');
+  // if (!ids.every((id) => id instanceof ObjectId)) throw new IdTypeError();
+  // if (!key || typeof key != 'string') throw new InvalidKeyError();
+  // if (!ids.length) return [];
+  // return (await getDb()).collection<WithId<InternalFlight>>('flights').aggregate<PublicFlight>([
+  //     { $match: { _id: { $in: ids }}},
+  //     ...pipelines.resolveFlightState(key, /*removeId=*/true)
+  // ]).toArray();
+}
+
+export async function deleteBarks(params: {
+  key: string;
+  bark_ids: ObjectId[];
+}): Promise<void> {}
+
+export async function getBarkLikesUserIds(params: {
+  key: string;
+  bark_id: ObjectId;
+  after: ObjectId | null;
+}): Promise<string[]> {}
+
+export async function getLikedBarkIds(params: {
+  key: string;
+  user_id: ObjectId;
+  after: ObjectId | null;
+}): Promise<string[]> {}
+
+export async function isBarkLiked(params: {
+  key: string;
+  bark_id: ObjectId;
+  user_id: ObjectId;
+}): Promise<boolean> {}
+
+export async function unlikeBark(params: {
+  key: string;
+  bark_id: ObjectId;
+  user_id: ObjectId;
+}): Promise<void> {}
+
+export async function likeBark(params: {
+  key: string;
+  bark_id: ObjectId;
+  user_id: ObjectId;
+}): Promise<void> {}
+
+export async function createBark(params: {
+  key: string;
+  data: NewBark;
+}): Promise<PublicBark> {}
+
+export async function getUsers(params: {
+  key: string;
+  after: ObjectId | null;
+}): Promise<PublicUser[]> {}
+
+export async function getUser(params: {
+  key: string;
+  user_id: ObjectId;
+}): Promise<PublicUser> {}
+
+export async function deleteUser(params: {
+  key: string;
+  user_id: ObjectId;
+}): Promise<void> {}
+
+export async function getFollowingUserIds(params: {
+  key: string;
+  user_id: ObjectId;
+  include_indirect: boolean;
+}): Promise<string[]> {}
+
+export async function isUserFollowing(params: {
+  key: string;
+  user_id: ObjectId;
+  followed_id: ObjectId;
+}): Promise<boolean> {}
+
+export async function followUser(params: {
+  key: string;
+  user_id: ObjectId;
+  followed_id: ObjectId;
+}): Promise<void> {}
+
+export async function unfollowUser(params: {
+  key: string;
+  user_id: ObjectId;
+  followed_id: ObjectId;
+}): Promise<void> {}
+
+export async function getPackmateUserIds(params: {
+  key: string;
+  user_id: ObjectId;
+}): Promise<string[]> {}
+
+export async function isUserPackmate(params: {
+  key: string;
+  user_id: ObjectId;
+  packmate_id: ObjectId;
+}): Promise<boolean> {}
+
+export async function addPackmate(params: {
+  key: string;
+  user_id: ObjectId;
+  packmate_id: ObjectId;
+}): Promise<void> {}
+
+export async function removePackmate(params: {
+  key: string;
+  user_id: ObjectId;
+  packmate_id: ObjectId;
+}): Promise<void> {}
+
+export async function getBookmarkedBarkIds(params: {
+  key: string;
+  user_id: ObjectId;
+}): Promise<string[]> {}
+
+export async function isBarkBookmarked(params: {
+  key: string;
+  user_id: ObjectId;
+  bark_id: ObjectId;
+}): Promise<boolean> {}
+
+export async function bookmarkBark(params: {
+  key: string;
+  user_id: ObjectId;
+  bark_id: ObjectId;
+}): Promise<void> {}
+
+export async function unbookmarkBark(params: {
+  key: string;
+  user_id: ObjectId;
+  bark_id: ObjectId;
+}): Promise<void> {}
+
+export async function createUser(params: {
+  key: string;
+  data: NewUser;
+}): Promise<PublicUser> {}
+
+export async function updateUser(params: {
+  key: string;
+  user_id: ObjectId;
+  data: PatchUser;
+}): Promise<void> {}
+
 export async function searchBarks(params: {
   key: string;
   after: ObjectId | null;
@@ -172,9 +303,9 @@ export async function searchBarks(params: {
   const { key, after, match, regexMatch } = params;
   let regexMatchObjectIds: ObjectId[] = [];
 
-  if (!key || typeof key != 'string') throw new KeyTypeError();
+  if (!key || typeof key != 'string') throw new InvalidKeyError();
 
-  if (after !== null && !(after instanceof ObjectId)) throw new IdTypeError(after);
+  if (after !== null && !(after instanceof ObjectId)) throw new InvalidIdError(after);
 
   if (!isObject(match) || !isObject(regexMatch))
     throw new ValidationError('missing match and/or regexMatch');
@@ -185,7 +316,7 @@ export async function searchBarks(params: {
 
   try {
     if (match.bark_id) {
-      match._id = new ObjectId(match.bark_id as string);
+      match._id = ObjectId(match.bark_id.toString());
       delete match.bark_id;
     }
 
@@ -193,7 +324,7 @@ export async function searchBarks(params: {
       regexMatchObjectIds = regexMatch.bark_id
         .toString()
         .split('|')
-        .map((oid) => new ObjectId(oid));
+        .map((oid) => ObjectId(oid));
       delete regexMatch.bark_id;
     }
   } catch {
@@ -268,7 +399,7 @@ export async function searchBarks(params: {
 
   const primaryMatchStage = {
     $match: {
-      ...(after ? { _id: { $lt: new ObjectId(after) } } : {}),
+      ...(after ? { _id: { $lt: ObjectId(after) } } : {}),
       ...primaryMatchers
     }
   };
