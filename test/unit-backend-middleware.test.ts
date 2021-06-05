@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { randomInt } from 'crypto';
 import { testApiHandler } from 'next-test-api-route-handler';
 import {

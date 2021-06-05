@@ -162,7 +162,7 @@ export async function getBarkLikesUserIds(params: {
   after: ObjectId | null;
 }): Promise<string[]> {}
 
-export async function getLikedBarkIds(params: {
+export async function getUserLikedBarkIds(params: {
   key: string;
   user_id: ObjectId;
   after: ObjectId | null;
