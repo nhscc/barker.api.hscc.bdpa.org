@@ -2,6 +2,28 @@ import { parse as parseAsBytes } from 'bytes';
 import { isServer } from 'is-server-side';
 import { AppError } from 'universe/backend/error';
 
+const HTTP2_METHODS = [
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH'
+];
+
+// TODO: unit test env.ts and all other backend abstraction layers, perhaps in
+// TODO: own files in new subfolder
+
+const envToArray = (envVal: string) => {
+  return envVal
+    .replace(/[^A-Za-z0-9=.<>,-^~_*]+/g, '')
+    .split(',')
+    .filter(Boolean);
+};
+
 export function getEnv(loud = false) {
   const env = {
     NODE_ENV:
@@ -11,7 +33,7 @@ export function getEnv(loud = false) {
       ? Number(process.env.MONGODB_MS_PORT)
       : null,
     DISABLED_API_VERSIONS: !!process.env.DISABLED_API_VERSIONS
-      ? process.env.DISABLED_API_VERSIONS.split(',')
+      ? envToArray(process.env.DISABLED_API_VERSIONS.toLowerCase())
       : [],
     RESULTS_PER_PAGE: Number(process.env.RESULTS_PER_PAGE),
     IGNORE_RATE_LIMITS:
@@ -19,7 +41,7 @@ export function getEnv(loud = false) {
     LOCKOUT_ALL_KEYS:
       !!process.env.LOCKOUT_ALL_KEYS && process.env.LOCKOUT_ALL_KEYS !== 'false',
     DISALLOWED_METHODS: !!process.env.DISALLOWED_METHODS
-      ? process.env.DISALLOWED_METHODS.split(',')
+      ? envToArray(process.env.DISALLOWED_METHODS.toUpperCase())
       : [],
     REQUESTS_PER_CONTRIVED_ERROR: Number(process.env.REQUESTS_PER_CONTRIVED_ERROR),
     MAX_CONTENT_LENGTH_BYTES: parseAsBytes(
@@ -63,16 +85,16 @@ export function getEnv(loud = false) {
       /--debug|--inspect/.test(process.execArgv.join(' '))
   };
 
+  if (loud && env.NODE_ENV == 'development') {
+    /* eslint-disable-next-line no-console */
+    console.info(`debug - ${env}`);
+  }
+
   const _mustBeGtZero = [
     env.RESULTS_PER_PAGE,
     env.REQUESTS_PER_CONTRIVED_ERROR,
     env.MAX_CONTENT_LENGTH_BYTES
   ];
-
-  if (loud && env.NODE_ENV == 'development') {
-    /* eslint-disable-next-line no-console */
-    console.info(`debug - ${env}`);
-  }
 
   // ? Typescript troubles
   const NODE_X: string = env.NODE_ENV;
@@ -80,16 +102,23 @@ export function getEnv(loud = false) {
 
   NODE_X == 'unknown' && errors.push(`bad NODE_ENV, saw "${NODE_X}"`);
 
-  isServer() &&
-    env.MONGODB_URI === '' &&
-    errors.push(`bad MONGODB_URI, saw "${env.MONGODB_URI}"`);
+  if (isServer()) {
+    env.MONGODB_URI === '' && errors.push(`bad MONGODB_URI, saw "${env.MONGODB_URI}"`);
 
-  isServer() &&
-    _mustBeGtZero.some(
+    _mustBeGtZero.forEach(
       (v) =>
         (typeof v != 'number' || isNaN(v) || v < 0) &&
         errors.push(`bad value "${v}", expected a number`)
     );
+
+    env.DISALLOWED_METHODS.forEach(
+      (method) =>
+        !HTTP2_METHODS.includes(method) &&
+        errors.push(
+          `unknown method "${method}", must be one of: ${HTTP2_METHODS.join(',')}`
+        )
+    );
+  }
 
   if (errors.length)
     throw new AppError(`illegal environment detected:\n - ${errors.join('\n - ')}`);
