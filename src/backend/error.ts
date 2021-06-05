@@ -1,16 +1,31 @@
-import { AppError, makeNamedError } from 'named-app-errors';
+import { AppError, KeyTypeError, makeNamedError } from 'named-app-errors';
 
 export * from 'named-app-errors';
 
+// TODO: update named-app-errors with new paradigm
+export { KeyTypeError as InvalidKeyError };
+
 export class ActivityGenerationError extends AppError {
   constructor(message?: string) {
-    super(message || 'an unknown error occurred');
+    super(message || 'activity generation failed');
   }
 }
 
 makeNamedError(ActivityGenerationError, 'ActivityGenerationError');
 
-export class IdTypeError<T = string | number> extends AppError {
+// * -- * \\
+
+export class ActivitySimulationError extends AppError {
+  constructor(message?: string) {
+    super(message || 'activity simulation failed');
+  }
+}
+
+makeNamedError(ActivitySimulationError, 'ActivitySimulationError');
+
+// * -- * \\
+
+export class InvalidIdError<T = string | number> extends AppError {
   constructor(id?: T) {
     super(
       id
@@ -20,4 +35,4 @@ export class IdTypeError<T = string | number> extends AppError {
   }
 }
 
-makeNamedError(IdTypeError, 'IdTypeError');
+makeNamedError(InvalidIdError, 'InvalidIdError');
