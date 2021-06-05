@@ -1,16 +1,16 @@
 import { sendHttpOk, sendHttpBadRequest } from 'multiverse/next-respond';
 import { searchBarks } from 'universe/backend';
 import { NotFoundError } from 'universe/backend/error';
-import { handleEndpoint } from 'universe/backend/middleware';
+import { wrapHandler } from 'universe/backend/middleware';
 import { ObjectId } from 'mongodb';
 
 import type { NextApiResponse, NextApiRequest } from 'next';
 
 // ? This is a NextJS special "config" export
-export { config } from 'universe/backend/middleware';
+export { defaultConfig as config } from 'universe/backend/middleware';
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
-  await handleEndpoint(
+  await wrapHandler(
     async ({ req, res }) => {
       const key = req.headers.key?.toString() || '';
       let after: ObjectId | null;
