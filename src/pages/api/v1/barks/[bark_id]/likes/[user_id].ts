@@ -17,48 +17,37 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
       const key = req.headers.key?.toString() || '';
-      let after: ObjectId | null | undefined = undefined;
       let bark_id: ObjectId | undefined = undefined;
       let user_id: ObjectId | undefined = undefined;
 
       try {
-        after = req.query.after ? new ObjectId(req.query.after.toString()) : null;
+        bark_id = new ObjectId(req.query.bark_id.toString());
       } catch {
         sendHttpBadRequest(res, {
-          error: `invalid bark_id "${req.query.after.toString()}"`
+          error: `invalid bark_id "${req.query.bark_id.toString()}"`
         });
       }
 
-      if (after !== undefined) {
+      if (bark_id !== undefined) {
         try {
-          bark_id = new ObjectId(req.query.bark_id.toString());
+          user_id = new ObjectId(req.query.user_id.toString());
         } catch {
           sendHttpBadRequest(res, {
-            error: `invalid bark_id "${req.query.bark_id.toString()}"`
+            error: `invalid user_id "${req.query.user_id.toString()}"`
           });
         }
 
-        if (bark_id !== undefined) {
-          try {
-            user_id = new ObjectId(req.query.user_id.toString());
-          } catch {
-            sendHttpBadRequest(res, {
-              error: `invalid user_id "${req.query.user_id.toString()}"`
-            });
-          }
-
-          if (user_id !== undefined) {
-            if (req.method == 'GET') {
-              (await isBarkLiked({ key, bark_id, user_id }))
-                ? sendHttpOk(res)
-                : sendHttpNotFound(res);
-            } else if (req.method == 'DELETE') {
-              await unlikeBark({ key, bark_id, user_id });
-              sendHttpOk(res);
-            } else {
-              await likeBark({ key, bark_id, user_id });
-              sendHttpOk(res);
-            }
+        if (user_id !== undefined) {
+          if (req.method == 'GET') {
+            (await isBarkLiked({ key, bark_id, user_id }))
+              ? sendHttpOk(res)
+              : sendHttpNotFound(res);
+          } else if (req.method == 'DELETE') {
+            await unlikeBark({ key, bark_id, user_id });
+            sendHttpOk(res);
+          } else {
+            await likeBark({ key, bark_id, user_id });
+            sendHttpOk(res);
           }
         }
       }

@@ -107,7 +107,7 @@ describe('api/v1/barks', () => {
         requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
         handler: api.barks,
         test: async ({ fetch }) => {
-          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+          const json = await fetch().then((r) => r.json());
 
           expect(json.success).toBe(true);
           expect(json.barks).toBeArray();
@@ -220,7 +220,7 @@ describe('api/v1/barks', () => {
             Promise.resolve([]) as unknown as ReturnType<typeof mockedGetBarks>
           );
 
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch().then((r) => r.status)).toBe(404);
         }
       });
     });
@@ -287,17 +287,33 @@ describe('api/v1/barks', () => {
   });
 
   describe('/:bark_id/likes [GET]', () => {
-    it('accepts bark_id; returns user_ids', async () => {
+    it('accepts bark_id and returns user_ids; errors if invalid bark_id given', async () => {
       expect.hasAssertions();
 
+      const factory = itemFactory([
+        [{ bark_id: 'invalid-id' }, 400],
+        [{ bark_id: new ObjectId().toString() }, 200]
+      ]);
+
+      const params = { bark_id: '' };
+
       await testApiHandler({
-        params: { bark_id: new ObjectId().toString() },
+        params,
         handler: api.barksIdLikes,
         test: async ({ fetch }) => {
-          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
-
-          expect(json.success).toBe(true);
-          expect(json.users).toBeArray();
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus != 200 ? { headers: { KEY } } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toStrictEqual([
+              expectedStatus,
+              expectedStatus == 200
+                ? { success: true, users: expect.any(Array) }
+                : expect.objectContaining({ success: false })
+            ]);
+          }
         }
       });
     });
@@ -336,7 +352,8 @@ describe('api/v1/barks', () => {
 
       await testApiHandler({
         requestPatcher: (req) => (req.url = factory()),
-        handler: api.barks,
+        params: { bark_id: new ObjectId().toString() },
+        handler: api.barksIdLikes,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
             Array.from({ length: factory.count }).map((_) => {
@@ -380,9 +397,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(
-              expectedStatus
-            );
+            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
           }
         }
       });
@@ -524,7 +539,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           const responses = await Promise.all(
             Array.from({ length: factory.count }).map((_) => {
-              return fetch({ headers: { KEY } }).then((r) => r.status);
+              return fetch().then((r) => r.status);
             })
           );
 
