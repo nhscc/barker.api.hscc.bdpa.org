@@ -36,6 +36,15 @@ import { ObjectId } from 'mongodb';
 import type { WithId } from 'mongodb';
 import type { NewUser, PublicUser } from 'types/global';
 import { ErrorJsonResponse } from 'multiverse/next-respond/types';
+import { asMockedFunction, itemFactory, mockEnvFactory } from 'testverse/setup';
+
+const withMockedEnv = mockEnvFactory(
+  {
+    REQUESTS_PER_CONTRIVED_ERROR: '0',
+    DISABLED_API_VERSIONS: ''
+  },
+  { replace: false }
+);
 
 const RESULT_SIZE = getEnv().RESULTS_PER_PAGE;
 const { getDb } = setupJest();
@@ -82,12 +91,9 @@ api.usersIdPackId.config = ConfigUsersIdPackId;
 api.usersIdBookmarks.config = ConfigUsersIdBookmarks;
 api.usersIdBookmarksId.config = ConfigUsersIdBookmarksId;
 
-process.env.REQUESTS_PER_CONTRIVED_ERROR = '0';
-process.env.DISABLED_API_VERSIONS = '';
-
 describe('api/v1/users', () => {
   describe('/ [GET]', () => {
-    it('returns expected users in LIFO order', async () => {
+    it('returns expected users', async () => {
       expect.hasAssertions();
 
       const results = dummyDbData.users.slice(0, getEnv().RESULTS_PER_PAGE);
@@ -95,10 +101,8 @@ describe('api/v1/users', () => {
       await testApiHandler({
         handler: api.users,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
           expect(json.users).toStrictEqual(results);
         }
@@ -115,10 +119,8 @@ describe('api/v1/users', () => {
         requestPatcher: (req) => (req.url = `/?after=${dummyDbData.users[1]._id}`),
         handler: api.users,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
           expect(json.users).toStrictEqual(results);
         }
@@ -338,7 +340,7 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id/liked [GET]', () => {
-    it('returns expected barks in LIFO order', async () => {
+    it('returns expected barks', async () => {
       expect.hasAssertions();
     });
 
@@ -362,7 +364,7 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id/following [GET]', () => {
-    it('returns expected users in LIFO order', async () => {
+    it('returns expected users', async () => {
       expect.hasAssertions();
     });
 
@@ -414,7 +416,7 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id/pack [GET]', () => {
-    it('returns expected users in LIFO order', async () => {
+    it('returns expected users', async () => {
       expect.hasAssertions();
     });
 
@@ -466,7 +468,7 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id/bookmarks [GET]', () => {
-    it('returns expected barks in LIFO order', async () => {
+    it('returns expected barks', async () => {
       expect.hasAssertions();
     });
 

@@ -1,3 +1,21 @@
+/* eslint-disable no-await-in-loop */
+import { getEnv } from 'universe/backend/env';
+import { wrapHandler } from 'universe/backend/middleware';
+import { dummyDbData, setupJest } from 'testverse/db';
+import { asMockedFunction, itemFactory } from 'testverse/setup';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { ObjectId } from 'mongodb';
+
+import {
+  DUMMY_KEY as KEY,
+  getBarks,
+  deleteBarks,
+  getBarkLikesUserIds,
+  isBarkLiked,
+  searchBarks,
+  createBark
+} from 'universe/backend';
+
 import EndpointBarks, { config as ConfigBarks } from 'universe/pages/api/v1/barks';
 import EndpointBarksIds, {
   config as ConfigBarksIds
@@ -12,16 +30,23 @@ import EndpointBarksIdLikesId, {
   config as ConfigBarksIdLikesId
 } from 'universe/pages/api/v1/barks/[bark_id]/likes/[user_id]';
 
-import { dummyDbData, setupJest } from 'testverse/db';
-import { testApiHandler } from 'next-test-api-route-handler';
-import { DUMMY_KEY as KEY } from 'universe/backend';
-import { getEnv } from 'universe/backend/env';
-import { ObjectId } from 'mongodb';
+import type { PublicBark } from 'types/global';
+import { sendNotImplementedError } from 'multiverse/next-respond';
 
-import { InternalInfo, NewBark, PublicBark } from 'types/global';
-import { ErrorJsonResponse, SuccessJsonResponse } from 'multiverse/next-respond/types';
+process.env.REQUESTS_PER_CONTRIVED_ERROR = '0';
+process.env.DISABLED_API_VERSIONS = '';
 
-const { getDb } = setupJest();
+jest.mock('universe/backend');
+jest.mock('universe/backend/middleware');
+
+const mockedGetBarks = asMockedFunction(getBarks);
+const mockedDeleteBarks = asMockedFunction(deleteBarks);
+const mockedGetBarkLikesUserIds = asMockedFunction(getBarkLikesUserIds);
+const mockedIsBarkLiked = asMockedFunction(isBarkLiked);
+const mockedSearchBarks = asMockedFunction(searchBarks);
+const mockedCreateBark = asMockedFunction(createBark);
+
+setupJest();
 
 const api = {
   barks: EndpointBarks as typeof EndpointBarks & { config?: typeof ConfigBarks },
@@ -45,45 +70,58 @@ api.barksSearch.config = ConfigBarksSearch;
 api.barksIdLikes.config = ConfigBarksIdLikes;
 api.barksIdLikesId.config = ConfigBarksIdLikesId;
 
-process.env.REQUESTS_PER_CONTRIVED_ERROR = '0';
-process.env.DISABLED_API_VERSIONS = '';
+beforeEach(() => {
+  asMockedFunction(wrapHandler).mockImplementation(async (fn, { req, res }) => {
+    const spy = jest.spyOn(res, 'send');
+
+    try {
+      fn && (await fn({ req, res }));
+    } finally {
+      // ! This must happen or jest tests will hang and mongomemserv will choke.
+      // ! Also note that this isn't a NextApiResponse but a ServerResponse!
+      if (!spy.mock.calls.length) sendNotImplementedError(res);
+    }
+  });
+
+  mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
+  mockedGetBarks.mockReturnValue(Promise.resolve([]));
+  mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
+  mockedSearchBarks.mockReturnValue(Promise.resolve([]));
+  mockedCreateBark.mockReturnValue(Promise.resolve({} as unknown as PublicBark));
+});
 
 describe('api/v1/barks', () => {
   describe('/ [GET]', () => {
-    it('returns expected bark in LIFO order', async () => {
+    it('returns expected bark', async () => {
       expect.hasAssertions();
-
-      const results = dummyDbData.barks.slice(0, getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
         handler: api.barks,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual(results);
+          expect(json.barks).toBeArray();
+          expect(mockedSearchBarks).toBeCalled();
         }
       });
     });
 
     it('returns expected bark with respect to offset', async () => {
       expect.hasAssertions();
-
       process.env.RESULTS_PER_PAGE = '15';
-      const results = dummyDbData.barks.slice(2, 2 + getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
         requestPatcher: (req) => (req.url = `/?after=${dummyDbData.barks[1]._id}`),
         handler: api.barks,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual(results);
+          expect(json.barks).toBeArray();
+          expect(mockedSearchBarks).toBeCalledWith(
+            expect.objectContaining({ after: expect.anything() })
+          );
         }
       });
     });
@@ -91,45 +129,30 @@ describe('api/v1/barks', () => {
     it('does the right thing when garbage offsets are provided', async () => {
       expect.hasAssertions();
 
-      const genUrl = (function* () {
-        yield `/?after=-5`;
-        yield `/?after=a`;
-        yield `/?after=@($)`;
-        yield `/?after=xyz`;
-        yield `/?after=123`;
-        yield `/?after=(*$)`;
-        yield `/?dne=123`;
-      })();
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
 
       await testApiHandler({
-        requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
+        requestPatcher: (req) => (req.url = factory()),
         handler: api.barks,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
-            Array.from({ length: 7 }).map((_) => {
+            Array.from({ length: factory.count }).map((_) => {
               return fetch({ headers: { KEY } }).then((r) => r.status);
             })
           );
 
-          expect(responses).toIncludeSameMembers([400, 400, 400, 400, 400, 400, 200]);
-        }
-      });
-    });
-
-    it('functions when no barks in the system', async () => {
-      expect.hasAssertions();
-
-      await (await getDb()).collection('barks').deleteMany({});
-
-      await testApiHandler({
-        handler: api.barks,
-        test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
-
-          expect(response.status).toBe(200);
-          expect((await response.json()).success).toBe(true);
-          expect(json.barks).toStrictEqual([]);
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: 6 }).map(() => 400),
+            200
+          ]);
         }
       });
     });
@@ -139,183 +162,17 @@ describe('api/v1/barks', () => {
     it('creates and returns new barks', async () => {
       expect.hasAssertions();
 
-      const yieldItems: NewBark[] = [
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '1',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        },
-        {
-          owner: new ObjectId(),
-          content: '2',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '3',
-          private: false,
-          barkbackTo: dummyDbData.barks[0]._id,
-          rebarkOf: null
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '4',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: dummyDbData.barks[0]._id
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '5',
-          private: true,
-          barkbackTo: null,
-          rebarkOf: null
-        }
-      ];
-
-      const yieldCount = yieldItems.length;
-      const getData = (function* () {
-        yield yieldItems.shift();
-      })();
-
       await testApiHandler({
         handler: api.barks,
         test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({
-                method: 'POST',
-                headers: { KEY, 'content-type': 'application/json' },
-                body: JSON.stringify(getData.next().value)
-              }).then(async (r) => [r.status, (await r.json()).bark])
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_, ndx) => [
-              200,
-              {
-                ...yieldItems[ndx],
-                bark_id: expect.any(String),
-                createdAt: expect.any(Number),
-                likes: expect.any(Number),
-                rebarks: expect.any(Number),
-                barkbacks: expect.any(Number),
-                deleted: false
-              } as PublicBark
-            ])
-          );
-        }
-      });
-    });
-
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-
-      await testApiHandler({
-        handler: api.barks,
-        test: async ({ fetch }) => {
-          await fetch({
-            method: 'POST',
-            headers: { KEY, 'content-type': 'application/json' },
-            body: JSON.stringify({
-              owner: dummyDbData.users[0]._id,
-              content: '1',
-              private: false,
-              barkbackTo: null,
-              rebarkOf: null
-            })
-          });
-
-          expect(await (await getDb()).collection('info').findOne({})).toStrictEqual(
-            expect.objectContaining({ totalBarks: dummyDbData.info.totalBarks + 1 })
-          );
-        }
-      });
-    });
-
-    it('errors if request body is invalid', async () => {
-      expect.hasAssertions();
-
-      const yieldCount = 11;
-      const getInvalidData = (function* () {
-        yield {};
-        yield { data: 1 };
-        yield { content: '', createdAt: Date.now() };
-        yield {
-          owner: '',
-          content: '',
-          private: false
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: '',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        };
-        yield {
-          owner: new ObjectId(),
-          content: 'xyz',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: new ObjectId(),
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: new ObjectId()
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: false,
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: dummyDbData.barks[0]._id,
-          rebarkOf: dummyDbData.barks[1]._id
-        } as NewBark;
-      })();
-
-      await testApiHandler({
-        handler: api.barks,
-        test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({
-                method: 'POST',
-                headers: { KEY, 'content-type': 'application/json' },
-                body: JSON.stringify(getInvalidData.next().value)
-              }).then((r) => r.status)
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_) => 400)
-          );
+          expect(
+            await fetch({
+              method: 'POST',
+              headers: { KEY, 'content-type': 'application/json' },
+              body: JSON.stringify({})
+            }).then(async (r) => [r.status, await r.json()])
+          ).toStrictEqual([200, expect.objectContaining({ bark: expect.anything() })]);
+          expect(mockedCreateBark).toBeCalled();
         }
       });
     });
@@ -325,213 +182,132 @@ describe('api/v1/barks', () => {
     it('returns one or many Barks by ID', async () => {
       expect.hasAssertions();
 
-      const yieldItems = [
+      const items = [
         [dummyDbData.barks[0]._id],
-        [dummyDbData.barks[99]._id],
         [dummyDbData.barks[5]._id, dummyDbData.barks[50]._id],
-        dummyDbData.barks.slice(0, 50).map((b) => b._id),
-        dummyDbData.barks.slice(45, 95).map((b) => b._id)
+        dummyDbData.barks.slice(0, 50).map((b) => b._id)
       ];
-      const yieldCount = yieldItems.length;
-      const genParams = (function* () {
-        yield yieldItems.shift();
-      })();
 
-      const params = { bark_ids: genParams.next().value };
+      const params = { bark_ids: [] as ObjectId[] };
 
       await testApiHandler({
         params,
         handler: api.barksIds,
         test: async ({ fetch }) => {
-          const responses = await Promise.all<
-            SuccessJsonResponse & { barks: PublicBark[] }
-          >(
-            Array.from({ length: yieldCount }).map(async () => {
-              const result = await fetch({ headers: { KEY } }).then((r) =>
-                r.ok ? r.json() : null
-              );
-              params.bark_ids = genParams.next().value;
-              return result;
-            })
-          );
+          // ? fetch is async, so to use params we need to wait
+          // TODO: fix w/ paramsPatcher
+          for (const item of items) {
+            params.bark_ids = item;
 
-          expect(responses.some((o) => !o?.success)).toBeFalse();
+            mockedGetBarks.mockReturnValue(
+              Promise.resolve(params.bark_ids) as unknown as ReturnType<
+                typeof mockedGetBarks
+              >
+            );
 
-          expect(
-            responses.map((r) => r.barks.map((b) => b.bark_id))
-          ).toIncludeSameMembers(yieldItems);
+            const result = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+            expect(result?.success).toBeTrue();
+            expect(result.barks).toStrictEqual(
+              params.bark_ids.map((id) => id.toString())
+            );
+          }
         }
       });
     });
 
-    it('errors if one or more IDs not found', async () => {
+    it('errors on bad results from getBarks', async () => {
       expect.hasAssertions();
 
-      const yieldItems = [
-        [new ObjectId().toHexString()],
-        [dummyDbData.barks[99]._id, new ObjectId().toHexString()]
-      ];
-      const yieldCount = yieldItems.length;
-      const genParams = (function* () {
-        yield yieldItems.shift();
-      })();
-
-      const params = { bark_ids: genParams.next().value };
-
       await testApiHandler({
-        params,
+        params: { bark_ids: [dummyDbData.barks[99]._id] },
         handler: api.barksIds,
         test: async ({ fetch }) => {
-          const responses = await Promise.all<
-            SuccessJsonResponse & { barks: PublicBark[] }
-          >(
-            Array.from({ length: yieldCount }).map(async () => {
-              const result = await fetch({ headers: { KEY } }).then((r) => r.json());
-              params.bark_ids = genParams.next().value;
-              return result;
-            })
+          mockedGetBarks.mockReturnValue(
+            Promise.resolve([]) as unknown as ReturnType<typeof mockedGetBarks>
           );
 
-          expect(responses.some((o) => o?.success)).toBeFalse();
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
+    });
+
+    it('errors if invalid IDs given', async () => {
+      expect.hasAssertions();
+
+      await testApiHandler({
+        params: { bark_ids: ['invalid-id'] },
+        handler: api.barksIds,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(400);
         }
       });
     });
   });
 
   describe('/:bark_id1/:bark_id2/.../:bark_idN [DELETE]', () => {
-    it('deletes one or more barks', async () => {
+    it('deletes one or more barks ignoring not found and duplicate bark_ids', async () => {
       expect.hasAssertions();
 
-      const yieldItems = [
+      const items = [
         [dummyDbData.barks[0]._id],
-        [dummyDbData.barks[99]._id],
-        [dummyDbData.barks[5]._id, dummyDbData.barks[50]._id],
-        dummyDbData.barks.slice(45, 95).map((b) => b._id)
+        [dummyDbData.barks[5]._id, dummyDbData.barks[5]._id],
+        dummyDbData.barks.slice(0, 50).map((b) => b._id),
+        [new ObjectId()],
+        [new ObjectId(), dummyDbData.barks[0]._id]
       ];
-      const yieldCount = yieldItems.length;
-      const genParams = (function* () {
-        yield yieldItems.shift();
-      })();
 
-      const params = { bark_ids: genParams.next().value };
+      const params = { bark_ids: [] as ObjectId[] };
 
       await testApiHandler({
         params,
         handler: api.barksIds,
         test: async ({ fetch }) => {
-          const responses = await Promise.all<
-            SuccessJsonResponse & { barks: PublicBark[] }
-          >(
-            Array.from({ length: yieldCount }).map(async () => {
-              const result = await fetch({ method: 'DELETE', headers: { KEY } }).then(
-                (r) => (r.ok ? r.json() : null)
-              );
-              params.bark_ids = genParams.next().value;
-              return result;
-            })
-          );
+          // ? fetch is async, so to use params we need to wait
+          // TODO: fix w/ paramsPatcher
+          for (const item of items) {
+            params.bark_ids = item;
 
-          expect(responses.some((o) => !o?.success)).toBeFalse();
+            const json = await fetch({ method: 'DELETE', headers: { KEY } }).then((r) =>
+              r.json()
+            );
 
-          expect(
-            await (
-              await getDb()
-            )
-              .collection('barks')
-              .aggregate([
-                { $match: { _id: { $in: yieldItems.flat() } } },
-                { $project: { deleted: 1 } }
-              ])
-              .toArray()
-          ).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_) =>
-              expect.objectContaining({ deleted: true })
-            )
-          );
-
-          expect(
-            await (
-              await getDb()
-            )
-              .collection('barks')
-              .aggregate([
-                { $match: { _id: dummyDbData.barks[1]._id } },
-                { $project: { deleted: 1 } }
-              ])
-              .toArray()
-          ).toStrictEqual(expect.objectContaining({ deleted: false }));
+            expect(json.success).toBe(true);
+            expect(mockedDeleteBarks).toBeCalled();
+          }
         }
       });
     });
 
-    it('system metadata is updated', async () => {
+    it('errors if invalid IDs given', async () => {
       expect.hasAssertions();
 
       await testApiHandler({
-        params: { bark_ids: [dummyDbData.barks[0]._id] },
+        params: { bark_ids: ['invalid-id'] },
         handler: api.barksIds,
         test: async ({ fetch }) => {
-          await fetch({ method: 'DELETE', headers: { KEY } });
-
-          expect(await (await getDb()).collection('info').findOne({})).toStrictEqual(
-            expect.objectContaining({ totalBarks: dummyDbData.info.totalBarks - 1 })
-          );
-        }
-      });
-    });
-
-    it('does not error if one or more IDs not found', async () => {
-      expect.hasAssertions();
-
-      const yieldItems = [
-        [new ObjectId().toHexString()],
-        [dummyDbData.barks[99]._id, new ObjectId().toHexString()]
-      ];
-      const yieldCount = yieldItems.length;
-      const genParams = (function* () {
-        yield yieldItems.shift();
-      })();
-
-      const params = { bark_ids: genParams.next().value };
-
-      await testApiHandler({
-        params,
-        handler: api.barksIds,
-        test: async ({ fetch }) => {
-          const responses = await Promise.all<
-            SuccessJsonResponse & { barks: PublicBark[] }
-          >(
-            Array.from({ length: yieldCount }).map(async () => {
-              const result = await fetch({ headers: { KEY } }).then((r) => r.json());
-              params.bark_ids = genParams.next().value;
-              return result;
-            })
-          );
-
-          expect(responses.some((o) => !o?.success)).toBeFalse();
+          expect(
+            await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
+          ).toBe(400);
         }
       });
     });
   });
 
   describe('/:bark_id/likes [GET]', () => {
-    it('returns expected users in LIFO order', async () => {
+    it('returns expected users', async () => {
       expect.hasAssertions();
 
       const targetBark = dummyDbData.barks[10];
 
       await testApiHandler({
-        params: { bark_id: targetBark._id },
+        params: { bark_id: targetBark._id.toString() },
         handler: api.barksIdLikes,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.users).toStrictEqual(
-            targetBark.likes.map((id) => id.toHexString()).reverse()
-          );
+          expect(json.users).toBeArray();
         }
       });
     });
@@ -540,32 +316,18 @@ describe('api/v1/barks', () => {
       expect.hasAssertions();
 
       const targetBark = dummyDbData.barks[10];
-      const targetBarkLikes = [
-        ...targetBark.likes,
-        ...Array.from({ length: 115 }).map(() => new ObjectId())
-      ];
-
-      await (await getDb()).collection('barks').updateOne(
-        { _id: targetBark._id },
-        {
-          $push: {
-            likes: { $each: targetBarkLikes }
-          }
-        }
-      );
 
       await testApiHandler({
-        params: { bark_id: targetBark._id },
-        requestPatcher: (req) => (req.url = `/?after=${targetBarkLikes[10]}`),
+        params: { bark_id: targetBark._id.toString() },
+        requestPatcher: (req) => (req.url = `/?after=${targetBark._id}`),
         handler: api.barksIdLikes,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual(
-            targetBarkLikes.slice(10, getEnv().RESULTS_PER_PAGE + 10)
+          expect(json.users).toBeArray();
+          expect(mockedGetBarkLikesUserIds).toBeCalledWith(
+            expect.objectContaining({ after: expect.anything() })
           );
         }
       });
@@ -585,17 +347,20 @@ describe('api/v1/barks', () => {
       })();
 
       await testApiHandler({
-        params: { bark_id: dummyDbData.barks[0]._id },
+        params: { bark_id: dummyDbData.barks[0]._id.toString() },
         requestPatcher: (req) => (req.url = genUrl.next().value || undefined),
         handler: api.barksIdLikes,
         test: async ({ fetch }) => {
           const responses = await Promise.all(
-            Array.from({ length: 7 }).map((_) => {
+            Array.from({ length: 7 }).map(async (_) => {
               return fetch({ headers: { KEY } }).then((r) => r.status);
             })
           );
 
-          expect(responses).toIncludeSameMembers([400, 400, 400, 400, 400, 400, 200]);
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: 6 }).map(() => 400),
+            200
+          ]);
         }
       });
     });
@@ -605,20 +370,14 @@ describe('api/v1/barks', () => {
 
       const targetBark = dummyDbData.barks[10];
 
-      await (await getDb())
-        .collection('barks')
-        .updateOne({ _id: targetBark._id }, { $set: { likes: [] } });
-
       await testApiHandler({
         params: { bark_id: targetBark._id },
         handler: api.barksIdLikes,
         test: async ({ fetch }) => {
-          const response = await fetch({ headers: { KEY } });
-          const json = await response.json();
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(response.status).toBe(200);
           expect(json.success).toBe(true);
-          expect(json.barks).toStrictEqual([]);
+          expect(json.users).toStrictEqual([]);
         }
       });
     });
@@ -627,43 +386,196 @@ describe('api/v1/barks', () => {
   describe('/:bark_id/likes/:user_id [GET]', () => {
     it('succeeds if the user has liked the bark', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+      mockedIsBarkLiked.mockReturnValue(Promise.resolve(true));
+
+      await testApiHandler({
+        params: {
+          bark_id: targetBark._id.toString(),
+          user_id: targetBark.likes[0].toString()
+        },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(200);
+        }
+      });
     });
 
     it('errors if the user has not liked the bark', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await testApiHandler({
+        params: {
+          bark_id: targetBark._id.toString(),
+          user_id: new ObjectId().toString()
+        },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
     });
   });
 
   describe('/:bark_id/likes/:user_id [DELETE]', () => {
-    it('the user "unlikes" the bark', async () => {
+    it('accepts bark_id, user_id, and method; responds as expected', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: targetBark.likes[0] },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          await fetch({ method: 'DELETE', headers: { KEY } });
+
+          expect(
+            await (await getDb()).collection('barks').findOne({ _id: targetBark._id })
+          ).toStrictEqual(
+            expect.objectContaining({
+              bark_id: targetBark._id,
+              likes: expect.not.arrayContaining([targetBark.likes[0]])
+            })
+          );
+        }
+      });
     });
 
     it('system metadata (bark and user) is updated', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: targetBark.likes[0] },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          await fetch({ method: 'DELETE', headers: { KEY } });
+
+          expect(
+            await (await getDb()).collection('barks').findOne({ _id: targetBark._id })
+          ).toStrictEqual(
+            expect.objectContaining({
+              bark_id: targetBark._id,
+              likes: expect.not.arrayContaining([targetBark.likes[0]])
+            })
+          );
+
+          expect(
+            await (await getDb())
+              .collection('users')
+              .findOne({ _id: targetBark.likes[0] })
+          ).toStrictEqual(
+            expect.objectContaining({
+              user_id: targetBark.likes[0],
+              liked: expect.not.arrayContaining([targetBark._id])
+            })
+          );
+        }
+      });
     });
 
     it('does not error if the user has not liked the bark', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[99];
+
+      expect(dummyDbData.users[0].liked).not.toContain(targetBark._id);
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: dummyDbData.users[0]._id },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          expect((await fetch({ method: 'DELETE', headers: { KEY } })).status).toBe(200);
+        }
+      });
     });
   });
 
   describe('/:bark_id/likes/:user_id [PUT]', () => {
     it('the user "likes" the bark', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[99];
+
+      expect(dummyDbData.users[0].liked).not.toContain(targetBark._id);
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: dummyDbData.users[0]._id },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          await fetch({ method: 'PUT', headers: { KEY } });
+
+          expect(
+            await (await getDb()).collection('barks').findOne({ _id: targetBark._id })
+          ).toStrictEqual(
+            expect.objectContaining({
+              bark_id: targetBark._id,
+              likes: expect.arrayContaining([dummyDbData.users[0]._id])
+            })
+          );
+        }
+      });
     });
 
     it('system metadata (bark and user) is updated', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[99];
+
+      expect(dummyDbData.users[0].liked).not.toContain(targetBark._id);
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: dummyDbData.users[0]._id },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          await fetch({ method: 'PUT', headers: { KEY } });
+
+          expect(
+            await (await getDb()).collection('barks').findOne({ _id: targetBark._id })
+          ).toStrictEqual(
+            expect.objectContaining({
+              bark_id: targetBark._id,
+              likes: expect.not.arrayContaining([targetBark.likes[0]])
+            })
+          );
+
+          expect(
+            await (await getDb())
+              .collection('users')
+              .findOne({ _id: dummyDbData.users[0]._id })
+          ).toStrictEqual(
+            expect.objectContaining({
+              user_id: dummyDbData.users[0]._id,
+              liked: expect.not.arrayContaining([targetBark._id])
+            })
+          );
+        }
+      });
     });
 
     it('does not error if the user has already liked the bark', async () => {
       expect.hasAssertions();
+
+      const targetBark = dummyDbData.barks[10];
+
+      await testApiHandler({
+        params: { bark_id: targetBark._id, user_id: targetBark.likes[0] },
+        handler: api.barksIdLikesId,
+        test: async ({ fetch }) => {
+          expect(
+            await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
+          ).toBe(200);
+        }
+      });
     });
   });
 
   describe('/search [GET]', () => {
-    it('returns expected barks in LIFO order with respect to offset', async () => {
+    it('returns expected barks with respect to offset', async () => {
       expect.hasAssertions();
     });
 
