@@ -122,3 +122,14 @@ export function sendNotImplementedError(
     ...responseJson
   });
 }
+
+export function sendHttpContrivedError(
+  res: NextApiResponse,
+  responseJson?: Record<string, unknown>
+) {
+  sendHttpErrorResponse(res, 555, {
+    error: '(note: do not report this contrived error)',
+    success: false,
+    ...responseJson
+  });
+}
