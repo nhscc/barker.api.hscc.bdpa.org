@@ -189,7 +189,7 @@ export async function createBark(params: {
   data: NewBark;
 }): Promise<PublicBark> {}
 
-export async function getUsers(params: {
+export async function getAllUsers(params: {
   key: string;
   after: ObjectId | null;
 }): Promise<PublicUser[]> {}
@@ -320,7 +320,7 @@ export async function searchBarks(params: {
 
   try {
     if (match.bark_id) {
-      match._id = ObjectId(match.bark_id.toString());
+      match._id = new ObjectId(match.bark_id.toString());
       delete match.bark_id;
     }
 
@@ -328,11 +328,11 @@ export async function searchBarks(params: {
       regexMatchObjectIds = regexMatch.bark_id
         .toString()
         .split('|')
-        .map((oid) => ObjectId(oid));
+        .map((oid) => new ObjectId(oid));
       delete regexMatch.bark_id;
     }
   } catch {
-    throw new ValidationError('bad bark_id encountered');
+    throw new ValidationError(`invalid bark_id "${match.bark_id.toString()}"`);
   }
 
   const matchKeys = Object.keys(match);
@@ -373,37 +373,9 @@ export async function searchBarks(params: {
   if (regexMatchKeys.length && !regexMatchKeysAreValid())
     throw new ValidationError('invalid regexMatch object (2)');
 
-  const primaryMatchers: Record<string, unknown> = {};
-  const secondaryMatchers: Record<string, unknown> = {};
-
-  // TODO: remove unnecessary code
-  // ? We need to split off the search params that need flight state resolved
-  // ? for both normal matchers and regex matchers (the latter takes
-  // ? precedence due to code order)
-
-  for (const [prop, val] of Object.entries(match)) {
-    if (primaryMatchTargets.includes(prop)) primaryMatchers[prop] = val;
-    else if (secondaryMatchTargets.includes(prop)) secondaryMatchers[prop] = val;
-    else
-      throw new GuruMeditationError(
-        `matcher "${prop}" is somehow neither primary nor secondary (1)`
-      );
-  }
-
-  for (const [prop, val] of Object.entries(regexMatch)) {
-    const regexVal = { $regex: val, $options: 'i' };
-
-    if (primaryMatchTargets.includes(prop)) primaryMatchers[prop] = regexVal;
-    else if (secondaryMatchTargets.includes(prop)) secondaryMatchers[prop] = regexVal;
-    else
-      throw new GuruMeditationError(
-        `matcher "${prop}" is somehow neither primary nor secondary (2)`
-      );
-  }
-
   const primaryMatchStage = {
     $match: {
-      ...(after ? { _id: { $lt: ObjectId(after) } } : {}),
+      ...(after ? { _id: { $lt: after } } : {}),
       ...primaryMatchers
     }
   };
@@ -425,9 +397,4 @@ export async function searchBarks(params: {
     .collection<unknown>('flights') // TODO: update "unknown"
     .aggregate<unknown>(pipeline)
     .toArray();
-}
-
-export async function generateActivity(silent = false) {
-  //const db = await getDb();
-  void silent;
 }

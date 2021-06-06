@@ -12,7 +12,7 @@ import {
 import {
   DUMMY_KEY as KEY,
   getUser,
-  getUsers,
+  getAllUsers,
   getUserLikedBarkIds,
   getBarkLikesUserIds,
   getPackmateUserIds,
@@ -60,7 +60,7 @@ jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
 
 const mockedGetUser = asMockedFunction(getUser);
-const mockedGetUsers = asMockedFunction(getUsers);
+const mockedGetAllUsers = asMockedFunction(getAllUsers);
 const mockedGetUserLikedBarkIds = asMockedFunction(getUserLikedBarkIds);
 const mockedGetBarkLikesUserIds = asMockedFunction(getBarkLikesUserIds);
 const mockedGetPackmateUserIds = asMockedFunction(getPackmateUserIds);
@@ -117,7 +117,7 @@ api.usersIdBookmarksId.config = ConfigUsersIdBookmarksId;
 beforeEach(() => {
   asMockedNextApiMiddleware(wrapHandler);
   mockedGetUser.mockReturnValue(Promise.resolve({} as unknown as PublicUser));
-  mockedGetUsers.mockReturnValue(Promise.resolve([]));
+  mockedGetAllUsers.mockReturnValue(Promise.resolve([]));
   mockedGetUserLikedBarkIds.mockReturnValue(Promise.resolve([]));
   mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
   mockedGetPackmateUserIds.mockReturnValue(Promise.resolve([]));

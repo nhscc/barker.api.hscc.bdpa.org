@@ -17,27 +17,25 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
       const key = req.headers.key?.toString() || '';
-      let ids: ObjectId[] | undefined = undefined;
+      let bark_ids: ObjectId[] | undefined = undefined;
 
       try {
-        ids = Array.from(
-          new Set<ObjectId>(
-            (req.query.bark_ids as string[]).map((id) => new ObjectId(id))
-          )
+        bark_ids = Array.from(new Set<string>(req.query.bark_ids as string[])).map(
+          (id) => new ObjectId(id)
         );
       } catch {
         sendHttpBadRequest(res, { error: 'invalid bark_id(s)' });
       }
 
-      if (ids !== undefined) {
+      if (bark_ids !== undefined) {
         if (req.method == 'GET') {
-          const barks = await getBarks({ key, bark_ids: ids });
+          const barks = await getBarks({ key, bark_ids });
 
-          if (barks.length != ids.length) {
-            sendHttpNotFound(res, { error: 'duplicate or non-existent bark_id(s)' });
+          if (barks.length != bark_ids.length) {
+            sendHttpNotFound(res, { error: 'duplicate bark_id(s)' });
           } else sendHttpOk(res, { barks });
         } else {
-          await deleteBarks({ key, bark_ids: ids });
+          await deleteBarks({ key, bark_ids });
           sendHttpOk(res);
         }
       }

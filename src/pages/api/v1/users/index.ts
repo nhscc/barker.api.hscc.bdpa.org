@@ -1,5 +1,5 @@
 import { wrapHandler } from 'universe/backend/middleware';
-import { createUser, getUsers } from 'universe/backend';
+import { createUser, getAllUsers } from 'universe/backend';
 import { sendHttpBadRequest, sendHttpOk } from 'multiverse/next-respond';
 import { ObjectId } from 'mongodb';
 
@@ -24,7 +24,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
       if (after !== undefined) {
         if (req.method == 'GET') {
-          sendHttpOk(res, { users: await getUsers({ key, after }) });
+          sendHttpOk(res, { users: await getAllUsers({ key, after }) });
         } else sendHttpOk(res, { user: await createUser({ key, data: req.body }) });
       }
     },
