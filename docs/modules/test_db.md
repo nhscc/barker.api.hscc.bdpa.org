@@ -17,7 +17,7 @@
 ### Functions
 
 - [hydrateDb][6]
-- [setupJest][7]
+- [setupTestDb][7]
 
 ## Type aliases
 
@@ -81,9 +81,9 @@ Defined in: [test/db.ts:64][16]
 
 ---
 
-### setupJest
+### setupTestDb
 
-▸ **setupJest**(): _object_
+▸ **setupTestDb**(): _object_
 
 **Returns:** _object_
 
@@ -102,7 +102,7 @@ Defined in: [test/db.ts:112][17]
 [4]: test_db.md#expand_results_by_mult
 [5]: test_db.md#unhydrateddummydbdata
 [6]: test_db.md#hydratedb
-[7]: test_db.md#setupjest
+[7]: test_db.md#setupTestDb
 [8]: types_global.md#internalbark
 [9]: types_global.md#internalinfo
 [10]: types_global.md#apikey

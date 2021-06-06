@@ -1,10 +1,10 @@
 //import { setClientAndDb } from 'universe/backend/db';
-//import { setupJest } from 'testverse/db';
+//import { setupTestDb } from 'testverse/db';
 //import generateActivity from 'externals/generate-activity';
 
 import type { WithId } from 'mongodb';
 
-//const { getDb, getNewClientAndDb } = setupJest();
+//const { getDb, getNewClientAndDb } = setupTestDb();
 
 describe('external-scripts/generate-activity', () => {
   it('generate some fake user activity', async () => {

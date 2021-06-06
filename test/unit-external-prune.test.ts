@@ -1,11 +1,11 @@
 import { setClientAndDb } from 'universe/backend/db';
-import { setupJest } from 'testverse/db';
+import { setupTestDb } from 'testverse/db';
 import pruneLogs from 'externals/prune-data';
 
 import type { RequestLogEntry } from 'types/global';
 import type { WithId, Db } from 'mongodb';
 
-const { getDb, getNewClientAndDb } = setupJest();
+const { getDb, getNewClientAndDb } = setupTestDb();
 
 const getCount = (db: Db) =>
   db.collection<WithId<RequestLogEntry>>('request-log').countDocuments();

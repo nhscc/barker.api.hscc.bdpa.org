@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { generateActivity } from 'universe/backend';
 import { getDbClient, closeDb } from 'universe/backend/db';
 
 export default async function main(isCLI = false) {
@@ -11,7 +10,7 @@ export default async function main(isCLI = false) {
 
     isCLI && console.log(`[ bootstrapping activity generation ]`);
 
-    await generateActivity(!isCLI);
+    //await generateActivity(!isCLI);
 
     isCLI && console.log('[ closing connection ]');
 

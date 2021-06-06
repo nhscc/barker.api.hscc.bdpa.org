@@ -1,7 +1,7 @@
-import { setupJest } from 'testverse/db';
+import { setupTestDb } from 'testverse/db';
 import * as IndexPage from 'universe/pages/index';
 
-const { getDb } = setupJest();
+const { getDb } = setupTestDb();
 
 process.env.REQUESTS_PER_CONTRIVED_ERROR = '0';
 

@@ -130,8 +130,6 @@ export async function getApiKeys() {
   ).map((apiKey) => ({ ...apiKey, key: sha256(apiKey.key).toString() }));
 }
 
-// TODO: env variables are respected (like contrived error)
-
 export async function getSystemInfo(params: { key: string }): Promise<InternalInfo> {}
 
 export async function getBarks(params: {

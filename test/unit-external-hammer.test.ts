@@ -1,5 +1,5 @@
 import { setClientAndDb } from 'universe/backend/db';
-import { setupJest } from 'testverse/db';
+import { setupTestDb } from 'testverse/db';
 import banHammer from 'externals/ban-hammer';
 
 import type { RequestLogEntry, LimitedLogEntry } from 'types/global';
@@ -7,7 +7,7 @@ import type { WithId } from 'mongodb';
 
 jest.setTimeout(10 ** 6);
 
-const { getDb, getNewClientAndDb } = setupJest();
+const { getDb, getNewClientAndDb } = setupTestDb();
 
 const getRequestLogDb = async () =>
   (await getDb()).collection<WithId<RequestLogEntry>>('request-log');

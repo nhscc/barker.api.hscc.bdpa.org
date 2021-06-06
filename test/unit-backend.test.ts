@@ -1,91 +1,234 @@
-import { WithId /* ObjectId */ } from 'mongodb';
+import sha256 from 'crypto-js/sha256';
+import { WithId, ObjectId } from 'mongodb';
 import * as Backend from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
-import { asMockedFunction, itemFactory, mockEnvFactory } from 'testverse/setup';
-//import sha256 from 'crypto-js/sha256';
+import { setupTestDb, dummyDbData } from 'testverse/db';
+import { itemFactory, mockEnvFactory } from 'testverse/setup';
 
-import {
-  setupJest /* unhydratedDummyDbData, EXPAND_RESULTS_BY_MULT */
-} from 'testverse/db';
-
-import { RequestLogEntry, LimitedLogEntry } from 'types/global';
-
+import type { RequestLogEntry, LimitedLogEntry } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const { /* getHydratedData, */ getDb } = setupJest();
-const withMockedEnv = mockEnvFactory(
-  {
-    REQUESTS_PER_CONTRIVED_ERROR: '0',
-    DISABLED_API_VERSIONS: ''
-  },
-  { replace: false }
-);
+const { getDb } = setupTestDb();
 
-it('functions when there are no barks in the system', async () => {
-  expect.hasAssertions();
-});
-
-it('returns expected barks with respect to match', async () => {
-  expect.hasAssertions();
-});
-
-it('returns expected barks with respect to regexMatch', async () => {
-  expect.hasAssertions();
-});
-
-it('regexMatch errors properly with bad inputs', async () => {
-  expect.hasAssertions();
-});
-
-it('ensure meta, totalLikes/totalRebarks/totalBarkbacks (unproxied), likes (non-numeric), and bark_id/_id cannot be matched against', async () => {
-  expect.hasAssertions();
-});
-
-it('returns same barks as GET /barks if no query params given', async () => {
-  expect.hasAssertions();
-});
-
-it('ensure numerical matches against likes (totalLikes), rebarks (totalRebarks), and barkbacks (totalBarkbacks) are properly proxied', async () => {
-  expect.hasAssertions();
-});
-
-it('returns expected barks with respect to all possible query params simultaneously', async () => {
-  expect.hasAssertions();
-});
-
-it('does not error if the user has already liked the bark', async () => {
-  expect.hasAssertions();
-
-  await testApiHandler({
-    params: {
-      bark_id: new ObjectId().toString(),
-      user_id: new ObjectId().toString()
-    },
-    handler: api.barksIdLikesId,
-    test: async ({ fetch }) => {
-      expect(await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)).toBe(
-        200
-      );
-    }
+describe('::getSystemInfo', () => {
+  it('functions when the database is empty', async () => {
+    expect.hasAssertions();
   });
 });
 
-it('does not error if the user has not liked the bark', async () => {
-  expect.hasAssertions();
-
-  await testApiHandler({
-    params: {
-      bark_id: new ObjectId().toString(),
-      user_id: new ObjectId().toString()
-    },
-    handler: api.barksIdLikesId,
-    test: async ({ fetch }) => {
-      expect(
-        await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-      ).toBe(200);
-    }
+describe('::getBarks', () => {
+  it('functions when no barks in the database', async () => {
+    expect.hasAssertions();
   });
 });
+
+describe('::deleteBarks', () => {
+  it('system metadata is updated upon bark deletion', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getBarkLikesUserIds', () => {
+  it('functions with barks that have never been liked', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getUserLikedBarkIds', () => {
+  it('functions when user has no liked barks', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::isBarkLiked', () => {
+  it('', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::unlikeBark', () => {
+  it('', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::likeBark', () => {
+  it('', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::createBark', () => {
+  it('system metadata is updated upon bark creation', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getUsers', () => {
+  it('functions when no users in the database', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getUser', () => {
+  it('', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::deleteUser', () => {
+  it('system metadata is updated upon user deletion', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getFollowingUserIds', () => {
+  it('functions when user has no followers', async () => {
+    expect.hasAssertions();
+  });
+
+  it('includeIndirect returns direct and indirect followers', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::isUserFollowing', () => {
+  it('returns true iff the specified user is following the other', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::followUser', () => {
+  it('assigns the specified user as a follower of another', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user is already a follower', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::unfollowUser', () => {
+  it('removes the specified user as a follower of another', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user was never a follower', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getPackmateUserIds', () => {
+  it('functions when user has no packmates', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::isUserPackmate', () => {
+  it('returns true iff a user is in the pack', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::addPackmate', () => {
+  it('adds a user to the pack', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user is already in the pack', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::removePackmate', () => {
+  it('removes a user from the pack', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user was never in the pack', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::getBookmarkedBarkIds', () => {
+  it('functions when user has no bookmarked barks', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::isBarkBookmarked', () => {
+  it('returns true iff a bark is bookmarked', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::bookmarkBark', () => {
+  it('bookmarks a bark', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user has already bookmarked the bark', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::unbookmarkBark', () => {
+  it('unbookmarks a bark', async () => {
+    expect.hasAssertions();
+  });
+
+  it('does not error if the user never bookmarked the bark', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::createUser', () => {
+  it('system metadata is updated upon user creation', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::updateUser', () => {
+  it('', async () => {
+    expect.hasAssertions();
+  });
+});
+
+describe('::searchBarks', () => {
+  it('functions when no barks in the database', async () => {
+    expect.hasAssertions();
+  });
+
+  it('returns expected barks with respect to match', async () => {
+    expect.hasAssertions();
+  });
+
+  it('returns expected barks with respect to regexMatch', async () => {
+    expect.hasAssertions();
+  });
+
+  it('regexMatch errors properly with bad inputs', async () => {
+    expect.hasAssertions();
+  });
+
+  it('ensure meta, totalLikes/totalRebarks/totalBarkbacks (unproxied), likes (non-numeric), and bark_id/_id cannot be matched against', async () => {
+    expect.hasAssertions();
+  });
+
+  it('returns same barks as GET /barks if no query params given', async () => {
+    expect.hasAssertions();
+  });
+
+  it('ensure numerical matches against likes (totalLikes), rebarks (totalRebarks), and barkbacks (totalBarkbacks) are properly proxied', async () => {
+    expect.hasAssertions();
+  });
+
+  it('returns expected barks with respect to all possible query params simultaneously', async () => {
+    expect.hasAssertions();
+  });
+});
+
+// TODO: env variables are respected (like contrived error)
 
 describe('/ [POST]', () => {
   it('creates and returns new users', async () => {
@@ -165,7 +308,7 @@ describe('/ [POST]', () => {
     });
   });
 
-  it('system metadata is updated', async () => {
+  it('system metadata is updated upon user creation', async () => {
     expect.hasAssertions();
   });
 

@@ -158,7 +158,7 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
   return newData;
 }
 
-export function setupJest() {
+export function setupTestDb() {
   const port = getEnv().DEBUG_MODE ? getEnv().MONGODB_MS_PORT : undefined;
 
   const server = new MongoMemoryServer({
