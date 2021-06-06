@@ -209,7 +209,7 @@ export async function deleteUser(params: {
 export async function getFollowingUserIds(params: {
   key: string;
   user_id: ObjectId;
-  include_indirect: boolean;
+  includeIndirect: boolean;
   after: ObjectId | null;
 }): Promise<string[]> {}
 

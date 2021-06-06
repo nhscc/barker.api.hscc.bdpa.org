@@ -476,7 +476,7 @@ describe('api/v1/users', () => {
       });
     });
 
-    it('supports pagination', async () => {
+    it('supports pagination and includeIndirect flag', async () => {
       expect.hasAssertions();
 
       await testApiHandler({
@@ -488,6 +488,24 @@ describe('api/v1/users', () => {
 
           expect(json.success).toBe(true);
           expect(json.users).toBeArray();
+          expect(mockedGetFollowingUserIds).toBeCalledWith(
+            expect.objectContaining({ includeIndirect: false })
+          );
+        }
+      });
+
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        requestPatcher: (req) => (req.url = '/?includeIndirect'),
+        handler: api.usersIdFollowing,
+        test: async ({ fetch }) => {
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBe(true);
+          expect(json.users).toBeArray();
+          expect(mockedGetFollowingUserIds).toBeCalledWith(
+            expect.objectContaining({ includeIndirect: true })
+          );
         }
       });
     });

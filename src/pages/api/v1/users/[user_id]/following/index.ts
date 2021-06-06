@@ -14,7 +14,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       const key = req.headers.key?.toString() || '';
       let after: ObjectId | null | undefined = undefined;
       let user_id: ObjectId | undefined = undefined;
-      const include_indirect = !!req.query.include_indirect;
+      const includeIndirect = req.query.includeIndirect !== undefined;
 
       try {
         after = req.query.after ? new ObjectId(req.query.after.toString()) : null;
@@ -35,7 +35,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
         if (user_id !== undefined) {
           sendHttpOk(res, {
-            users: await getFollowingUserIds({ key, user_id, include_indirect, after })
+            users: await getFollowingUserIds({ key, user_id, includeIndirect, after })
           });
         }
       }

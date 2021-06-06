@@ -169,7 +169,7 @@ describe('/ [POST]', () => {
     expect.hasAssertions();
   });
 
-  // TODO: test include_indirect
+  // TODO: test includeIndirect
 
   it('errors if request body is invalid', async () => {
     expect.hasAssertions();
