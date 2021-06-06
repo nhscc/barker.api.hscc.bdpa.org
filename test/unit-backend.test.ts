@@ -87,6 +87,173 @@ it('does not error if the user has not liked the bark', async () => {
   });
 });
 
+describe('/ [POST]', () => {
+  it('creates and returns new users', async () => {
+    expect.hasAssertions();
+
+    const yieldItems: NewUser[] = [
+      {
+        owner: dummyDbData.users[0]._id,
+        content: '1',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      },
+      {
+        owner: new ObjectId(),
+        content: '2',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      },
+      {
+        owner: dummyDbData.users[0]._id,
+        content: '3',
+        private: false,
+        barkbackTo: dummyDbData.users[0]._id,
+        rebarkOf: null
+      },
+      {
+        owner: dummyDbData.users[0]._id,
+        content: '4',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: dummyDbData.users[0]._id
+      },
+      {
+        owner: dummyDbData.users[0]._id,
+        content: '5',
+        private: true,
+        barkbackTo: null,
+        rebarkOf: null
+      }
+    ];
+
+    const yieldCount = yieldItems.length;
+    const getData = (function* () {
+      yield yieldItems.shift();
+    })();
+
+    await testApiHandler({
+      handler: api.users,
+      test: async ({ fetch }) => {
+        const responses = await Promise.all(
+          Array.from({ length: yieldCount }).map((_) =>
+            fetch({
+              method: 'POST',
+              headers: { KEY, 'content-type': 'application/json' },
+              body: JSON.stringify(getData.next().value)
+            }).then(async (r) => [r.status, (await r.json()).bark])
+          )
+        );
+
+        expect(responses).toStrictEqual(
+          Array.from({ length: yieldCount }).map((_, ndx) => [
+            200,
+            {
+              ...yieldItems[ndx],
+              user_id: expect.any(String),
+              createdAt: expect.any(Number),
+              likes: expect.any(Number),
+              reusers: expect.any(Number),
+              barkbacks: expect.any(Number),
+              deleted: false
+            } as PublicUser
+          ])
+        );
+      }
+    });
+  });
+
+  it('system metadata is updated', async () => {
+    expect.hasAssertions();
+  });
+
+  // TODO: test include_indirect
+
+  it('errors if request body is invalid', async () => {
+    expect.hasAssertions();
+
+    const yieldCount = 11;
+    const getInvalidData = (function* () {
+      yield {};
+      yield { data: 1 };
+      yield { content: '', createdAt: Date.now() };
+      yield {
+        owner: '',
+        content: '',
+        private: false
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: 'xyz',
+        private: false
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: '',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      };
+      yield {
+        owner: new ObjectId(),
+        content: 'xyz',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: 'xyz',
+        private: false,
+        barkbackTo: new ObjectId(),
+        rebarkOf: null
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: 'xyz',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: new ObjectId()
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: 'xyz',
+        private: false,
+        barkbackTo: false,
+        rebarkOf: null
+      };
+      yield {
+        owner: dummyDbData.users[0]._id,
+        content: 'xyz',
+        private: false,
+        barkbackTo: dummyDbData.users[0]._id,
+        rebarkOf: dummyDbData.users[1]._id
+      } as NewUser;
+    })();
+
+    await testApiHandler({
+      handler: api.users,
+      test: async ({ fetch }) => {
+        const responses = await Promise.all(
+          Array.from({ length: yieldCount }).map((_) =>
+            fetch({
+              method: 'POST',
+              headers: { KEY, 'content-type': 'application/json' },
+              body: JSON.stringify(getInvalidData.next().value)
+            }).then((r) => r.status)
+          )
+        );
+
+        expect(responses).toStrictEqual(
+          Array.from({ length: yieldCount }).map((_) => 400)
+        );
+      }
+    });
+  });
+});
+
 it('system metadata (bark and user) is updated', async () => {
   expect.hasAssertions();
 

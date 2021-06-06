@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { wrapHandler } from 'universe/backend/middleware';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { ObjectId } from 'mongodb';
@@ -12,7 +13,6 @@ import {
   DUMMY_KEY as KEY,
   getUser,
   getUsers,
-  deleteUser,
   getUserLikedBarkIds,
   getBarkLikesUserIds,
   getPackmateUserIds,
@@ -21,9 +21,7 @@ import {
   isUserPackmate,
   isBarkBookmarked,
   isBarkLiked,
-  createUser,
-  addPackmate,
-  removePackmate
+  createUser
 } from 'universe/backend';
 
 import EndpointUsers, { config as ConfigUsers } from 'universe/pages/api/v1/users';
@@ -60,7 +58,17 @@ import type { NewUser, PublicUser } from 'types/global';
 jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
 
-const mockedGetBarks = asMockedFunction(getBarks);
+const mockedGetUser = asMockedFunction(getUser);
+const mockedGetUsers = asMockedFunction(getUsers);
+const mockedGetUserLikedBarkIds = asMockedFunction(getUserLikedBarkIds);
+const mockedGetBarkLikesUserIds = asMockedFunction(getBarkLikesUserIds);
+const mockedGetPackmateUserIds = asMockedFunction(getPackmateUserIds);
+const mockedGetFollowingUserIds = asMockedFunction(getFollowingUserIds);
+const mockedIsUserFollowing = asMockedFunction(isUserFollowing);
+const mockedIsUserPackmate = asMockedFunction(isUserPackmate);
+const mockedIsBarkBookmarked = asMockedFunction(isBarkBookmarked);
+const mockedIsBarkLiked = asMockedFunction(isBarkLiked);
+const mockedCreateUser = asMockedFunction(createUser);
 
 const api = {
   users: EndpointUsers as typeof EndpointUsers & { config?: typeof ConfigUsers },
@@ -106,19 +114,23 @@ api.usersIdBookmarksId.config = ConfigUsersIdBookmarksId;
 
 beforeEach(() => {
   asMockedNextApiMiddleware(wrapHandler);
-  mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
-  mockedGetBarks.mockReturnValue(Promise.resolve([]));
+  mockedGetUser.mockReturnValue(Promise.resolve({} as unknown as PublicUser));
+  mockedGetUsers.mockReturnValue(Promise.resolve([]));
+  mockedGetUserLikedBarkIds.mockReturnValue(Promise.resolve([]));
   mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
-  mockedSearchBarks.mockReturnValue(Promise.resolve([]));
-  mockedCreateBark.mockReturnValue(Promise.resolve({} as unknown as PublicBark));
+  mockedGetPackmateUserIds.mockReturnValue(Promise.resolve([]));
+  mockedGetFollowingUserIds.mockReturnValue(Promise.resolve([]));
+  mockedIsUserFollowing.mockReturnValue(Promise.resolve(false));
+  mockedIsUserPackmate.mockReturnValue(Promise.resolve(false));
+  mockedIsBarkBookmarked.mockReturnValue(Promise.resolve(false));
+  mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
+  mockedCreateUser.mockReturnValue(Promise.resolve({} as unknown as PublicUser));
 });
 
 describe('api/v1/users', () => {
   describe('/ [GET]', () => {
-    it('returns expected users', async () => {
+    it('returns users', async () => {
       expect.hasAssertions();
-
-      const results = dummyDbData.users.slice(0, getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
         handler: api.users,
@@ -126,252 +138,189 @@ describe('api/v1/users', () => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
           expect(json.success).toBe(true);
-          expect(json.users).toStrictEqual(results);
+          expect(json.users).toBeArray();
         }
       });
     });
 
-    it('returns expected users with respect to offset', async () => {
+    it('supports pagination', async () => {
       expect.hasAssertions();
-
-      process.env.RESULTS_PER_PAGE = '15';
-      const results = dummyDbData.users.slice(2, 2 + getEnv().RESULTS_PER_PAGE);
 
       await testApiHandler({
-        requestPatcher: (req) => (req.url = `/?after=${dummyDbData.users[1]._id}`),
+        requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
         handler: api.users,
         test: async ({ fetch }) => {
-          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+          const json = await fetch().then((r) => r.json());
 
           expect(json.success).toBe(true);
-          expect(json.users).toStrictEqual(results);
+          expect(json.users).toBeArray();
         }
       });
     });
 
-    it('does the right thing when garbage offsets are provided', async () => {
+    it('handles invalid offsets during pagination', async () => {
       expect.hasAssertions();
-    });
 
-    it('functions normally when there are no users in the system', async () => {
-      expect.hasAssertions();
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = factory()),
+        handler: api.users,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: factory.count }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: factory.count - 1 }).map(() => 400),
+            200
+          ]);
+        }
+      });
     });
   });
 
   describe('/ [POST]', () => {
-    it('creates and returns new users', async () => {
+    it('accepts a new user schema; returns a bark', async () => {
       expect.hasAssertions();
-
-      const yieldItems: NewUser[] = [
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '1',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        },
-        {
-          owner: new ObjectId(),
-          content: '2',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '3',
-          private: false,
-          barkbackTo: dummyDbData.users[0]._id,
-          rebarkOf: null
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '4',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: dummyDbData.users[0]._id
-        },
-        {
-          owner: dummyDbData.users[0]._id,
-          content: '5',
-          private: true,
-          barkbackTo: null,
-          rebarkOf: null
-        }
-      ];
-
-      const yieldCount = yieldItems.length;
-      const getData = (function* () {
-        yield yieldItems.shift();
-      })();
 
       await testApiHandler({
         handler: api.users,
         test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({
-                method: 'POST',
-                headers: { KEY, 'content-type': 'application/json' },
-                body: JSON.stringify(getData.next().value)
-              }).then(async (r) => [r.status, (await r.json()).bark])
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_, ndx) => [
-              200,
-              {
-                ...yieldItems[ndx],
-                user_id: expect.any(String),
-                createdAt: expect.any(Number),
-                likes: expect.any(Number),
-                reusers: expect.any(Number),
-                barkbacks: expect.any(Number),
-                deleted: false
-              } as PublicUser
-            ])
-          );
-        }
-      });
-    });
-
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
-
-    it('errors if request body is invalid', async () => {
-      expect.hasAssertions();
-
-      const yieldCount = 11;
-      const getInvalidData = (function* () {
-        yield {};
-        yield { data: 1 };
-        yield { content: '', createdAt: Date.now() };
-        yield {
-          owner: '',
-          content: '',
-          private: false
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: '',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        };
-        yield {
-          owner: new ObjectId(),
-          content: 'xyz',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: new ObjectId(),
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: null,
-          rebarkOf: new ObjectId()
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: false,
-          rebarkOf: null
-        };
-        yield {
-          owner: dummyDbData.users[0]._id,
-          content: 'xyz',
-          private: false,
-          barkbackTo: dummyDbData.users[0]._id,
-          rebarkOf: dummyDbData.users[1]._id
-        } as NewUser;
-      })();
-
-      await testApiHandler({
-        handler: api.users,
-        test: async ({ fetch }) => {
-          const responses = await Promise.all(
-            Array.from({ length: yieldCount }).map((_) =>
-              fetch({
-                method: 'POST',
-                headers: { KEY, 'content-type': 'application/json' },
-                body: JSON.stringify(getInvalidData.next().value)
-              }).then((r) => r.status)
-            )
-          );
-
-          expect(responses).toStrictEqual(
-            Array.from({ length: yieldCount }).map((_) => 400)
-          );
+          expect(
+            await fetch({
+              method: 'POST',
+              headers: { KEY, 'content-type': 'application/json' },
+              body: JSON.stringify({})
+            }).then(async (r) => [r.status, await r.json()])
+          ).toStrictEqual([200, expect.objectContaining({ bark: expect.anything() })]);
         }
       });
     });
   });
 
   describe('/:user_id [GET]', () => {
-    it('returns user by ID', async () => {
+    it('accepts a user_id and returns a user; errors on invalid user_id', async () => {
       expect.hasAssertions();
-    });
 
-    it('errors if ID not found', async () => {
-      expect.hasAssertions();
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        handler: api.usersId,
+        test: async ({ fetch }) => {
+          mockedGetUser.mockReturnValue(
+            Promise.resolve({}) as ReturnType<typeof mockedGetUser>
+          );
+
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBeTrue();
+          expect(json.user).toBeObject();
+        }
+      });
+
+      await testApiHandler({
+        params: { user_id: 'invalid' },
+        handler: api.usersId,
+        test: async ({ fetch }) => expect(await fetch().then((r) => r.status)).toBe(400)
+      });
     });
   });
 
   describe('/:user_id [DELETE]', () => {
-    it('deletes user by ID', async () => {
+    it('accepts a user_id; errors on invalid user_id', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ user_id: new ObjectId().toString() }, 200],
+        [{ user_id: 'invalid-id' }, 400]
+      ]);
 
-    it('does not error if ID not found', async () => {
-      expect.hasAssertions();
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            mockedGetUser.mockReturnValue(
+              Promise.resolve({}) as ReturnType<typeof mockedGetUser>
+            );
+
+            Object.assign(params, expectedParams);
+
+            expect(
+              await fetch({
+                method: 'PUT',
+                ...(expectedStatus == 200 ? { headers: { KEY } } : {})
+              }).then(async (r) => [r.status, await r.json()])
+            ).toBe([expectedStatus, { success: true }]);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id [PUT]', () => {
-    it('updates user by ID', async () => {
+    it('accepts a user_id; errors on invalid user_id', async () => {
       expect.hasAssertions();
-    });
 
-    it('errors if ID not found', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ user_id: new ObjectId().toString() }, 200],
+        [{ user_id: 'invalid-id' }, 400]
+      ]);
 
-    it('errors if request body is invalid', async () => {
-      expect.hasAssertions();
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus == 200 ? { method: 'PUT' } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toBe([expectedStatus, { success: true }]);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/liked [GET]', () => {
-    it('returns expected barks', async () => {
+    it('accepts user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('returns expected barks with respect to offset', async () => {
-      expect.hasAssertions();
-    });
+      mockedIsBarkLiked.mockReturnValue(Promise.resolve(true));
 
-    it('does the right thing when garbage offsets are provided', async () => {
-      expect.hasAssertions();
+      const factory = itemFactory([
+        [{ user_id: new ObjectId().toString() }, 200],
+        [{ user_id: 'invalid-id' }, 400]
+      ]);
+
+      const params = { bark_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 

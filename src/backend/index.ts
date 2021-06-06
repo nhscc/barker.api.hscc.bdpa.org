@@ -210,6 +210,7 @@ export async function getFollowingUserIds(params: {
   key: string;
   user_id: ObjectId;
   include_indirect: boolean;
+  after: ObjectId | null;
 }): Promise<string[]> {}
 
 export async function isUserFollowing(params: {
@@ -233,6 +234,7 @@ export async function unfollowUser(params: {
 export async function getPackmateUserIds(params: {
   key: string;
   user_id: ObjectId;
+  after: ObjectId | null;
 }): Promise<string[]> {}
 
 export async function isUserPackmate(params: {
@@ -256,6 +258,7 @@ export async function removePackmate(params: {
 export async function getBookmarkedBarkIds(params: {
   key: string;
   user_id: ObjectId;
+  after: ObjectId | null;
 }): Promise<string[]> {}
 
 export async function isBarkBookmarked(params: {

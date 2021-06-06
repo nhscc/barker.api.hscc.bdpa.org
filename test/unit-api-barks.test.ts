@@ -12,7 +12,6 @@ import {
 import {
   DUMMY_KEY as KEY,
   getBarks,
-  deleteBarks,
   getBarkLikesUserIds,
   isBarkLiked,
   searchBarks,
@@ -39,7 +38,6 @@ jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
 
 const mockedGetBarks = asMockedFunction(getBarks);
-const mockedDeleteBarks = asMockedFunction(deleteBarks);
 const mockedGetBarkLikesUserIds = asMockedFunction(getBarkLikesUserIds);
 const mockedIsBarkLiked = asMockedFunction(isBarkLiked);
 const mockedSearchBarks = asMockedFunction(searchBarks);
@@ -153,7 +151,6 @@ describe('api/v1/barks', () => {
               body: JSON.stringify({})
             }).then(async (r) => [r.status, await r.json()])
           ).toStrictEqual([200, expect.objectContaining({ bark: expect.anything() })]);
-          expect(mockedCreateBark).toBeCalled();
         }
       });
     });
@@ -254,7 +251,6 @@ describe('api/v1/barks', () => {
             );
 
             expect(json.success).toBe(true);
-            expect(mockedDeleteBarks).toBeCalled();
           }
         }
       });
@@ -319,9 +315,6 @@ describe('api/v1/barks', () => {
 
           expect(json.success).toBe(true);
           expect(json.users).toBeArray();
-          expect(mockedGetBarkLikesUserIds).toBeCalledWith(
-            expect.objectContaining({ after: expect.anything() })
-          );
         }
       });
     });
