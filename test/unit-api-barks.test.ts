@@ -272,7 +272,7 @@ describe('api/v1/barks', () => {
   });
 
   describe('/:bark_id/likes [GET]', () => {
-    it('accepts bark_id and returns user_ids; errors if invalid bark_id given', async () => {
+    it('accepts bark_id and returns users; errors if invalid bark_id given', async () => {
       expect.hasAssertions();
 
       const factory = itemFactory([

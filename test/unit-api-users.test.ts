@@ -17,6 +17,7 @@ import {
   getBarkLikesUserIds,
   getPackmateUserIds,
   getFollowingUserIds,
+  getBookmarkedBarkIds,
   isUserFollowing,
   isUserPackmate,
   isBarkBookmarked,
@@ -53,7 +54,7 @@ import EndpointUsersIdBookmarksId, {
   config as ConfigUsersIdBookmarksId
 } from 'universe/pages/api/v1/users/[user_id]/bookmarks/[bark_id]';
 
-import type { NewUser, PublicUser } from 'types/global';
+import type { PublicUser } from 'types/global';
 
 jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
@@ -64,6 +65,7 @@ const mockedGetUserLikedBarkIds = asMockedFunction(getUserLikedBarkIds);
 const mockedGetBarkLikesUserIds = asMockedFunction(getBarkLikesUserIds);
 const mockedGetPackmateUserIds = asMockedFunction(getPackmateUserIds);
 const mockedGetFollowingUserIds = asMockedFunction(getFollowingUserIds);
+const mockedGetBookmarkedBarkIds = asMockedFunction(getBookmarkedBarkIds);
 const mockedIsUserFollowing = asMockedFunction(isUserFollowing);
 const mockedIsUserPackmate = asMockedFunction(isUserPackmate);
 const mockedIsBarkBookmarked = asMockedFunction(isBarkBookmarked);
@@ -120,6 +122,7 @@ beforeEach(() => {
   mockedGetBarkLikesUserIds.mockReturnValue(Promise.resolve([]));
   mockedGetPackmateUserIds.mockReturnValue(Promise.resolve([]));
   mockedGetFollowingUserIds.mockReturnValue(Promise.resolve([]));
+  mockedGetBookmarkedBarkIds.mockReturnValue(Promise.resolve([]));
   mockedIsUserFollowing.mockReturnValue(Promise.resolve(false));
   mockedIsUserPackmate.mockReturnValue(Promise.resolve(false));
   mockedIsBarkBookmarked.mockReturnValue(Promise.resolve(false));
@@ -203,7 +206,7 @@ describe('api/v1/users', () => {
               headers: { KEY, 'content-type': 'application/json' },
               body: JSON.stringify({})
             }).then(async (r) => [r.status, await r.json()])
-          ).toStrictEqual([200, expect.objectContaining({ bark: expect.anything() })]);
+          ).toStrictEqual([200, expect.objectContaining({ user: expect.anything() })]);
         }
       });
     });
@@ -260,10 +263,13 @@ describe('api/v1/users', () => {
 
             expect(
               await fetch({
-                method: 'PUT',
+                method: 'DELETE',
                 ...(expectedStatus == 200 ? { headers: { KEY } } : {})
               }).then(async (r) => [r.status, await r.json()])
-            ).toBe([expectedStatus, { success: true }]);
+            ).toStrictEqual([
+              expectedStatus,
+              expect.objectContaining({ success: expectedStatus == 200 })
+            ]);
           }
         }
       });
@@ -271,7 +277,7 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id [PUT]', () => {
-    it('accepts a user_id; errors on invalid user_id', async () => {
+    it('accepts a user_id and patch user; errors on invalid user_id', async () => {
       expect.hasAssertions();
 
       const factory = itemFactory([
@@ -288,10 +294,18 @@ describe('api/v1/users', () => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
             expect(
-              await fetch(expectedStatus == 200 ? { method: 'PUT' } : {}).then(
-                async (r) => [r.status, await r.json()]
-              )
-            ).toBe([expectedStatus, { success: true }]);
+              await fetch({
+                method: 'PUT',
+                headers: {
+                  ...(expectedStatus == 200 ? { KEY } : {}),
+                  'content-type': 'application/json'
+                },
+                body: JSON.stringify({})
+              }).then(async (r) => [r.status, await r.json()])
+            ).toStrictEqual([
+              expectedStatus,
+              expect.objectContaining({ success: expectedStatus == 200 })
+            ]);
           }
         }
       });
@@ -299,21 +313,110 @@ describe('api/v1/users', () => {
   });
 
   describe('/:user_id/liked [GET]', () => {
-    it('accepts user_id; errors if invalid IDs given', async () => {
+    it('accepts user_id and returns barks; errors if invalid IDs given', async () => {
+      expect.hasAssertions();
+
+      const factory = itemFactory([
+        [{ user_id: 'invalid-id' }, 400],
+        [{ user_id: new ObjectId().toString() }, 200]
+      ]);
+
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdLiked,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus != 200 ? { headers: { KEY } } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toStrictEqual([
+              expectedStatus,
+              expectedStatus == 200
+                ? { success: true, barks: expect.any(Array) }
+                : expect.objectContaining({ success: false })
+            ]);
+          }
+        }
+      });
+    });
+
+    it('supports pagination', async () => {
+      expect.hasAssertions();
+
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
+        handler: api.usersIdLiked,
+        test: async ({ fetch }) => {
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBe(true);
+          expect(json.barks).toBeArray();
+        }
+      });
+    });
+
+    it('handles invalid offsets during pagination', async () => {
+      expect.hasAssertions();
+
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = factory()),
+        params: { user_id: new ObjectId().toString() },
+        handler: api.usersIdLiked,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: factory.count }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: factory.count - 1 }).map(() => 400),
+            200
+          ]);
+        }
+      });
+    });
+  });
+
+  describe('/:user_id/liked/:bark_id [GET]', () => {
+    it('accepts bark_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
 
       mockedIsBarkLiked.mockReturnValue(Promise.resolve(true));
 
       const factory = itemFactory([
-        [{ user_id: new ObjectId().toString() }, 200],
-        [{ user_id: 'invalid-id' }, 400]
+        [{ bark_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ bark_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ bark_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            bark_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
       ]);
 
       const params = { bark_id: '', user_id: '' };
 
       await testApiHandler({
         params,
-        handler: api.usersId,
+        handler: api.usersIdLikedId,
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
@@ -322,171 +425,622 @@ describe('api/v1/users', () => {
         }
       });
     });
-  });
-
-  describe('/:user_id/liked/:bark_id [GET]', () => {
-    it('succeeds if the user has liked the bark', async () => {
-      expect.hasAssertions();
-    });
 
     it('errors if the user has not liked the bark', async () => {
       expect.hasAssertions();
+
+      mockedIsBarkLiked.mockReturnValue(Promise.resolve(false));
+
+      await testApiHandler({
+        params: {
+          bark_id: new ObjectId().toString(),
+          user_id: new ObjectId().toString()
+        },
+        handler: api.usersIdLikedId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
     });
   });
 
   describe('/:user_id/following [GET]', () => {
-    it('returns expected users', async () => {
+    it('accepts user_id and returns users; errors if invalid user_id given', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        [{ user_id: 'invalid-id' }, 400],
+        [{ user_id: new ObjectId().toString() }, 200]
+      ]);
+
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdFollowing,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus != 200 ? { headers: { KEY } } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toStrictEqual([
+              expectedStatus,
+              expectedStatus == 200
+                ? { success: true, users: expect.any(Array) }
+                : expect.objectContaining({ success: false })
+            ]);
+          }
+        }
+      });
     });
 
-    it('returns expected users with respect to offset', async () => {
+    it('supports pagination', async () => {
       expect.hasAssertions();
+
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
+        handler: api.usersIdFollowing,
+        test: async ({ fetch }) => {
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBe(true);
+          expect(json.users).toBeArray();
+        }
+      });
     });
 
-    it('does the right thing when garbage offsets are provided', async () => {
+    it('handles invalid offsets during pagination', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = factory()),
+        params: { user_id: new ObjectId().toString() },
+        handler: api.usersIdFollowing,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: factory.count }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: factory.count - 1 }).map(() => 400),
+            200
+          ]);
+        }
+      });
     });
   });
 
   describe('/:user_id/following/:followed_id [GET]', () => {
-    it('succeeds if the user is a follower', async () => {
+    it('accepts followed_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
+
+      mockedIsUserFollowing.mockReturnValue(Promise.resolve(true));
+
+      const factory = itemFactory([
+        [{ followed_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ followed_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ followed_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            followed_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
+
+      const params = { followed_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdFollowingId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+          }
+        }
+      });
     });
 
-    it('errors if the user is not a follower', async () => {
+    it('errors if followed_id is not actually followed', async () => {
       expect.hasAssertions();
+
+      mockedIsUserFollowing.mockReturnValue(Promise.resolve(false));
+
+      await testApiHandler({
+        params: {
+          followed_id: new ObjectId().toString(),
+          user_id: new ObjectId().toString()
+        },
+        handler: api.usersIdFollowingId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
     });
   });
 
   describe('/:user_id/following/:followed_id [DELETE]', () => {
-    it('the user "unfollows" the formerly followed user', async () => {
+    it('accepts followed_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ followed_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ followed_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ followed_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            followed_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the user is not a follower', async () => {
-      expect.hasAssertions();
+      const params = { followed_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdFollowingId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/following/:followed_id [PUT]', () => {
-    it('the user "follows" the other user', async () => {
+    it('accepts followed_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ followed_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ followed_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ followed_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            followed_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the user is already follower', async () => {
-      expect.hasAssertions();
+      const params = { followed_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdFollowingId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/pack [GET]', () => {
-    it('returns expected users', async () => {
+    it('accepts user_id and returns users; errors if invalid user_id given', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        [{ user_id: 'invalid-id' }, 400],
+        [{ user_id: new ObjectId().toString() }, 200]
+      ]);
+
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdPack,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus != 200 ? { headers: { KEY } } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toStrictEqual([
+              expectedStatus,
+              expectedStatus == 200
+                ? { success: true, users: expect.any(Array) }
+                : expect.objectContaining({ success: false })
+            ]);
+          }
+        }
+      });
     });
 
-    it('returns expected users with respect to offset', async () => {
+    it('supports pagination', async () => {
       expect.hasAssertions();
+
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
+        handler: api.usersIdPack,
+        test: async ({ fetch }) => {
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBe(true);
+          expect(json.users).toBeArray();
+        }
+      });
     });
 
-    it('does the right thing when garbage offsets are provided', async () => {
+    it('handles invalid offsets during pagination', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = factory()),
+        params: { user_id: new ObjectId().toString() },
+        handler: api.usersIdPack,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: factory.count }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: factory.count - 1 }).map(() => 400),
+            200
+          ]);
+        }
+      });
     });
   });
 
   describe('/:user_id/pack/:packmate_id [GET]', () => {
-    it('succeeds if the user is a packmate', async () => {
+    it('accepts packmate_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
+
+      mockedIsUserPackmate.mockReturnValue(Promise.resolve(true));
+
+      const factory = itemFactory([
+        [{ packmate_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ packmate_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ packmate_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            packmate_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
+
+      const params = { packmate_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdPackId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+          }
+        }
+      });
     });
 
-    it('errors if the user is not a packmate', async () => {
+    it('errors if packmate_id does not belong to a packmate', async () => {
       expect.hasAssertions();
+
+      mockedIsUserPackmate.mockReturnValue(Promise.resolve(false));
+
+      await testApiHandler({
+        params: {
+          packmate_id: new ObjectId().toString(),
+          user_id: new ObjectId().toString()
+        },
+        handler: api.usersIdPackId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
     });
   });
 
   describe('/:user_id/pack/:packmate_id [DELETE]', () => {
-    it('removes the target user from the pack', async () => {
+    it('accepts packmate_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ packmate_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ packmate_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ packmate_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            packmate_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the user is not a packmate', async () => {
-      expect.hasAssertions();
+      const params = { packmate_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdPackId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/pack/:packmate_id [PUT]', () => {
-    it('adds the target user to pack', async () => {
+    it('accepts packmate_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ packmate_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ packmate_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ packmate_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            packmate_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the user is already a packmate', async () => {
-      expect.hasAssertions();
+      const params = { packmate_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdPackId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/bookmarks [GET]', () => {
-    it('returns expected barks', async () => {
+    it('accepts user_id and returns barks; errors if invalid user_id given', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        [{ user_id: 'invalid-id' }, 400],
+        [{ user_id: new ObjectId().toString() }, 200]
+      ]);
+
+      const params = { user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdBookmarks,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch(expectedStatus != 200 ? { headers: { KEY } } : {}).then(
+                async (r) => [r.status, await r.json()]
+              )
+            ).toStrictEqual([
+              expectedStatus,
+              expectedStatus == 200
+                ? { success: true, barks: expect.any(Array) }
+                : expect.objectContaining({ success: false })
+            ]);
+          }
+        }
+      });
     });
 
-    it('returns expected barks with respect to offset', async () => {
+    it('supports pagination', async () => {
       expect.hasAssertions();
+
+      await testApiHandler({
+        params: { user_id: new ObjectId().toString() },
+        requestPatcher: (req) => (req.url = `/?after=${new ObjectId()}`),
+        handler: api.usersIdBookmarks,
+        test: async ({ fetch }) => {
+          const json = await fetch({ headers: { KEY } }).then((r) => r.json());
+
+          expect(json.success).toBe(true);
+          expect(json.barks).toBeArray();
+        }
+      });
     });
 
-    it('does the right thing when garbage offsets are provided', async () => {
+    it('handles invalid offsets during pagination', async () => {
       expect.hasAssertions();
+
+      const factory = itemFactory([
+        `/?after=-5`,
+        `/?after=a`,
+        `/?after=@($)`,
+        `/?after=xyz`,
+        `/?after=123`,
+        `/?after=(*$)`,
+        `/?dne=123`
+      ]);
+
+      await testApiHandler({
+        requestPatcher: (req) => (req.url = factory()),
+        params: { user_id: new ObjectId().toString() },
+        handler: api.usersIdBookmarks,
+        test: async ({ fetch }) => {
+          const responses = await Promise.all(
+            Array.from({ length: factory.count }).map((_) => {
+              return fetch({ headers: { KEY } }).then((r) => r.status);
+            })
+          );
+
+          expect(responses).toIncludeSameMembers([
+            ...Array.from({ length: factory.count - 1 }).map(() => 400),
+            200
+          ]);
+        }
+      });
     });
   });
 
   describe('/:user_id/bookmarks/:bark_id [GET]', () => {
-    it('succeeds if the user has bookmarked the bark', async () => {
+    it('accepts bark_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
+
+      mockedIsBarkBookmarked.mockReturnValue(Promise.resolve(true));
+
+      const factory = itemFactory([
+        [{ bark_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ bark_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ bark_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            bark_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
+
+      const params = { bark_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdBookmarksId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+          }
+        }
+      });
     });
 
-    it('errors if the user has not bookmarked the bark', async () => {
+    it('errors if bark_id does not belong to a packmate', async () => {
       expect.hasAssertions();
+
+      mockedIsBarkBookmarked.mockReturnValue(Promise.resolve(false));
+
+      await testApiHandler({
+        params: {
+          bark_id: new ObjectId().toString(),
+          user_id: new ObjectId().toString()
+        },
+        handler: api.usersIdBookmarksId,
+        test: async ({ fetch }) => {
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+        }
+      });
     });
   });
 
   describe('/:user_id/bookmarks/:bark_id [DELETE]', () => {
-    it('the user "unbookmarks" the bark', async () => {
+    it('accepts bark_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ bark_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ bark_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ bark_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            bark_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the bark already is not bookmarked', async () => {
-      expect.hasAssertions();
+      const params = { bark_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdBookmarksId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 
   describe('/:user_id/bookmarks/:bark_id [PUT]', () => {
-    it('the user "bookmarks" the bark', async () => {
+    it('accepts bark_id and user_id; errors if invalid IDs given', async () => {
       expect.hasAssertions();
-    });
 
-    it('system metadata is updated', async () => {
-      expect.hasAssertions();
-    });
+      const factory = itemFactory([
+        [{ bark_id: 'invalid-id', user_id: new ObjectId().toString() }, 400],
+        [{ bark_id: new ObjectId().toString(), user_id: 'invalid-id' }, 400],
+        [{ bark_id: 'invalid-id', user_id: 'invalid-id' }, 400],
+        [
+          {
+            bark_id: new ObjectId().toString(),
+            user_id: new ObjectId().toString()
+          },
+          200
+        ]
+      ]);
 
-    it('does not error if the bark is already bookmarked', async () => {
-      expect.hasAssertions();
+      const params = { bark_id: '', user_id: '' };
+
+      await testApiHandler({
+        params,
+        handler: api.usersIdBookmarksId,
+        test: async ({ fetch }) => {
+          for (const [expectedParams, expectedStatus] of factory) {
+            Object.assign(params, expectedParams);
+            expect(
+              await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
+            ).toBe(expectedStatus);
+          }
+        }
+      });
     });
   });
 });
