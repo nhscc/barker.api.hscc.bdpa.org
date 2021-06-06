@@ -6,6 +6,7 @@ import { hydrateDb, dummyDbData } from 'testverse/db';
 
 import type { GetServerSidePropsContext } from 'next';
 import { Awaited } from '@ergodark/types';
+import { isServer } from 'is-server-side';
 
 let previouslyHydratedDb = false;
 
@@ -49,10 +50,12 @@ export default function Index({
 
   if (shouldHydrateDb) status = <span style={{ color: 'darkred' }}>hydrated</span>;
 
-  // eslint-disable-next-line no-console
-  console.log(`serverless node runtime: ${nodeVersion}`);
-  // eslint-disable-next-line no-console
-  console.log(`barker runtime: v${pkgVersion}`);
+  if (!isServer()) {
+    // eslint-disable-next-line no-console
+    console.log(`serverless node runtime: ${nodeVersion}`);
+    // eslint-disable-next-line no-console
+    console.log(`barker runtime: v${pkgVersion}`);
+  }
 
   return (
     <React.Fragment>
