@@ -5,7 +5,7 @@ import { getEnv } from 'universe/backend/env';
 import { setupTestDb, dummyDbData } from 'testverse/db';
 import { itemFactory, mockEnvFactory } from 'testverse/setup';
 
-import type { RequestLogEntry, LimitedLogEntry } from 'types/global';
+import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const { getDb } = setupTestDb();
@@ -36,6 +36,10 @@ describe('::getBarks', () => {
   it('throws if ID(s) not found', async () => {
     expect.hasAssertions();
   });
+
+  it('throws if too many IDs requested', async () => {
+    expect.hasAssertions();
+  });
 });
 
 describe('::deleteBarks', () => {
@@ -44,6 +48,10 @@ describe('::deleteBarks', () => {
   });
 
   it('throws if ID(s) not found', async () => {
+    expect.hasAssertions();
+  });
+
+  it('throws if too many IDs requested', async () => {
     expect.hasAssertions();
   });
 });
@@ -292,6 +300,8 @@ describe('::createBark', () => {
         rebarkOf: dummyDbData.barks[1]._id
       } as NewBark;
     })();
+
+    // TODO: test content too long/too short
 
     await testApiHandler({
       handler: api.barks,
@@ -692,6 +702,9 @@ describe('::createUser', () => {
       } as NewUser;
     })();
 
+    // TODO: test bad name, email, phone, username
+    // TODO: test null phone
+
     await testApiHandler({
       handler: api.users,
       test: async ({ fetch }) => {
@@ -732,7 +745,7 @@ describe('::updateUser', () => {
 });
 
 describe('::searchBarks', () => {
-  it('returns same barks as "GET /barks" if no query params given', async () => {
+  it('returns all barks in LIFO order if no query params given', async () => {
     expect.hasAssertions();
   });
 
@@ -811,7 +824,9 @@ describe('::addToRequestLog', () => {
 
     Date.now = _now;
 
-    const reqlog = (await getDb()).collection<WithId<RequestLogEntry>>('request-log');
+    const reqlog = (await getDb()).collection<WithId<InternalRequestLogEntry>>(
+      'request-log'
+    );
 
     const { _id: _, ...log1 } = (await reqlog.findOne({ resStatusCode: 1111 })) || {};
     const { _id: __, ...log2 } = (await reqlog.findOne({ resStatusCode: 2222 })) || {};
@@ -938,7 +953,7 @@ describe('::isRateLimited', () => {
     expect(await Backend.isRateLimited(req)).toContainEntry(['limited', true]);
 
     await (await getDb())
-      .collection<LimitedLogEntry>('limited-log-mview')
+      .collection<InternalLimitedLogEntry>('limited-log-mview')
       .updateOne({ ip: '1.2.3.4' }, { $set: { until: Date.now() - 10 ** 5 } });
 
     expect(await Backend.isRateLimited(req)).toStrictEqual({

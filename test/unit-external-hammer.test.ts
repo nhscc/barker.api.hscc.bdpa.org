@@ -2,7 +2,7 @@ import { setClientAndDb } from 'universe/backend/db';
 import { setupTestDb } from 'testverse/db';
 import banHammer from 'externals/ban-hammer';
 
-import type { RequestLogEntry, LimitedLogEntry } from 'types/global';
+import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
 import type { WithId } from 'mongodb';
 
 jest.setTimeout(10 ** 6);
@@ -10,9 +10,9 @@ jest.setTimeout(10 ** 6);
 const { getDb, getNewClientAndDb } = setupTestDb();
 
 const getRequestLogDb = async () =>
-  (await getDb()).collection<WithId<RequestLogEntry>>('request-log');
+  (await getDb()).collection<WithId<InternalRequestLogEntry>>('request-log');
 const getRateLimitsDb = async () =>
-  (await getDb()).collection<WithId<LimitedLogEntry>>('limited-log-mview');
+  (await getDb()).collection<WithId<InternalLimitedLogEntry>>('limited-log-mview');
 const getRateLimits = async () =>
   (await getRateLimitsDb()).find().project({ _id: 0, ip: 1, key: 1 }).toArray();
 const getRateLimitUntils = async () =>

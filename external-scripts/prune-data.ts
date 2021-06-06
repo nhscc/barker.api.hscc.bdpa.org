@@ -4,7 +4,7 @@ import { AppError } from 'universe/backend/error';
 import { getDb, closeDb } from 'universe/backend/db';
 
 import type { WithId } from 'mongodb';
-import type { RequestLogEntry } from 'types/global';
+import type { InternalRequestLogEntry } from 'types/global';
 
 export default async function main(isCLI = false) {
   try {
@@ -19,7 +19,7 @@ export default async function main(isCLI = false) {
 
     const db = await getDb({ external: true });
 
-    const requestLog = db.collection<WithId<RequestLogEntry>>('request-log');
+    const requestLog = db.collection<WithId<InternalRequestLogEntry>>('request-log');
     const cursor = requestLog.find().sort({ _id: -1 }).skip(PRUNE_DATA_MAX_LOGS).limit(1);
     const thresholdEntry = await cursor.next();
 

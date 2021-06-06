@@ -2,13 +2,13 @@ import { setClientAndDb } from 'universe/backend/db';
 import { setupTestDb } from 'testverse/db';
 import pruneLogs from 'externals/prune-data';
 
-import type { RequestLogEntry } from 'types/global';
+import type { InternalRequestLogEntry } from 'types/global';
 import type { WithId, Db } from 'mongodb';
 
 const { getDb, getNewClientAndDb } = setupTestDb();
 
 const getCount = (db: Db) =>
-  db.collection<WithId<RequestLogEntry>>('request-log').countDocuments();
+  db.collection<WithId<InternalRequestLogEntry>>('request-log').countDocuments();
 
 describe('external-scripts/prune-data', () => {
   it('ensures at most PRUNE_DATA_MAX_LOGS log entries exist', async () => {

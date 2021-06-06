@@ -90,6 +90,10 @@ export type InternalBark = {
    */
   meta: {
     /**
+     * The API key responsible for creating this Bark.
+     */
+    creator: string;
+    /**
      * User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent
      * chance of a generated follower liking a specific Bark from this user.
      *
@@ -164,6 +168,10 @@ export type InternalUser = {
    */
   meta: {
     /**
+     * The API key responsible for creating this Bark.
+     */
+    creator: string;
+    /**
      * Max percentage of the generated user base that will _eventually_ follow
      * this user.
      *
@@ -197,7 +205,7 @@ export type PublicBark = Pick<
  * The shape of a publicly available user.
  */
 export type PublicUser = Pick<
-  InternalBark,
+  InternalUser,
   'name' | 'email' | 'phone' | 'username' | 'deleted'
 > & {
   user_id: string;
@@ -218,47 +226,12 @@ export type NewBark = Pick<
 /**
  * The shape of a newly received user.
  */
-export type NewUser = Pick<InternalBark, 'name' | 'email' | 'phone' | 'username'>;
+export type NewUser = Pick<InternalUser, 'name' | 'email' | 'phone' | 'username'>;
 
 /**
  * The shape of a received update to an existing user.
  */
-export type PatchUser = Pick<InternalBark, 'name' | 'email' | 'phone'>;
-
-/**
- * The shape of an API key.
- */
-export type ApiKey = {
-  owner: string;
-  key: string;
-};
-
-/**
- * The shape of a request log entry.
- */
-export type RequestLogEntry = {
-  ip: string | null;
-  key: string | null;
-  route: string | null;
-  method: string | null;
-  resStatusCode: number;
-  time: number;
-};
-
-/**
- * The shape of a limited log entry.
- */
-export type LimitedLogEntry =
-  | {
-      until: number;
-      ip: string | null;
-      key?: never;
-    }
-  | {
-      until: number;
-      ip?: never;
-      key: string | null;
-    };
+export type PatchUser = Pick<InternalUser, 'name' | 'email' | 'phone'>;
 
 /**
  * The shape of precomputed conversation corpus data.
@@ -275,3 +248,38 @@ export type CorpusDialogLine = {
   actor: 'A' | 'B';
   line: string;
 };
+
+/**
+ * The shape of an API key.
+ */
+export type InternalApiKey = {
+  owner: string;
+  key: string;
+};
+
+/**
+ * The shape of a request log entry.
+ */
+export type InternalRequestLogEntry = {
+  ip: string | null;
+  key: string | null;
+  route: string | null;
+  method: string | null;
+  resStatusCode: number;
+  time: number;
+};
+
+/**
+ * The shape of a limited log entry.
+ */
+export type InternalLimitedLogEntry =
+  | {
+      until: number;
+      ip: string | null;
+      key?: never;
+    }
+  | {
+      until: number;
+      ip?: never;
+      key: string | null;
+    };

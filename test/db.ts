@@ -16,16 +16,16 @@ import { randomInt } from 'crypto';
 import type { Db, WithId } from 'mongodb';
 
 import type {
-  ApiKey,
-  RequestLogEntry,
-  LimitedLogEntry,
+  InternalApiKey,
+  InternalRequestLogEntry,
+  InternalLimitedLogEntry,
   InternalBark,
   InternalUser,
   InternalInfo
 } from 'types/global';
 
 export type DummyDbData = {
-  keys: WithId<ApiKey>[];
+  keys: WithId<InternalApiKey>[];
   barks: WithId<InternalBark>[];
   users: WithId<InternalUser>[];
   info: WithId<InternalInfo>;
@@ -135,7 +135,7 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
     ...[newData.barks.length ? db.collection('barks').insertMany(newData.barks) : null],
     ...[newData.info ? db.collection('info').insertMany([newData.info]) : null],
 
-    db.collection<WithId<RequestLogEntry>>('request-log').insertMany(
+    db.collection<WithId<InternalRequestLogEntry>>('request-log').insertMany(
       [...Array(22)].map((_, ndx) => ({
         ip: '1.2.3.4',
         key: ndx % 2 ? null : NULL_KEY,
@@ -147,11 +147,11 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
     ),
 
     db
-      .collection<WithId<LimitedLogEntry>>('limited-log-mview')
+      .collection<WithId<InternalLimitedLogEntry>>('limited-log-mview')
       .insertMany([
-        { ip: '1.2.3.4', until: Date.now() + 1000 * 60 * 15 } as LimitedLogEntry,
-        { ip: '5.6.7.8', until: Date.now() + 1000 * 60 * 15 } as LimitedLogEntry,
-        { key: NULL_KEY, until: Date.now() + 1000 * 60 * 60 } as LimitedLogEntry
+        { ip: '1.2.3.4', until: Date.now() + 1000 * 60 * 15 } as InternalLimitedLogEntry,
+        { ip: '5.6.7.8', until: Date.now() + 1000 * 60 * 15 } as InternalLimitedLogEntry,
+        { key: NULL_KEY, until: Date.now() + 1000 * 60 * 60 } as InternalLimitedLogEntry
       ])
   ]);
 
