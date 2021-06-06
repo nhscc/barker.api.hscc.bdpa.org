@@ -90,7 +90,7 @@ export function getEnv(loud = false) {
     console.info(`debug - ${env}`);
   }
 
-  const _mustBeGtZero = [
+  const mustBeGtZero = [
     env.RESULTS_PER_PAGE,
     env.REQUESTS_PER_CONTRIVED_ERROR,
     env.MAX_CONTENT_LENGTH_BYTES
@@ -100,15 +100,15 @@ export function getEnv(loud = false) {
   const NODE_X: string = env.NODE_ENV;
   const errors = [];
 
-  NODE_X == 'unknown' && errors.push(`bad NODE_ENV, saw "${NODE_X}"`);
+  if (NODE_X == 'unknown') errors.push(`bad NODE_ENV, saw "${NODE_X}"`);
 
   if (isServer()) {
-    env.MONGODB_URI === '' && errors.push(`bad MONGODB_URI, saw "${env.MONGODB_URI}"`);
+    if (env.MONGODB_URI === '') errors.push(`bad MONGODB_URI, saw "${env.MONGODB_URI}"`);
 
-    _mustBeGtZero.forEach(
+    mustBeGtZero.forEach(
       (v) =>
         (typeof v != 'number' || isNaN(v) || v < 0) &&
-        errors.push(`bad value "${v}", expected a number`)
+        errors.push(`bad value "${v}", expected a non-negative number`)
     );
 
     env.DISALLOWED_METHODS.forEach(
@@ -118,15 +118,13 @@ export function getEnv(loud = false) {
           `unknown method "${method}", must be one of: ${HTTP2_METHODS.join(',')}`
         )
     );
+
+    if (env.MONGODB_MS_PORT && env.MONGODB_MS_PORT <= 1024) {
+      errors.push(`optional environment variable MONGODB_MS_PORT must be > 1024`);
+    }
   }
 
-  if (errors.length)
+  if (errors.length) {
     throw new AppError(`illegal environment detected:\n - ${errors.join('\n - ')}`);
-
-  if (env.RESULTS_PER_PAGE < 15) throw new AppError(`RESULTS_PER_PAGE must be >= 15`);
-
-  if (isServer() && env.MONGODB_MS_PORT && env.MONGODB_MS_PORT <= 1024)
-    throw new AppError(`optional environment variable MONGODB_MS_PORT must be > 1024`);
-
-  return env;
+  } else return env;
 }
