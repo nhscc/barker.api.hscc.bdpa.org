@@ -132,7 +132,9 @@ export function itemToObjectId<T extends ObjectId>(
             ? i
             : typeof i == 'string'
             ? new ObjectId(i)
-            : (i as WithId<unknown>)._id
+            : i
+            ? (i as WithId<unknown>)._id
+            : toss(new GuruMeditationError('encountered untransformable sub-item'))
         ) as T;
       })
     : typeof item == 'string'

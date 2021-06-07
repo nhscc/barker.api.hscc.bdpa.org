@@ -462,7 +462,7 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
     const users = db.collection<InternalUser>('users');
 
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
-    await users.updateOne({ _id: { $in: user_id } }, { $set: { deleted: true } });
+    await users.updateOne({ _id: user_id }, { $set: { deleted: true } });
   }
 }
 
@@ -727,17 +727,17 @@ export async function getBookmarkedBarkIds({
     return (
       (await users
         .find({ _id: user_id })
-        .project<{ following: ObjectId[] }>({
-          following: {
+        .project<{ bookmarked: ObjectId[] }>({
+          bookmarked: {
             $slice: [
-              '$following',
-              after ? { $sum: [{ $indexOfArray: ['$following', after] }, 1] } : 0,
+              '$bookmarked',
+              after ? { $sum: [{ $indexOfArray: ['$bookmarked', after] }, 1] } : 0,
               getEnv().RESULTS_PER_PAGE
             ]
           }
         })
         .next()
-        .then((r) => itemToStringId(r?.following))) ?? toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.bookmarked))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -765,7 +765,7 @@ export async function isBarkBookmarked({
       (await users
         .find({ _id: user_id })
         .project<{ bookmarked: boolean }>({
-          bookmarked: { $in: [bark_id, '$bookmarks'] }
+          bookmarked: { $in: [bark_id, '$bookmarked'] }
         })
         .next()
         .then((r) => r?.bookmarked)) ?? toss(new GuruMeditationError())

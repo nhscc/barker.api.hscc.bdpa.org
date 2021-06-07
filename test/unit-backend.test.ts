@@ -1,10 +1,9 @@
 /* eslint-disable no-await-in-loop */
-import sha256 from 'crypto-js/sha256';
 import { WithId, ObjectId } from 'mongodb';
 import * as Backend from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
 import { setupTestDb, dummyDbData } from 'testverse/db';
-import { itemFactory, mockEnvFactory } from 'testverse/setup';
+import { mockEnvFactory } from 'testverse/setup';
 
 import {
   InternalRequestLogEntry,
@@ -23,6 +22,7 @@ import {
 } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { itemToObjectId, itemToStringId } from 'universe/backend/db';
+import { toss } from 'toss-expression';
 
 const { getDb } = setupTestDb();
 
@@ -101,7 +101,7 @@ describe('::getBarks', () => {
     });
   });
 
-  it('functions when no barks in the database', async () => {
+  it('functions when database is empty', async () => {
     expect.hasAssertions();
 
     const db = await getDb();
@@ -151,7 +151,7 @@ describe('::deleteBarks', () => {
         .collection('barks')
         .find({ _id: { $in: testIds.flat() }, deleted: false })
         .count()
-    ).toBe(0);
+    ).toStrictEqual(0);
   });
 
   it('updates summary system metadata', async () => {
@@ -169,7 +169,7 @@ describe('::deleteBarks', () => {
         .collection<InternalInfo>('info')
         .findOne({})
         .then((r) => r?.totalBarks)
-    ).toBe(90);
+    ).toStrictEqual(dummyDbData.info.totalBarks - 10);
   });
 
   it('rejects if bark_ids not found', async () => {
@@ -303,12 +303,14 @@ describe('::isBarkLiked', () => {
 
     const items: [UserId, BarkId, boolean][] = [
       [dummyDbData.users[0]._id, dummyDbData.barks[0]._id, false],
-      [dummyDbData.users[0]._id, dummyDbData.barks[1]._id, true]
+      [dummyDbData.users[0]._id, new ObjectId(dummyDbData.users[0].liked[0]), true]
     ];
 
     await Promise.all(
       items.map(([user_id, bark_id, expectedTruth]) =>
-        expect(Backend.isBarkLiked({ user_id, bark_id })).resolves.toBe(expectedTruth)
+        expect(Backend.isBarkLiked({ user_id, bark_id })).resolves.toStrictEqual(
+          expectedTruth
+        )
       )
     );
   });
@@ -350,6 +352,13 @@ describe('::unlikeBark', () => {
         .count()
     ).not.toStrictEqual(0);
 
+    const totalLikes =
+      (await barks
+        .find({ _id: testBarks[0] })
+        .project<{ totalLikes: number }>({ totalLikes: true })
+        .next()
+        .then((r) => r?.totalLikes)) || toss(new Error('totalLikes was undefined'));
+
     await Promise.all(
       testBarks.map((id) =>
         Backend.unlikeBark({ user_id: dummyDbData.users[0]._id, bark_id: id })
@@ -365,6 +374,13 @@ describe('::unlikeBark', () => {
         .find({ _id: { $in: testBarks }, likes: dummyDbData.users[0]._id })
         .count()
     ).toStrictEqual(0);
+
+    expect(
+      await barks
+        .find({ _id: testBarks[0] })
+        .project({ _id: false, totalLikes: true })
+        .next()
+    ).toStrictEqual({ totalLikes: totalLikes - 1 });
   });
 
   it('does not error if the user never liked the bark', async () => {
@@ -401,22 +417,33 @@ describe('::likeBark', () => {
     expect.hasAssertions();
 
     const db = await getDb();
-    const barks = await db.collection<InternalBark>('barks');
+    const barks = await db.collection<WithId<InternalBark>>('barks');
     const users = await db.collection<InternalUser>('users');
-    const originallyLikedBarks = itemToStringId(dummyDbData.users[0].liked);
+    const originallyLikedBarks = itemToObjectId(dummyDbData.users[0].liked);
     const newlyLikedBarks = dummyDbData.barks
-      .filter((bark) => !originallyLikedBarks.includes(itemToStringId(bark)))
+      .filter(
+        (bark) => !itemToStringId(originallyLikedBarks).includes(itemToStringId(bark))
+      )
       .map<ObjectId>(itemToObjectId);
 
     expect(
-      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked.length)
-    ).toStrictEqual(originallyLikedBarks.length);
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.liked))
+    ).toIncludeSameMembers(originallyLikedBarks);
 
     expect(
       await barks
         .find({ _id: { $in: newlyLikedBarks }, likes: dummyDbData.users[0]._id })
-        .count()
-    ).toStrictEqual(0);
+        .toArray()
+    ).toIncludeSameMembers([]);
+
+    const totalLikes =
+      (await barks
+        .find({ _id: newlyLikedBarks[0] })
+        .project<{ totalLikes: number }>({ totalLikes: true })
+        .next()
+        .then((r) => r?.totalLikes)) || toss(new Error('totalLikes was undefined'));
 
     await Promise.all(
       newlyLikedBarks.map((id) =>
@@ -425,14 +452,24 @@ describe('::likeBark', () => {
     );
 
     expect(
-      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked.length)
-    ).toStrictEqual(originallyLikedBarks.length + newlyLikedBarks.length);
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.liked))
+    ).toIncludeSameMembers([...originallyLikedBarks, ...newlyLikedBarks]);
 
     expect(
       await barks
         .find({ _id: { $in: newlyLikedBarks }, likes: dummyDbData.users[0]._id })
-        .count()
-    ).toStrictEqual(newlyLikedBarks.length);
+        .toArray()
+        .then((b) => itemToObjectId(b))
+    ).toIncludeSameMembers(newlyLikedBarks);
+
+    expect(
+      await barks
+        .find({ _id: newlyLikedBarks[0] })
+        .project({ _id: false, totalLikes: true })
+        .next()
+    ).toStrictEqual({ totalLikes: totalLikes + 1 });
   });
 
   it('does not error if the user already liked the bark', async () => {
@@ -651,12 +688,11 @@ describe('::createBark', () => {
     );
   });
 
-  it('updates summary system metadata', async () => {
+  it('updates user and summary system metadata', async () => {
     expect.hasAssertions();
 
     const db = await getDb();
-
-    await Backend.createBark({
+    const bark_id = await Backend.createBark({
       key: Backend.DUMMY_KEY,
       data: {
         owner: dummyDbData.users[0]._id,
@@ -665,74 +701,248 @@ describe('::createBark', () => {
         barkbackTo: null,
         rebarkOf: null
       }
+    }).then((b) => new ObjectId(b.bark_id));
+
+    expect(
+      await db
+        .collection<InternalBark>('barks')
+        .findOne({ _id: bark_id })
+        .then((r) => [r?.totalBarkbacks, r?.totalRebarks])
+    ).toStrictEqual([0, 0]);
+
+    await Backend.createBark({
+      key: Backend.DUMMY_KEY,
+      data: {
+        owner: dummyDbData.users[0]._id,
+        content: '2',
+        private: false,
+        barkbackTo: bark_id,
+        rebarkOf: null
+      }
     });
+
+    await Backend.createBark({
+      key: Backend.DUMMY_KEY,
+      data: {
+        owner: dummyDbData.users[0]._id,
+        content: '2',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: bark_id
+      }
+    });
+
+    expect(
+      await db
+        .collection<InternalBark>('barks')
+        .findOne({ _id: bark_id })
+        .then((r) => [r?.totalBarkbacks, r?.totalRebarks])
+    ).toStrictEqual([1, 1]);
 
     expect(
       await db
         .collection<InternalInfo>('info')
         .findOne({})
         .then((r) => r?.totalBarks)
-    ).toBe(101);
+    ).toStrictEqual(dummyDbData.info.totalBarks + 3);
   });
 });
 
 describe('::getAllUsers', () => {
+  const reversedUsers = dummyDbData.users.reverse();
+
   it('returns all users', async () => {
     expect.hasAssertions();
+
+    expect(await Backend.getAllUsers({ after: null })).toStrictEqual(
+      reversedUsers.map(toPublicUser)
+    );
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getAllUsers({
+            after: reversedUsers[1]._id
+          }).then((users) => users)
+        ).toStrictEqual(reversedUsers.slice(2, 5).map(toPublicUser));
+      },
+      { RESULTS_PER_PAGE: '3' }
+    );
   });
 
-  it('functions when no users in the database', async () => {
+  it('functions when database is empty', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    await db.collection('barks').deleteMany({});
+    await db.collection('users').deleteMany({});
+
+    expect(await Backend.getAllUsers({ after: null })).toStrictEqual([]);
   });
 });
 
 describe('::getUser', () => {
-  it('returns user by ID', async () => {
+  it('returns user', async () => {
     expect.hasAssertions();
-  });
 
-  it('supports pagination', async () => {
-    expect.hasAssertions();
+    expect(await Backend.getUser({ user_id: dummyDbData.users[0]._id })).toStrictEqual(
+      toPublicUser(dummyDbData.users[0])
+    );
   });
 
   it('rejects if id not found', async () => {
     expect.hasAssertions();
+
+    const id = new ObjectId();
+
+    await expect(Backend.getUser({ user_id: id })).rejects.toMatchObject({
+      message: expect.stringContaining(id.toString())
+    });
   });
 });
 
 describe('::deleteUser', () => {
   it('deletes a user', async () => {
     expect.hasAssertions();
+
+    const users = (await getDb()).collection('users');
+    const user_id = dummyDbData.users[1]._id;
+
+    await users.updateOne({ _id: user_id }, { $set: { deleted: false } });
+    await Backend.deleteUser({ user_id });
+
+    expect(await users.find({ _id: user_id, deleted: false }).count()).toStrictEqual(0);
   });
 
   it('updates summary system metadata', async () => {
     expect.hasAssertions();
+
+    await Backend.deleteUser({ user_id: dummyDbData.users[1]._id });
+
+    expect(
+      await (
+        await getDb()
+      )
+        .collection<InternalInfo>('info')
+        .findOne({})
+        .then((r) => r?.totalUsers)
+    ).toStrictEqual(dummyDbData.info.totalUsers - 1);
   });
 
   it('rejects if id not found', async () => {
     expect.hasAssertions();
+
+    const user_id = new ObjectId();
+
+    await expect(Backend.deleteUser({ user_id })).rejects.toMatchObject({
+      message: expect.stringContaining(user_id.toString())
+    });
   });
 });
 
 describe('::getFollowingUserIds', () => {
   it('returns users that a user is (directly) following', async () => {
     expect.hasAssertions();
+
+    const users = dummyDbData.users.map<[ObjectId, UserId[]]>((u) => [
+      u._id,
+      u.following
+    ]);
+
+    for (const [user_id, expectedIds] of users) {
+      expect(
+        await Backend.getFollowingUserIds({
+          user_id,
+          after: null,
+          includeIndirect: false
+        })
+      ).toStrictEqual(itemToStringId(expectedIds));
+    }
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    const extraUsers = dummyDbData.users.slice(2, 7);
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne(
+        { _id: dummyDbData.users[9]._id },
+        { $push: { following: { $each: itemToObjectId(extraUsers) } } }
+      );
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getFollowingUserIds({
+            user_id: dummyDbData.users[9]._id,
+            after: dummyDbData.users[9].following[0],
+            includeIndirect: false
+          })
+        ).toStrictEqual(
+          [
+            itemToStringId(dummyDbData.users[9].following.slice(1)),
+            itemToStringId(extraUsers)
+          ]
+            .flat()
+            .slice(0, 4)
+        );
+      },
+      { RESULTS_PER_PAGE: '4' }
+    );
   });
 
-  it('functions when user has no followers', async () => {
+  it('functions when user is not following anyone', async () => {
     expect.hasAssertions();
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne({ _id: dummyDbData.users[9]._id }, { $set: { following: [] } });
+
+    expect(
+      await Backend.getFollowingUserIds({
+        user_id: dummyDbData.users[9]._id,
+        after: null,
+        includeIndirect: false
+      })
+    ).toStrictEqual([]);
   });
 
-  it('includeIndirect returns direct and indirect followers', async () => {
+  it('?includeIndirect returns direct and indirect followed users_ids', async () => {
     expect.hasAssertions();
+
+    const getAllFollowers = (id: UserId, recurse = false): UserId[] => {
+      const user =
+        dummyDbData.users.find((user) => user._id.equals(id)) ||
+        toss(new Error('could not find user'));
+
+      return Array.from(
+        new Set([
+          ...user.following,
+          ...(recurse ? [] : user.following.map((id) => getAllFollowers(id, true)).flat())
+        ])
+      );
+    };
+
+    const users = dummyDbData.users.map<[ObjectId, UserId[]]>((u) => [
+      u._id,
+      getAllFollowers(u._id)
+    ]);
+
+    for (const [user_id, expectedIds] of users) {
+      expect(
+        await Backend.getFollowingUserIds({
+          user_id,
+          after: null,
+          includeIndirect: true
+        })
+      ).toStrictEqual(itemToStringId(expectedIds));
+    }
   });
 
   it('rejects if ids not found', async () => {
@@ -758,6 +968,19 @@ describe('::getFollowingUserIds', () => {
 describe('::isUserFollowing', () => {
   it('returns true iff the specified user is following the other', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, boolean][] = [
+      [dummyDbData.users[0]._id, dummyDbData.users[0]._id, false],
+      [dummyDbData.users[0]._id, new ObjectId(dummyDbData.users[0].following[0]), true]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, followed_id, expectedTruth]) =>
+        expect(Backend.isUserFollowing({ user_id, followed_id })).resolves.toStrictEqual(
+          expectedTruth
+        )
+      )
+    );
   });
 
   it('rejects if ids not found', async () => {
@@ -783,14 +1006,34 @@ describe('::isUserFollowing', () => {
 describe('::followUser', () => {
   it('assigns the specified user as a follower of another', async () => {
     expect.hasAssertions();
+
+    const users = await (await getDb()).collection<InternalUser>('users');
+    const followed_id = itemToObjectId(dummyDbData.users[5]);
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToStringId(r?.following))
+    ).not.toStrictEqual(expect.arrayContaining([followed_id.toString()]));
+
+    await Backend.followUser({ user_id: dummyDbData.users[0]._id, followed_id });
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToStringId(r?.following))
+    ).toStrictEqual(expect.arrayContaining([followed_id.toString()]));
   });
 
   it('does not error if the user is already a follower', async () => {
     expect.hasAssertions();
-  });
 
-  it('user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.followUser({
+        user_id: dummyDbData.users[0]._id,
+        followed_id: dummyDbData.users[0].following[0]
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -811,19 +1054,53 @@ describe('::followUser', () => {
       )
     );
   });
+
+  it('user cannot follow themselves', async () => {
+    expect.hasAssertions();
+
+    await expect(
+      Backend.followUser({
+        user_id: dummyDbData.users[0]._id,
+        followed_id: dummyDbData.users[0]._id
+      })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('cannot follow themselves')
+    });
+  });
 });
 
 describe('::unfollowUser', () => {
   it('removes the specified user as a follower of another', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    const users = await db.collection<InternalUser>('users');
+    const testUsers = itemToObjectId(dummyDbData.users[9].following);
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.following)
+    ).not.toStrictEqual([]);
+
+    await Promise.all(
+      testUsers.map((followed_id) =>
+        Backend.unfollowUser({ user_id: dummyDbData.users[9]._id, followed_id })
+      )
+    );
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.following)
+    ).toStrictEqual([]);
   });
 
   it('does not error if the user was never a follower', async () => {
     expect.hasAssertions();
-  });
 
-  it('user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.unfollowUser({
+        user_id: dummyDbData.users[0]._id,
+        followed_id: dummyDbData.users[5]._id
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -849,14 +1126,60 @@ describe('::unfollowUser', () => {
 describe('::getPackmateUserIds', () => {
   it('returns packmates', async () => {
     expect.hasAssertions();
+
+    const users = dummyDbData.users.map<[ObjectId, UserId[]]>((u) => [
+      u._id,
+      u.packmates
+    ]);
+
+    for (const [user_id, expectedIds] of users) {
+      expect(
+        await Backend.getPackmateUserIds({
+          user_id,
+          after: null
+        })
+      ).toStrictEqual(itemToStringId(expectedIds));
+    }
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    const extraUsers = dummyDbData.users.slice(2, 5);
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne(
+        { _id: dummyDbData.users[9]._id },
+        { $push: { packmates: { $each: itemToObjectId(extraUsers) } } }
+      );
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getPackmateUserIds({
+            user_id: dummyDbData.users[9]._id,
+            after: dummyDbData.users[9].packmates[0]
+          })
+        ).toStrictEqual(itemToStringId(extraUsers.slice(0, 2)));
+      },
+      { RESULTS_PER_PAGE: '2' }
+    );
   });
 
   it('functions when user has no packmates', async () => {
     expect.hasAssertions();
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne({ _id: dummyDbData.users[9]._id }, { $set: { packmates: [] } });
+
+    expect(
+      await Backend.getPackmateUserIds({
+        user_id: dummyDbData.users[9]._id,
+        after: null
+      })
+    ).toStrictEqual([]);
   });
 
   it('rejects if ids not found', async () => {
@@ -880,6 +1203,19 @@ describe('::getPackmateUserIds', () => {
 describe('::isUserPackmate', () => {
   it('returns true iff a user is in the pack', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, boolean][] = [
+      [dummyDbData.users[0]._id, dummyDbData.users[0]._id, false],
+      [dummyDbData.users[0]._id, new ObjectId(dummyDbData.users[0].packmates[0]), true]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, packmate_id, expectedTruth]) =>
+        expect(Backend.isUserPackmate({ user_id, packmate_id })).resolves.toStrictEqual(
+          expectedTruth
+        )
+      )
+    );
   });
 
   it('rejects if ids not found', async () => {
@@ -905,14 +1241,41 @@ describe('::isUserPackmate', () => {
 describe('::addPackmate', () => {
   it('adds a user to the pack', async () => {
     expect.hasAssertions();
+
+    const users = await (await getDb()).collection<InternalUser>('users');
+    const originalPackmates = itemToObjectId(dummyDbData.users[0].packmates);
+    const newPackmates = dummyDbData.users
+      .filter((user) => !itemToStringId(originalPackmates).includes(itemToStringId(user)))
+      .map<ObjectId>(itemToObjectId);
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.packmates))
+    ).toIncludeSameMembers(originalPackmates);
+
+    await Promise.all(
+      newPackmates.map((id) =>
+        Backend.addPackmate({ user_id: dummyDbData.users[0]._id, packmate_id: id })
+      )
+    );
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.packmates))
+    ).toIncludeSameMembers([...originalPackmates, ...newPackmates]);
   });
 
-  it('does not error if the user is already in the pack', async () => {
+  it('does not error if the user is already a packmate', async () => {
     expect.hasAssertions();
-  });
 
-  it('user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.addPackmate({
+        user_id: dummyDbData.users[0]._id,
+        packmate_id: dummyDbData.users[0].packmates[0]
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -933,19 +1296,53 @@ describe('::addPackmate', () => {
       )
     );
   });
+
+  it('user cannot add themselves to their own pack', async () => {
+    expect.hasAssertions();
+
+    await expect(
+      Backend.addPackmate({
+        user_id: dummyDbData.users[0]._id,
+        packmate_id: dummyDbData.users[0]._id
+      })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('cannot be in their own pack')
+    });
+  });
 });
 
 describe('::removePackmate', () => {
   it('removes a user from the pack', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    const users = await db.collection<InternalUser>('users');
+    const testUsers = itemToObjectId(dummyDbData.users[9].packmates);
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.packmates)
+    ).not.toStrictEqual([]);
+
+    await Promise.all(
+      testUsers.map((packmate_id) =>
+        Backend.removePackmate({ user_id: dummyDbData.users[9]._id, packmate_id })
+      )
+    );
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.packmates)
+    ).toStrictEqual([]);
   });
 
   it('does not error if the user was never in the pack', async () => {
     expect.hasAssertions();
-  });
 
-  it('user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.removePackmate({
+        user_id: dummyDbData.users[0]._id,
+        packmate_id: dummyDbData.users[0]._id
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -971,14 +1368,57 @@ describe('::removePackmate', () => {
 describe('::getBookmarkedBarkIds', () => {
   it('returns barks that a user bookmarked', async () => {
     expect.hasAssertions();
+
+    const users = dummyDbData.users.map<[ObjectId, BarkId[]]>((u) => [
+      u._id,
+      u.bookmarked
+    ]);
+
+    for (const [user_id, expectedIds] of users) {
+      expect(await Backend.getBookmarkedBarkIds({ user_id, after: null })).toStrictEqual(
+        itemToStringId(expectedIds)
+      );
+    }
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    const extraBarks = dummyDbData.barks.slice(0, 5);
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne(
+        { _id: dummyDbData.users[9]._id },
+        { $push: { bookmarked: { $each: itemToObjectId(extraBarks) } } }
+      );
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getBookmarkedBarkIds({
+            user_id: dummyDbData.users[9]._id,
+            after: dummyDbData.users[9].bookmarked[0]
+          })
+        ).toStrictEqual(itemToStringId(extraBarks.slice(0, 3)));
+      },
+      { RESULTS_PER_PAGE: '3' }
+    );
   });
 
   it('functions when user has no bookmarked barks', async () => {
     expect.hasAssertions();
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne({ _id: dummyDbData.users[9]._id }, { $set: { bookmarked: [] } });
+
+    expect(
+      await Backend.getBookmarkedBarkIds({
+        user_id: dummyDbData.users[9]._id,
+        after: null
+      })
+    ).toStrictEqual([]);
   });
 
   it('rejects if ids not found', async () => {
@@ -1002,6 +1442,19 @@ describe('::getBookmarkedBarkIds', () => {
 describe('::isBarkBookmarked', () => {
   it('returns true iff a bark is bookmarked', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, boolean][] = [
+      [dummyDbData.users[0]._id, dummyDbData.barks[0]._id, false],
+      [dummyDbData.users[0]._id, new ObjectId(dummyDbData.users[0].bookmarked[0]), true]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, expectedTruth]) =>
+        expect(Backend.isBarkBookmarked({ user_id, bark_id })).resolves.toStrictEqual(
+          expectedTruth
+        )
+      )
+    );
   });
 
   it('rejects if ids not found', async () => {
@@ -1025,14 +1478,41 @@ describe('::isBarkBookmarked', () => {
 describe('::bookmarkBark', () => {
   it('bookmarks a bark', async () => {
     expect.hasAssertions();
+
+    const users = await (await getDb()).collection<InternalUser>('users');
+    const originalBookmarks = itemToObjectId(dummyDbData.users[0].bookmarked);
+    const newBookmarkedBarks = dummyDbData.barks
+      .filter((bark) => !itemToStringId(originalBookmarks).includes(itemToStringId(bark)))
+      .map<ObjectId>(itemToObjectId);
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.bookmarked))
+    ).toIncludeSameMembers(originalBookmarks);
+
+    await Promise.all(
+      newBookmarkedBarks.map((id) =>
+        Backend.bookmarkBark({ user_id: dummyDbData.users[0]._id, bark_id: id })
+      )
+    );
+
+    expect(
+      await users
+        .findOne({ _id: dummyDbData.users[0]._id })
+        .then((r) => itemToObjectId(r?.bookmarked))
+    ).toIncludeSameMembers([...originalBookmarks, ...newBookmarkedBarks]);
   });
 
   it('does not error if the user has already bookmarked the bark', async () => {
     expect.hasAssertions();
-  });
 
-  it('bark and user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.bookmarkBark({
+        user_id: dummyDbData.users[0]._id,
+        bark_id: dummyDbData.users[0].bookmarked[0]
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -1056,14 +1536,35 @@ describe('::bookmarkBark', () => {
 describe('::unbookmarkBark', () => {
   it('unbookmarks a bark', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    const users = await db.collection<InternalUser>('users');
+    const testBarks = itemToObjectId(dummyDbData.users[9].bookmarked);
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.bookmarked)
+    ).not.toStrictEqual([]);
+
+    await Promise.all(
+      testBarks.map((bark_id) =>
+        Backend.unbookmarkBark({ user_id: dummyDbData.users[9]._id, bark_id })
+      )
+    );
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[9]._id }).then((r) => r?.bookmarked)
+    ).toStrictEqual([]);
   });
 
   it('does not error if the user never bookmarked the bark', async () => {
     expect.hasAssertions();
-  });
 
-  it('bark and user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.unbookmarkBark({
+        user_id: dummyDbData.users[0]._id,
+        bark_id: dummyDbData.barks[0]._id
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
@@ -1341,7 +1842,7 @@ describe('::createUser', () => {
         .collection<InternalInfo>('info')
         .findOne({})
         .then((r) => r?.totalUsers)
-    ).toBe(11);
+    ).toStrictEqual(dummyDbData.info.totalUsers + 1);
   });
 });
 
@@ -1585,8 +2086,8 @@ describe('::getApiKeys', () => {
 
     const keys = await Backend.getApiKeys();
 
-    expect(keys).toIncludeSameMembers(
-      dummyDbData.keys.map<InternalApiKey>((k) => ({
+    expect(keys).toStrictEqual(
+      dummyDbData.keys.map(() => ({
         owner: expect.any(String),
         key: expect.any(String)
       }))

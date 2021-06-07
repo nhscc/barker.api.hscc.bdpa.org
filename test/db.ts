@@ -23,6 +23,7 @@ import type {
   InternalUser,
   InternalInfo
 } from 'types/global';
+import { toss } from 'toss-expression';
 
 export type DummyDbData = {
   keys: WithId<InternalApiKey>[];
@@ -109,10 +110,12 @@ dummyDbData.barks = Array.from({ length: 100 }).map<WithId<InternalBark>>((_, nd
 
 dummyDbData.users.forEach((user, ndx, arr) => {
   user.following = arr
-    .slice((ndx + 1) % arr.length, (ndx + (ndx % 2 == 0 ? 2 : 3)) % arr.length)
+    .slice((ndx + 1) % arr.length, ((ndx + 1) % arr.length) + (ndx % 2 == 0 ? 2 : 3))
     .map((internal) => internal._id);
 
-  user.packmates = [user.following[0]];
+  user.packmates = user.following[0]
+    ? [user.following[0]]
+    : toss(new Error('failed to generate any followers and packmates'));
 
   user.liked = dummyDbData.barks
     .slice(
@@ -125,7 +128,9 @@ dummyDbData.users.forEach((user, ndx, arr) => {
     .filter((bark) => user.liked.includes(bark._id))
     .forEach((bark) => bark.likes.push(user._id));
 
-  user.bookmarked = [user.liked[5]];
+  user.bookmarked = user.liked[5]
+    ? [user.liked[5]]
+    : toss(new Error('failed to generate any bookmarks'));
 });
 
 export async function hydrateDb(db: Db, data: DummyDbData) {
