@@ -30,7 +30,8 @@ import type {
   NewUser,
   InternalInfo,
   InternalBark,
-  InternalUser
+  InternalUser,
+  UserId
 } from 'types/global';
 
 const isObject = (object: unknown) =>
@@ -110,6 +111,69 @@ export const publicUserProjection = {
   deleted: true
 };
 
+export const indirectFollowersAggregation = (user_id: UserId, after: UserId | null) => [
+  { $match: { _id: user_id } },
+  {
+    $lookup: {
+      from: 'users',
+      localField: 'following',
+      foreignField: '_id',
+      as: 'following_ids'
+    }
+  },
+  {
+    $project: {
+      following: true,
+      following_ids: {
+        $reduce: {
+          input: '$following_ids.following',
+          initialValue: [],
+          in: {
+            $concatArrays: ['$$value', '$$this']
+          }
+        }
+      }
+    }
+  },
+  {
+    $project: {
+      _id: false,
+      following_ids: {
+        $setUnion: ['$following_ids', '$following']
+      }
+    }
+  },
+  {
+    $unwind: {
+      path: '$following_ids'
+    }
+  },
+  {
+    $replaceRoot: {
+      newRoot: {
+        _id: '$following_ids'
+      }
+    }
+  },
+  ...(after
+    ? [
+        {
+          $match: {
+            _id: { $lt: after }
+          }
+        }
+      ]
+    : []),
+  {
+    $sort: {
+      _id: -1
+    }
+  },
+  {
+    $limit: getEnv().RESULTS_PER_PAGE
+  }
+];
+
 export async function getSystemInfo(): Promise<InternalInfo> {
   return (
     (await (await getDb())
@@ -158,12 +222,15 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
   } else if (!bark_ids.every((id) => id instanceof ObjectId)) {
     throw new InvalidIdError();
   } else if (bark_ids.length) {
-    const numUpdated = await (
-      await getDb()
-    )
+    const db = await getDb();
+    const numUpdated = await db
       .collection<InternalBark>('barks')
       .updateMany({ _id: { $in: bark_ids } }, { $set: { deleted: true } })
       .then((r) => r.matchedCount);
+
+    await db
+      .collection<InternalInfo>('info')
+      .updateOne({}, { $inc: { totalBarks: -numUpdated } });
 
     if (numUpdated != bark_ids.length) {
       throw new NotFoundError('some or all bark_ids could not be found');
@@ -303,7 +370,10 @@ export async function unlikeBark({
 
     await Promise.all([
       users.updateOne({ _id: user_id }, { $pull: { liked: bark_id } }),
-      barks.updateOne({ _id: bark_id }, { $pull: { likes: user_id } })
+      barks.updateOne(
+        { _id: bark_id },
+        { $pull: { likes: user_id }, $inc: { totalLikes: -1 } }
+      )
     ]);
   }
 }
@@ -334,7 +404,7 @@ export async function likeBark({
       ),
       barks.updateOne(
         { _id: bark_id, liked: { $ne: bark_id } },
-        { $push: { likes: { $each: [user_id], $position: 0 } } }
+        { $push: { likes: { $each: [user_id], $position: 0 } }, $inc: { totalLikes: 1 } }
       )
     ]);
   }
@@ -409,6 +479,14 @@ export async function createBark({
   };
 
   await barks.insertOne(newBark);
+  await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalBarks: 1 } });
+
+  if (barkbackTo) {
+    await barks.updateOne({ _id: barkbackTo }, { $inc: { totalBarkbacks: 1 } });
+  } else if (rebarkOf) {
+    await barks.updateOne({ _id: rebarkOf }, { $inc: { totalRebarks: 1 } });
+  }
+
   return getBarks({ bark_ids: [(newBark as WithId<InternalBark>)._id] }).then(
     (ids) => ids[0]
   );
@@ -463,6 +541,7 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
 
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
     await users.updateOne({ _id: user_id }, { $set: { deleted: true } });
+    await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: -1 } });
   }
 }
 
@@ -491,21 +570,26 @@ export async function getFollowingUserIds({
       throw new ItemNotFoundError(after);
     }
 
-    return (
-      (await users
-        .find({ _id: user_id })
-        .project<{ following: ObjectId[] }>({
-          following: {
-            $slice: [
-              '$following',
-              after ? { $sum: [{ $indexOfArray: ['$following', after] }, 1] } : 0,
-              getEnv().RESULTS_PER_PAGE
-            ]
-          }
-        })
-        .next()
-        .then((r) => itemToStringId(r?.following))) ?? toss(new GuruMeditationError())
-    );
+    const result = includeIndirect
+      ? await users
+          .aggregate<{ _id: ObjectId }>(indirectFollowersAggregation(user_id, after))
+          .toArray()
+          .then(itemToStringId)
+      : await users
+          .find({ _id: user_id })
+          .project<{ following: ObjectId[] }>({
+            following: {
+              $slice: [
+                '$following',
+                after ? { $sum: [{ $indexOfArray: ['$following', after] }, 1] } : 0,
+                getEnv().RESULTS_PER_PAGE
+              ]
+            }
+          })
+          .next()
+          .then((r) => itemToStringId(r?.following));
+
+    return result ?? toss(new GuruMeditationError());
   }
 }
 
@@ -550,6 +634,8 @@ export async function followUser({
     throw new InvalidIdError(followed_id);
   } else if (!(user_id instanceof ObjectId)) {
     throw new InvalidIdError(user_id);
+  } else if (user_id.equals(followed_id)) {
+    throw new ValidationError('users cannot follow themselves');
   } else {
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
@@ -666,6 +752,8 @@ export async function addPackmate({
     throw new InvalidIdError(packmate_id);
   } else if (!(user_id instanceof ObjectId)) {
     throw new InvalidIdError(user_id);
+  } else if (user_id.equals(packmate_id)) {
+    throw new ValidationError('users cannot add themselves to their own pack');
   } else {
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
@@ -883,7 +971,10 @@ export async function createUser({
     }
   };
 
-  await (await getDb()).collection<InternalUser>('users').insertOne(newUser);
+  const db = await getDb();
+  await db.collection<InternalUser>('users').insertOne(newUser);
+  await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: 1 } });
+
   return getUser({ user_id: (newUser as WithId<InternalUser>)._id });
 }
 

@@ -854,6 +854,29 @@ describe('::deleteUser', () => {
 });
 
 describe('::getFollowingUserIds', () => {
+  const getAllFollowers = async (id: UserId, recurse = false) => {
+    const findUser = (uid: UserId) =>
+      dummyDbData.users.find((user) => user._id.equals(uid)) ||
+      toss(new Error('could not find user'));
+
+    const user = findUser(id);
+
+    const ids = Array.from(
+      new Set([
+        ...user.following,
+        ...(recurse ? [] : user.following.map((id) => findUser(id).following).flat())
+      ])
+    );
+
+    return (await getDb())
+      .collection<InternalUser>('users')
+      .find({ _id: { $in: ids } })
+      .sort({ _id: -1 })
+      .project<WithId<unknown>>({ _id: true })
+      .toArray()
+      .then(itemToObjectId);
+  };
+
   it('returns users that a user is (directly) following', async () => {
     expect.hasAssertions();
 
@@ -925,23 +948,11 @@ describe('::getFollowingUserIds', () => {
   it('?includeIndirect returns direct and indirect followed users_ids', async () => {
     expect.hasAssertions();
 
-    const getAllFollowers = (id: UserId, recurse = false): UserId[] => {
-      const user =
-        dummyDbData.users.find((user) => user._id.equals(id)) ||
-        toss(new Error('could not find user'));
-
-      return Array.from(
-        new Set([
-          ...user.following,
-          ...(recurse ? [] : user.following.map((id) => getAllFollowers(id, true)).flat())
-        ])
-      );
-    };
-
-    const users = dummyDbData.users.map<[ObjectId, UserId[]]>((u) => [
-      u._id,
-      getAllFollowers(u._id)
-    ]);
+    const users = await Promise.all(
+      dummyDbData.users.map(
+        async (u) => [u._id, await getAllFollowers(u._id)] as [ObjectId, UserId[]]
+      )
+    );
 
     for (const [user_id, expectedIds] of users) {
       expect(
@@ -952,6 +963,42 @@ describe('::getFollowingUserIds', () => {
         })
       ).toStrictEqual(itemToStringId(expectedIds));
     }
+  });
+
+  it('supports pagination with ?includeIndirect', async () => {
+    expect.hasAssertions();
+
+    const target = dummyDbData.users[9]._id;
+    const expectedIds = await getAllFollowers(target);
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getFollowingUserIds({
+            user_id: target,
+            after: null,
+            includeIndirect: true
+          })
+        ).toStrictEqual(itemToStringId([expectedIds[0]]));
+
+        expect(
+          await Backend.getFollowingUserIds({
+            user_id: target,
+            after: expectedIds[0],
+            includeIndirect: true
+          })
+        ).toStrictEqual(itemToStringId([expectedIds[1]]));
+
+        expect(
+          await Backend.getFollowingUserIds({
+            user_id: target,
+            after: expectedIds[1],
+            includeIndirect: true
+          })
+        ).toStrictEqual(itemToStringId([expectedIds[2]]));
+      },
+      { RESULTS_PER_PAGE: '1' }
+    );
   });
 
   it('rejects if ids not found', async () => {
@@ -1252,27 +1299,28 @@ describe('::addPackmate', () => {
     expect.hasAssertions();
 
     const users = await (await getDb()).collection<InternalUser>('users');
-    const originalPackmates = itemToObjectId(dummyDbData.users[0].packmates);
+    const target = dummyDbData.users[0];
+    const originalPackmates = itemToObjectId(target.packmates);
     const newPackmates = dummyDbData.users
-      .filter((user) => !itemToStringId(originalPackmates).includes(itemToStringId(user)))
+      .filter(
+        (user) =>
+          !user._id.equals(target._id) &&
+          !itemToStringId(originalPackmates).includes(itemToStringId(user))
+      )
       .map<ObjectId>(itemToObjectId);
 
     expect(
-      await users
-        .findOne({ _id: dummyDbData.users[0]._id })
-        .then((r) => itemToObjectId(r?.packmates))
+      await users.findOne({ _id: target._id }).then((r) => itemToObjectId(r?.packmates))
     ).toIncludeSameMembers(originalPackmates);
 
     await Promise.all(
-      newPackmates.map((id) =>
-        Backend.addPackmate({ user_id: dummyDbData.users[0]._id, packmate_id: id })
+      newPackmates.map((packmate_id) =>
+        Backend.addPackmate({ user_id: target._id, packmate_id })
       )
     );
 
     expect(
-      await users
-        .findOne({ _id: dummyDbData.users[0]._id })
-        .then((r) => itemToObjectId(r?.packmates))
+      await users.findOne({ _id: target._id }).then((r) => itemToObjectId(r?.packmates))
     ).toIncludeSameMembers([...originalPackmates, ...newPackmates]);
   });
 
@@ -1315,7 +1363,7 @@ describe('::addPackmate', () => {
         packmate_id: dummyDbData.users[0]._id
       })
     ).rejects.toMatchObject({
-      message: expect.stringContaining('cannot be in their own pack')
+      message: expect.stringContaining('cannot add themselves to')
     });
   });
 });
