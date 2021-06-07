@@ -24,7 +24,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
       if (after !== undefined) {
         if (req.method == 'GET') {
-          sendHttpOk(res, { users: await getAllUsers({ key, after }) });
+          sendHttpOk(res, { users: await getAllUsers({ after }) });
         } else sendHttpOk(res, { user: await createUser({ key, data: req.body }) });
       }
     },

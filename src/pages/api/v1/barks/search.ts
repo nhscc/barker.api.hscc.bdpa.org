@@ -11,7 +11,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let after: ObjectId | null | undefined = undefined;
       let match: Record<string, unknown> | undefined = undefined;
       let regexMatch: Record<string, unknown> | undefined = undefined;
@@ -35,7 +34,6 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         if (match && regexMatch) {
           sendHttpOk(res, {
             barks: await searchBarks({
-              key,
               after,
               // @ts-expect-error: validation is handled
               match,

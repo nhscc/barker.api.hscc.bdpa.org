@@ -16,6 +16,7 @@ import {
 import {
   GuruMeditationError,
   NotFoundError,
+  ItemNotFoundError,
   NotAuthorizedError,
   InvalidIdError,
   InvalidKeyError,
@@ -128,7 +129,7 @@ export async function wrapHandler(
       sendHttpBadRequest(finalRes, error.message ? { error: error.message } : {});
     } else if (error instanceof NotAuthorizedError) {
       sendHttpUnauthorized(finalRes);
-    } else if (error instanceof NotFoundError) {
+    } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
       sendHttpNotFound(finalRes);
     } else if (error instanceof AppError) {
       sendHttpError(finalRes, error.message ? { error: error.message } : {});

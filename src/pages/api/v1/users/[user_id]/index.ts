@@ -11,7 +11,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let user_id: ObjectId | undefined = undefined;
 
       try {
@@ -24,12 +23,12 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
       if (user_id !== undefined) {
         if (req.method == 'GET') {
-          sendHttpOk(res, { user: await getUser({ key, user_id }) });
+          sendHttpOk(res, { user: await getUser({ user_id }) });
         } else if (req.method == 'DELETE') {
-          await deleteUser({ key, user_id });
+          await deleteUser({ user_id });
           sendHttpOk(res);
         } else {
-          await updateUser({ key, user_id, data: req.body });
+          await updateUser({ user_id, data: req.body });
           sendHttpOk(res);
         }
       }

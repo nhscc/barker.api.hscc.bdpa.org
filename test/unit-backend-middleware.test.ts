@@ -20,6 +20,7 @@ import {
   ActivityGenerationError,
   NotAuthorizedError,
   NotFoundError,
+  ItemNotFoundError,
   AppError,
   GuruMeditationError,
   ActivitySimulationError
@@ -274,6 +275,7 @@ describe('::handleEndpoint', () => {
       [new ActivitySimulationError(), 500],
       [new NotAuthorizedError(), 403],
       [new NotFoundError(), 404],
+      [new ItemNotFoundError(), 404],
       [new AppError(), 500],
       [new GuruMeditationError(), 500],
       [new Error(), 500]

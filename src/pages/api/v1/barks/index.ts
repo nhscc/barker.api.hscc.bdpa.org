@@ -26,7 +26,6 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         if (req.method == 'GET') {
           sendHttpOk(res, {
             barks: await searchBarks({
-              key,
               after,
               match: {},
               regexMatch: {}

@@ -16,7 +16,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let followed_id: ObjectId | undefined = undefined;
       let user_id: ObjectId | undefined = undefined;
 
@@ -39,14 +38,14 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
         if (user_id !== undefined) {
           if (req.method == 'GET') {
-            (await isUserFollowing({ key, followed_id, user_id }))
+            (await isUserFollowing({ followed_id, user_id }))
               ? sendHttpOk(res)
               : sendHttpNotFound(res);
           } else if (req.method == 'DELETE') {
-            await unfollowUser({ key, followed_id, user_id });
+            await unfollowUser({ followed_id, user_id });
             sendHttpOk(res);
           } else {
-            await followUser({ key, followed_id, user_id });
+            await followUser({ followed_id, user_id });
             sendHttpOk(res);
           }
         }

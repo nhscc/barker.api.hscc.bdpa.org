@@ -11,7 +11,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let after: ObjectId | null | undefined = undefined;
       let user_id: ObjectId | undefined = undefined;
       const includeIndirect = req.query.includeIndirect !== undefined;
@@ -35,7 +34,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
         if (user_id !== undefined) {
           sendHttpOk(res, {
-            users: await getFollowingUserIds({ key, user_id, includeIndirect, after })
+            users: await getFollowingUserIds({ user_id, includeIndirect, after })
           });
         }
       }

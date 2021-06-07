@@ -16,7 +16,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let packmate_id: ObjectId | undefined = undefined;
       let user_id: ObjectId | undefined = undefined;
 
@@ -39,14 +38,14 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
         if (user_id !== undefined) {
           if (req.method == 'GET') {
-            (await isUserPackmate({ key, packmate_id, user_id }))
+            (await isUserPackmate({ packmate_id, user_id }))
               ? sendHttpOk(res)
               : sendHttpNotFound(res);
           } else if (req.method == 'DELETE') {
-            await removePackmate({ key, packmate_id, user_id });
+            await removePackmate({ packmate_id, user_id });
             sendHttpOk(res);
           } else {
-            await addPackmate({ key, packmate_id, user_id });
+            await addPackmate({ packmate_id, user_id });
             sendHttpOk(res);
           }
         }

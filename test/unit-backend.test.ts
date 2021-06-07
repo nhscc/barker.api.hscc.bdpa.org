@@ -5,59 +5,155 @@ import { getEnv } from 'universe/backend/env';
 import { setupTestDb, dummyDbData } from 'testverse/db';
 import { itemFactory, mockEnvFactory } from 'testverse/setup';
 
-import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
+import {
+  InternalRequestLogEntry,
+  InternalLimitedLogEntry,
+  InternalInfo,
+  InternalUser,
+  PublicUser,
+  PublicBark,
+  InternalBark
+} from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const { getDb } = setupTestDb();
 
+const withMockedEnv = mockEnvFactory({}, { replace: false });
+
+const toPublicUser = (internal: WithId<InternalUser>): PublicUser => ({
+  user_id: internal._id.toString(),
+  name: internal.name,
+  email: internal.email,
+  phone: internal.phone,
+  username: internal.username,
+  packmates: internal.packmates.length,
+  following: internal.following.length,
+  bookmarked: internal.bookmarked.length,
+  liked: internal.liked.length,
+  deleted: internal.deleted
+});
+
+const toPublicBark = (internal: WithId<InternalBark>): PublicBark => ({
+  bark_id: internal._id.toString(),
+  likes: internal.totalLikes,
+  rebarks: internal.totalRebarks,
+  barkbacks: internal.totalBarkbacks,
+  owner: internal.owner,
+  content: internal.content,
+  createdAt: internal.createdAt,
+  deleted: internal.deleted,
+  private: internal.private,
+  barkbackTo: internal.barkbackTo,
+  rebarkOf: internal.rebarkOf
+});
+
 describe('::getSystemInfo', () => {
   it('returns summary system metadata', async () => {
     expect.hasAssertions();
+    expect(await Backend.getSystemInfo()).toStrictEqual<InternalInfo>({
+      totalBarks: dummyDbData.info.totalBarks,
+      totalUsers: dummyDbData.info.totalUsers
+    });
   });
 
   it('functions when the database is empty', async () => {
     expect.hasAssertions();
+
+    await (await getDb())
+      .collection('info')
+      .updateOne({}, { $set: { totalBarks: 0, totalUsers: 0 } });
+
+    expect(await Backend.getSystemInfo()).toStrictEqual<InternalInfo>({
+      totalBarks: 0,
+      totalUsers: 0
+    });
   });
 });
 
 describe('::getBarks', () => {
-  it('returns one or more barks by ID in LIFO order', async () => {
+  it('returns one or more barks by ID', async () => {
     expect.hasAssertions();
+
+    const testBarks = [[], [dummyDbData.barks[0]], dummyDbData.barks.slice(10, 20)];
+
+    await Promise.all(
+      testBarks.map((barks) =>
+        expect(
+          Backend.getBarks({ bark_ids: barks.map((b) => b._id) })
+        ).resolves.toIncludeSameMembers(barks.map(toPublicBark))
+      )
+    );
   });
 
-  it('supports pagination', async () => {
+  it('rejects if bark_ids not found', async () => {
     expect.hasAssertions();
+
+    await expect(Backend.getBarks({ bark_ids: [new ObjectId()] })).rejects.toMatchObject({
+      message: expect.stringContaining('some or all')
+    });
   });
 
   it('functions when no barks in the database', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    await db.collection('barks').deleteMany({});
+    await db.collection('users').deleteMany({});
+
+    await expect(
+      Backend.getBarks({ bark_ids: [dummyDbData.barks[0]._id] })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('some or all')
+    });
   });
 
-  it('throws if ID(s) not found', async () => {
+  it('rejects if too many bark_ids requested', async () => {
     expect.hasAssertions();
-  });
 
-  it('throws if too many IDs requested', async () => {
-    expect.hasAssertions();
+    await withMockedEnv(
+      async () => {
+        await expect(
+          Backend.getBarks({ bark_ids: [new ObjectId(), new ObjectId()] })
+        ).rejects.toMatchObject({
+          message: expect.stringContaining('too many')
+        });
+      },
+      { RESULTS_PER_PAGE: '1' }
+    );
   });
 });
 
 describe('::deleteBarks', () => {
-  it('system metadata is updated upon bark deletion', async () => {
+  it('deletes one or more barks and updates system metadata', async () => {
+    expect.hasAssertions();
+
+    const testIds = [[], [dummyDbData.barks[0]], dummyDbData.barks.slice(10, 20)].map(
+      (barks) => barks.map((bark) => bark._id)
+    );
+
+    await Promise.all(testIds.map((bark_ids) => Backend.deleteBarks({ bark_ids })));
+
+    expect(
+      await (
+        await getDb()
+      )
+        .collection('barks')
+        .find({ _id: { $in: testIds.flat() } })
+        .count()
+    ).toBe(0);
+  });
+
+  it('rejects if bark_ids not found', async () => {
     expect.hasAssertions();
   });
 
-  it('throws if ID(s) not found', async () => {
-    expect.hasAssertions();
-  });
-
-  it('throws if too many IDs requested', async () => {
+  it('rejects if too many bark_id requested', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getBarkLikesUserIds', () => {
-  it('returns IDs of users that liked a bark in LIFO order', async () => {
+  it('returns user_ids that liked a bark in LIFO order', async () => {
     expect.hasAssertions();
   });
 
@@ -69,13 +165,13 @@ describe('::getBarkLikesUserIds', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ID not found', async () => {
+  it('rejects if bark_id not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getUserLikedBarkIds', () => {
-  it('returns IDs of barks that a user liked in LIFO order', async () => {
+  it('returns bark_id of barks that a user liked in LIFO order', async () => {
     expect.hasAssertions();
   });
 
@@ -87,7 +183,7 @@ describe('::getUserLikedBarkIds', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ID not found', async () => {
+  it('rejects if ID not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -97,7 +193,7 @@ describe('::isBarkLiked', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -149,7 +245,7 @@ describe('::unlikeBark', () => {
     });
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -167,7 +263,7 @@ describe('::likeBark', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -351,7 +447,7 @@ describe('::getUser', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ID not found', async () => {
+  it('rejects if ID not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -361,13 +457,13 @@ describe('::deleteUser', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ID not found', async () => {
+  it('rejects if ID not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getFollowingUserIds', () => {
-  it('returns IDs of users that a user is following in LIFO order', async () => {
+  it('returns users that a user is following in LIFO order', async () => {
     expect.hasAssertions();
   });
 
@@ -383,7 +479,7 @@ describe('::getFollowingUserIds', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -393,7 +489,7 @@ describe('::isUserFollowing', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -411,7 +507,7 @@ describe('::followUser', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -429,13 +525,13 @@ describe('::unfollowUser', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getPackmateUserIds', () => {
-  it('returns IDs of packmates in LIFO order', async () => {
+  it('returns packmates in LIFO order', async () => {
     expect.hasAssertions();
   });
 
@@ -447,7 +543,7 @@ describe('::getPackmateUserIds', () => {
     expect.hasAssertions();
   });
 
-  it('throws if id not found', async () => {
+  it('rejects if id not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -457,7 +553,7 @@ describe('::isUserPackmate', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -475,7 +571,7 @@ describe('::addPackmate', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -493,13 +589,13 @@ describe('::removePackmate', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getBookmarkedBarkIds', () => {
-  it('returns IDs of barks that a user bookmarked in LIFO order', async () => {
+  it('returns barks that a user bookmarked in LIFO order', async () => {
     expect.hasAssertions();
   });
 
@@ -511,7 +607,7 @@ describe('::getBookmarkedBarkIds', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -521,7 +617,7 @@ describe('::isBarkBookmarked', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -539,7 +635,7 @@ describe('::bookmarkBark', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -557,7 +653,7 @@ describe('::unbookmarkBark', () => {
     expect.hasAssertions();
   });
 
-  it('throws if ids not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
   });
 });
@@ -739,7 +835,7 @@ describe('::updateUser', () => {
     expect.hasAssertions();
   });
 
-  it('throws if id not found', async () => {
+  it('rejects if id not found', async () => {
     expect.hasAssertions();
   });
 });

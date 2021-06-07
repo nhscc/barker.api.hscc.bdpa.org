@@ -10,7 +10,7 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ res }) => {
-      sendHttpOk(res, await getSystemInfo({ key: req.headers.key?.toString() || '' }));
+      sendHttpOk(res, await getSystemInfo());
     },
     { req, res, methods: ['GET'], apiVersion: 1 }
   );

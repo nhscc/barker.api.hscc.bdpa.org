@@ -16,7 +16,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let bark_ids: ObjectId[] | undefined = undefined;
 
       try {
@@ -29,13 +28,13 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
       if (bark_ids !== undefined) {
         if (req.method == 'GET') {
-          const barks = await getBarks({ key, bark_ids });
+          const barks = await getBarks({ bark_ids });
 
           if (barks.length != bark_ids.length) {
             sendHttpNotFound(res, { error: 'duplicate bark_id(s)' });
           } else sendHttpOk(res, { barks });
         } else {
-          await deleteBarks({ key, bark_ids });
+          await deleteBarks({ bark_ids });
           sendHttpOk(res);
         }
       }

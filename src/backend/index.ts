@@ -11,7 +11,8 @@ import {
   InvalidKeyError,
   ValidationError,
   GuruMeditationError,
-  NotFoundError
+  NotFoundError,
+  ItemNotFoundError
 } from 'universe/backend/error';
 
 import type { NextApiRequest } from 'next';
@@ -98,11 +99,10 @@ export const publicUserProjection = {
 
 export async function getSystemInfo(): Promise<InternalInfo> {
   return (
-    (await (
-      await getDb()
-    )
+    (await (await getDb())
       .collection<InternalInfo>('info')
-      .aggregate([{ $project: { _id: -1 } }])
+      .find()
+      .project({ _id: false })
       .next()) ?? toss(new GuruMeditationError())
   );
 }
@@ -175,9 +175,9 @@ export async function getBarkLikesUserIds({
     const users = db.collection<InternalUser>('users');
 
     if (!(await idExists(barks, bark_id))) {
-      throw new NotFoundError(bark_id);
+      throw new ItemNotFoundError(bark_id);
     } else if (after && !(await idExists(users, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return (
@@ -216,9 +216,9 @@ export async function getUserLikedBarkIds({
     const barks = db.collection<InternalBark>('barks');
 
     if (!(await idExists(users, user_id))) {
-      throw new NotFoundError(user_id);
+      throw new ItemNotFoundError(user_id);
     } else if (after && !(await idExists(barks, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return (
@@ -256,8 +256,8 @@ export async function isBarkLiked({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await barks
@@ -287,8 +287,8 @@ export async function unlikeBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await Promise.all([
       users.updateOne({ _id: user_id }, { $pull: { liked: bark_id } }),
@@ -313,8 +313,8 @@ export async function likeBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await Promise.all([
       users.updateOne({ _id: user_id }, { $addToSet: { liked: bark_id } }),
@@ -396,7 +396,7 @@ export async function getAllUsers({
     const users = db.collection<InternalUser>('users');
 
     if (after && !(await idExists(users, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return users
@@ -419,7 +419,7 @@ export async function getUser({ user_id }: { user_id: ObjectId }): Promise<Publi
       (await users
         .find({ _id: user_id })
         .project<PublicUser>(publicUserProjection)
-        .next()) ?? toss(new NotFoundError(user_id))
+        .next()) ?? toss(new ItemNotFoundError(user_id))
     );
   }
 }
@@ -431,7 +431,7 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
     await users.updateOne({ _id: { $in: user_id } }, { $set: { deleted: true } });
   }
 }
@@ -456,9 +456,9 @@ export async function getFollowingUserIds({
     const users = db.collection<InternalUser>('users');
 
     if (!(await idExists(users, user_id))) {
-      throw new NotFoundError(user_id);
+      throw new ItemNotFoundError(user_id);
     } else if (after && !(await idExists(users, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return (
@@ -495,8 +495,8 @@ export async function isUserFollowing({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new NotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -525,8 +525,8 @@ export async function followUser({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new NotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { following: followed_id } });
   }
@@ -547,8 +547,8 @@ export async function unfollowUser({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new NotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { following: followed_id } });
   }
@@ -570,9 +570,9 @@ export async function getPackmateUserIds({
     const users = db.collection<InternalUser>('users');
 
     if (!(await idExists(users, user_id))) {
-      throw new NotFoundError(user_id);
+      throw new ItemNotFoundError(user_id);
     } else if (after && !(await idExists(users, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return (
@@ -609,8 +609,8 @@ export async function isUserPackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new NotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -639,8 +639,8 @@ export async function addPackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new NotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { packmates: packmate_id } });
   }
@@ -661,8 +661,8 @@ export async function removePackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new NotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { packmates: packmate_id } });
   }
@@ -685,9 +685,9 @@ export async function getBookmarkedBarkIds({
     const barks = db.collection<InternalBark>('barks');
 
     if (!(await idExists(users, user_id))) {
-      throw new NotFoundError(user_id);
+      throw new ItemNotFoundError(user_id);
     } else if (after && !(await idExists(barks, after))) {
-      throw new NotFoundError(after);
+      throw new ItemNotFoundError(after);
     }
 
     return (
@@ -725,8 +725,8 @@ export async function isBarkBookmarked({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -756,8 +756,8 @@ export async function bookmarkBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $addToSet: { bookmarked: bark_id } });
   }
@@ -778,8 +778,8 @@ export async function unbookmarkBark({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, bark_id))) throw new NotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+    if (!(await idExists(users, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { bookmarked: bark_id } });
   }
@@ -885,7 +885,7 @@ export async function updateUser({
   const db = await getDb();
   const users = db.collection<InternalUser>('users');
 
-  if (!(await idExists(users, user_id))) throw new NotFoundError(user_id);
+  if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
   await users.updateOne({ _id: user_id }, { $set: patchUser });
 }
 

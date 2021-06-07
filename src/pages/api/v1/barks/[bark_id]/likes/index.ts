@@ -11,7 +11,6 @@ export { defaultConfig as config } from 'universe/backend/middleware';
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await wrapHandler(
     async ({ req, res }) => {
-      const key = req.headers.key?.toString() || '';
       let after: ObjectId | null | undefined = undefined;
       let bark_id: ObjectId | undefined = undefined;
 
@@ -33,7 +32,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         }
 
         if (bark_id !== undefined) {
-          sendHttpOk(res, { users: await getBarkLikesUserIds({ key, bark_id, after }) });
+          sendHttpOk(res, { users: await getBarkLikesUserIds({ bark_id, after }) });
         }
       }
     },
