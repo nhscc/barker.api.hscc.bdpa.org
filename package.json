@@ -117,7 +117,7 @@
     "next": "^10.2.3",
     "next-test-api-route-handler": "^1.2.24",
     "next-transpile-modules": "^7.2.0",
-    "prettier": "^2.3.0",
+    "prettier": "^2.3.1",
     "random-int": "^3.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
