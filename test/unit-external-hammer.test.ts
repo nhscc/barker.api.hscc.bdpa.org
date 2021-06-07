@@ -178,7 +178,7 @@ describe('external-scripts/ban-hammer', () => {
     let saw = 0;
     (await getRateLimitUntils()).forEach((u) => u.until == 9998784552826 && saw++);
 
-    expect(saw).toBe(2);
+    expect(saw).toStrictEqual(2);
   });
 
   it('deletes outdated entries outside the punishment period', async () => {

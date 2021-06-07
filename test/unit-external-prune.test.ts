@@ -14,30 +14,30 @@ describe('external-scripts/prune-data', () => {
   it('ensures at most PRUNE_DATA_MAX_LOGS log entries exist', async () => {
     expect.hasAssertions();
 
-    expect(await getCount(await getDb())).toBe(22);
+    expect(await getCount(await getDb())).toStrictEqual(22);
 
     process.env.PRUNE_DATA_MAX_LOGS = '10';
     await pruneLogs();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getCount(await getDb())).toBe(10);
+    expect(await getCount(await getDb())).toStrictEqual(10);
 
     process.env.PRUNE_DATA_MAX_LOGS = '1';
     await pruneLogs();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getCount(await getDb())).toBe(1);
+    expect(await getCount(await getDb())).toStrictEqual(1);
   });
 
   it('only deletes log entries if necessary', async () => {
     expect.hasAssertions();
 
-    expect(await getCount(await getDb())).toBe(22);
+    expect(await getCount(await getDb())).toStrictEqual(22);
 
     process.env.PRUNE_DATA_MAX_LOGS = '100';
     await pruneLogs();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getCount(await getDb())).toBe(22);
+    expect(await getCount(await getDb())).toStrictEqual(22);
   });
 });

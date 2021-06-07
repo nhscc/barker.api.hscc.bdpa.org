@@ -14,12 +14,12 @@ describe('external-scripts/generate-activity', () => {
 
     // await (await getFlightsDb()).deleteMany({});
 
-    // expect(await getCount()).toBe(0);
+    // expect(await getCount()).toStrictEqual(0);
 
     // process.env.FLIGHTS_GENERATE_DAYS = '1';
     // await generateActivity();
 
     //setClientAndDb(await getNewClientAndDb());
-    // expect(await getCount()).not.toBe(0);
+    // expect(await getCount()).not.toStrictEqual(0);
   });
 });

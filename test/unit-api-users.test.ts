@@ -140,7 +140,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
         }
       });
@@ -155,7 +155,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch().then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
         }
       });
@@ -234,7 +234,8 @@ describe('api/v1/users', () => {
       await testApiHandler({
         params: { user_id: 'invalid' },
         handler: api.usersId,
-        test: async ({ fetch }) => expect(await fetch().then((r) => r.status)).toBe(400)
+        test: async ({ fetch }) =>
+          expect(await fetch().then((r) => r.status)).toStrictEqual(400)
       });
     });
   });
@@ -354,7 +355,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.barks).toBeArray();
         }
       });
@@ -420,7 +421,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+            expect(await fetch().then((r) => r.status)).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -438,7 +439,9 @@ describe('api/v1/users', () => {
         },
         handler: api.usersIdLikedId,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            404
+          );
         }
       });
     });
@@ -486,7 +489,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
           expect(mockedGetFollowingUserIds).toBeCalledWith(
             expect.objectContaining({ includeIndirect: false })
@@ -501,7 +504,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
           expect(mockedGetFollowingUserIds).toBeCalledWith(
             expect.objectContaining({ includeIndirect: true })
@@ -570,7 +573,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+            expect(await fetch().then((r) => r.status)).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -588,7 +591,9 @@ describe('api/v1/users', () => {
         },
         handler: api.usersIdFollowingId,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            404
+          );
         }
       });
     });
@@ -621,7 +626,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -655,7 +660,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -704,7 +709,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
         }
       });
@@ -770,7 +775,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+            expect(await fetch().then((r) => r.status)).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -788,7 +793,9 @@ describe('api/v1/users', () => {
         },
         handler: api.usersIdPackId,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            404
+          );
         }
       });
     });
@@ -821,7 +828,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -855,7 +862,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -904,7 +911,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.barks).toBeArray();
         }
       });
@@ -970,7 +977,7 @@ describe('api/v1/users', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+            expect(await fetch().then((r) => r.status)).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -988,7 +995,9 @@ describe('api/v1/users', () => {
         },
         handler: api.usersIdBookmarksId,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            404
+          );
         }
       });
     });
@@ -1021,7 +1030,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -1055,7 +1064,7 @@ describe('api/v1/users', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });

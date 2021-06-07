@@ -84,7 +84,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.barks).toBeArray();
         }
       });
@@ -99,7 +99,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           const json = await fetch().then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.barks).toBeArray();
         }
       });
@@ -201,7 +201,7 @@ describe('api/v1/barks', () => {
             Promise.resolve([]) as unknown as ReturnType<typeof mockedGetBarks>
           );
 
-          expect(await fetch().then((r) => r.status)).toBe(404);
+          expect(await fetch().then((r) => r.status)).toStrictEqual(404);
         }
       });
     });
@@ -213,7 +213,9 @@ describe('api/v1/barks', () => {
         params: { bark_ids: ['invalid-id'] },
         handler: api.barksIds,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(400);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            400
+          );
         }
       });
     });
@@ -245,7 +247,7 @@ describe('api/v1/barks', () => {
               r.json()
             );
 
-            expect(json.success).toBe(true);
+            expect(json.success).toBeTrue();
           }
         }
       });
@@ -260,7 +262,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           expect(
             await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-          ).toBe(400);
+          ).toStrictEqual(400);
         }
       });
     });
@@ -308,7 +310,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           const json = await fetch({ headers: { KEY } }).then((r) => r.json());
 
-          expect(json.success).toBe(true);
+          expect(json.success).toBeTrue();
           expect(json.users).toBeArray();
         }
       });
@@ -374,7 +376,7 @@ describe('api/v1/barks', () => {
         test: async ({ fetch }) => {
           for (const [expectedParams, expectedStatus] of factory) {
             Object.assign(params, expectedParams);
-            expect(await fetch().then((r) => r.status)).toBe(expectedStatus);
+            expect(await fetch().then((r) => r.status)).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -392,7 +394,9 @@ describe('api/v1/barks', () => {
         },
         handler: api.barksIdLikesId,
         test: async ({ fetch }) => {
-          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toBe(404);
+          expect(await fetch({ headers: { KEY } }).then((r) => r.status)).toStrictEqual(
+            404
+          );
         }
       });
     });
@@ -425,7 +429,7 @@ describe('api/v1/barks', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'DELETE', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });
@@ -459,7 +463,7 @@ describe('api/v1/barks', () => {
             Object.assign(params, expectedParams);
             expect(
               await fetch({ method: 'PUT', headers: { KEY } }).then((r) => r.status)
-            ).toBe(expectedStatus);
+            ).toStrictEqual(expectedStatus);
           }
         }
       });

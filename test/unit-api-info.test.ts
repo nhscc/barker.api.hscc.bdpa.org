@@ -43,7 +43,7 @@ describe('api/v1/info', () => {
       await testApiHandler({
         handler: api.info,
         test: async ({ fetch }) => {
-          expect(await fetch().then((r) => r.status)).toBe(200);
+          expect(await fetch().then((r) => r.status)).toStrictEqual(200);
         }
       });
     });
