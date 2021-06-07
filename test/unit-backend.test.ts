@@ -214,14 +214,23 @@ describe('::getBarkLikesUserIds', () => {
   it('supports pagination', async () => {
     expect.hasAssertions();
 
+    const bark_id = dummyDbData.barks[10]._id;
+
+    await (await getDb())
+      .collection<InternalBark>('barks')
+      .updateOne(
+        { _id: bark_id },
+        { $set: { likes: itemToObjectId(dummyDbData.users) } }
+      );
+
     await withMockedEnv(
       async () => {
         expect(
           await Backend.getBarkLikesUserIds({
             bark_id: dummyDbData.barks[10]._id,
-            after: dummyDbData.barks[10].likes[3]
+            after: dummyDbData.users[2]._id
           })
-        ).toStrictEqual(itemToStringId(dummyDbData.barks[10].likes.slice(4, 7)));
+        ).toStrictEqual(itemToStringId(dummyDbData.users.slice(3, 6)));
       },
       { RESULTS_PER_PAGE: '3' }
     );
@@ -2043,40 +2052,162 @@ describe('::updateUser', () => {
 });
 
 describe('::searchBarks', () => {
+  const reversedBarks = dummyDbData.barks.reverse();
+
   it('returns all barks if no query params given', async () => {
     expect.hasAssertions();
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.searchBarks({ after: null, match: {}, regexMatch: {} })
+        ).toStrictEqual(reversedBarks.slice(0, 5).map(toPublicBark));
+      },
+      { RESULTS_PER_PAGE: '5' }
+    );
+  });
+
+  it('searches with respect to match and regexMatch, handles proxying and special ID regexMatches', async () => {
+    expect.hasAssertions();
+
+    const matchItems = [
+      [
+        { likes: { $gt: 20 } },
+        itemToStringId(dummyDbData.barks.filter((b) => b.totalLikes > 20))
+      ],
+      [
+        { rebarks: { $lte: 50 } },
+        itemToStringId(dummyDbData.barks.filter((b) => b.totalRebarks <= 50))
+      ],
+      [
+        { barkbacks: dummyDbData.barks[0].totalBarkbacks },
+        itemToStringId(
+          dummyDbData.barks.filter(
+            (b) => b.totalBarkbacks == dummyDbData.barks[0].totalBarkbacks
+          )
+        )
+      ]
+    ] as [Parameters<typeof Backend.searchBarks>[0]['match'], string[]][];
+
+    const regexMatchItems = [
+      [
+        { content: '^#\\d ' },
+        itemToStringId(dummyDbData.barks.filter((b) => /^#\d /i.test(b.content)))
+      ]
+    ] as [Parameters<typeof Backend.searchBarks>[0]['regexMatch'], string[]][];
+
+    await Promise.all([
+      ...matchItems.map(([match, expectedBarks]) =>
+        // eslint-disable-next-line jest/valid-expect-in-promise
+        expect(
+          Backend.searchBarks({ after: null, match, regexMatch: {} }).then((r) =>
+            r.map((b) => b.bark_id.toString())
+          )
+        ).resolves.toIncludeSameMembers(expectedBarks)
+      ),
+      ...regexMatchItems.map(([regexMatch, expectedBarks]) =>
+        // eslint-disable-next-line jest/valid-expect-in-promise
+        expect(
+          Backend.searchBarks({ after: null, regexMatch, match: {} }).then((r) =>
+            r.map((b) => b.bark_id.toString())
+          )
+        ).resolves.toIncludeSameMembers(expectedBarks)
+      )
+    ]);
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.searchBarks({ after: null, match: {}, regexMatch: {} })
+        ).toStrictEqual(reversedBarks.slice(0, 5).map(toPublicBark));
+
+        expect(
+          await Backend.searchBarks({
+            after: reversedBarks[4]._id,
+            match: {},
+            regexMatch: {}
+          })
+        ).toStrictEqual(reversedBarks.slice(5, 10).map(toPublicBark));
+
+        expect(
+          await Backend.searchBarks({
+            after: reversedBarks[9]._id,
+            match: {},
+            regexMatch: {}
+          })
+        ).toStrictEqual(reversedBarks.slice(10, 15).map(toPublicBark));
+      },
+      { RESULTS_PER_PAGE: '5' }
+    );
   });
 
-  it('functions when no barks in the database', async () => {
+  it('functions when database is empty', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    await db.collection('barks').deleteMany({});
+    await db.collection('users').deleteMany({});
+
+    expect(
+      await Backend.searchBarks({ after: null, match: {}, regexMatch: {} })
+    ).toStrictEqual([]);
   });
 
-  it('returns expected barks with respect to match', async () => {
+  it('returns expected barks when using match and regexMatch simultaneously', async () => {
     expect.hasAssertions();
+
+    expect(
+      await Backend.searchBarks({
+        after: null,
+        match: { likes: { $lt: 100 } },
+        regexMatch: {
+          owner: `${dummyDbData.users[0]._id}|${dummyDbData.users[1]._id}`
+        }
+      }).then((r) => r.map((b) => b.bark_id.toString()))
+    ).toIncludeSameMembers(
+      itemToStringId(
+        dummyDbData.barks.filter(
+          (b) =>
+            [dummyDbData.users[0]._id, dummyDbData.users[1]._id].includes(b.owner) &&
+            b.totalLikes < 100
+        )
+      )
+    );
   });
 
-  it('returns expected barks with respect to regexMatch', async () => {
+  it('match and regexMatch errors properly with bad inputs', async () => {
     expect.hasAssertions();
-  });
 
-  it('regexMatch errors properly with bad inputs', async () => {
-    expect.hasAssertions();
-  });
+    const items = [
+      [{ likes: { $in: [5] } }, 'validation'],
+      [{ bad: 'super-bad' }, 'validation'],
+      [{ meta: {} }, 'validation'],
+      [{ bark_id: 5 }, 'illegal'],
+      [{ _id: 5 }, 'illegal'],
+      [{ user_id: 5 }, 'illegal']
+    ] as unknown;
 
-  it('ensure meta, totalLikes/totalRebarks/totalBarkbacks (unproxied), likes (non-numeric), and bark_id/_id cannot be matched against', async () => {
-    expect.hasAssertions();
-  });
+    await Promise.all(
+      (items as [Parameters<typeof Backend.searchBarks>[0]['match'], string][]).map(
+        ([match, expectedMessage]) =>
+          expect(
+            Backend.searchBarks({ after: null, match, regexMatch: {} })
+          ).rejects.toMatchObject({ message: expect.stringContaining(expectedMessage) })
+      )
+    );
 
-  it('ensure numerical matches against likes (totalLikes), rebarks (totalRebarks), and barkbacks (totalBarkbacks) are properly proxied', async () => {
-    expect.hasAssertions();
-  });
-
-  it('returns expected barks with respect to all possible query params simultaneously', async () => {
-    expect.hasAssertions();
+    await Promise.all(
+      (items as [Parameters<typeof Backend.searchBarks>[0]['regexMatch'], string][]).map(
+        ([regexMatch, expectedMessage]) =>
+          expect(
+            Backend.searchBarks({ after: null, regexMatch, match: {} })
+          ).rejects.toMatchObject({ message: expect.stringContaining(expectedMessage) })
+      )
+    );
   });
 });
 

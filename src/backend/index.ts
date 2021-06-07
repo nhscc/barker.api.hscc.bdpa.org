@@ -4,7 +4,7 @@ import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { getClientIp } from 'request-ip';
 import { getEnv } from 'universe/backend/env';
-import { getDb, idExists, itemToStringId } from 'universe/backend/db';
+import { getDb, idExists, itemToObjectId, itemToStringId } from 'universe/backend/db';
 
 import {
   InvalidIdError,
@@ -948,7 +948,6 @@ export async function searchBarks({
   match: {
     [specifier: string]:
       | string
-      | ObjectId
       | number
       | {
           [subspecifier in '$gt' | '$lt' | '$gte' | '$lte']?: number;
@@ -958,6 +957,8 @@ export async function searchBarks({
     [specifier: string]: string;
   };
 }) {
+  // ? Initial validation
+
   if (after !== null && !(after instanceof ObjectId)) {
     throw new InvalidIdError(after);
   } else if (!isObject(match) || !isObject(regexMatch)) {
@@ -967,6 +968,51 @@ export async function searchBarks({
   } else if (regexMatch._id || regexMatch.bark_id || regexMatch.user_id) {
     throw new ValidationError('regexMatch object has an illegal X_id property');
   }
+
+  // ? Handle aliasing/proxying
+
+  const enableProxyMatches = (m: typeof regexMatch | typeof match) => {
+    if (m.likes) {
+      m.totalLikes = m.likes;
+      delete m.likes;
+    }
+
+    if (m.rebarks) {
+      m.totalRebarks = m.rebarks;
+      delete m.rebarks;
+    }
+
+    if (m.barkbacks) {
+      m.totalBarkbacks = m.barkbacks;
+      delete m.barkbacks;
+    }
+  };
+
+  enableProxyMatches(match);
+  enableProxyMatches(regexMatch);
+
+  // ? Transform all the "or" queries that might appear in regular expressions
+
+  type ValidMatchId = 'owner' | 'barkbackTo' | 'rebarkOf';
+  const matchIds = {} as Record<ValidMatchId, ObjectId[]>;
+  const split = (str: string) => str.toString().split('|');
+
+  if (regexMatch.owner) {
+    matchIds['owner'] = itemToObjectId(split(regexMatch.owner));
+    delete regexMatch.owner;
+  }
+
+  if (regexMatch.barkbackTo) {
+    matchIds['barkbackTo'] = itemToObjectId(split(regexMatch.barkbackTo));
+    delete regexMatch.barkbackTo;
+  }
+
+  if (regexMatch.rebarkOf) {
+    matchIds['rebarkOf'] = itemToObjectId(split(regexMatch.rebarkOf));
+    delete regexMatch.rebarkOf;
+  }
+
+  // ? Next, we validate everything
 
   const matchKeys = Object.keys(match);
   const regexMatchKeys = Object.keys(regexMatch);
@@ -1009,22 +1055,27 @@ export async function searchBarks({
   if (regexMatchKeys.length && !regexMatchKeysAreValid())
     throw new ValidationError('regexMatch object validation failed');
 
+  // ? Finally, we construct the pristine params objects and perform the search
+
   const finalRegexMatch = {} as Record<string, unknown>;
 
   Object.entries(regexMatch).map(([k, v]) => {
     finalRegexMatch[k] = { $regex: v, $options: 'i' };
   });
 
-  const $match = {
-    ...(after ? { _id: { $lt: after } } : {}),
-    ...match,
-    ...finalRegexMatch
+  const primaryMatchStage = {
+    $match: {
+      ...(after ? { _id: { $lt: after } } : {}),
+      ...match,
+      ...finalRegexMatch
+    }
   };
 
   return (await getDb())
     .collection<InternalBark>('barks')
     .aggregate<PublicBark>([
-      ...(Object.keys($match).length ? [{ $match }] : []),
+      ...(Object.keys(primaryMatchStage).length ? [primaryMatchStage] : []),
+      ...Object.entries(matchIds).map(([k, v]) => ({ $match: { [k]: { $in: v } } })),
       { $sort: { _id: -1 } },
       { $limit: getEnv().RESULTS_PER_PAGE },
       { $project: publicBarkProjection }
