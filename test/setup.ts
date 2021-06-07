@@ -36,6 +36,26 @@ try {
 
 verifyEnvironment();
 
+// TODO: XXX: is toBeAround still needed given we're using type-fest?
+
+expect.extend({
+  toBeAround(actual, expected, precision) {
+    const pass = Math.abs(expected - actual) <= precision;
+
+    if (pass) {
+      return {
+        message: () => `expected ${actual} not to be with ±${precision} of ${expected}`,
+        pass: true
+      };
+    } else {
+      return {
+        message: () => `expected ${actual} to be with ±${precision} of ${expected}`,
+        pass: false
+      };
+    }
+  }
+});
+
 // TODO: XXX: add these brand new tools to where they're supposed to be!
 
 export function asMockedNextApiMiddleware(

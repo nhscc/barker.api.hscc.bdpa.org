@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId } from 'mongodb';
-import { NULL_KEY, DUMMY_KEY } from 'universe/backend';
+import { DUMMY_KEY } from 'universe/backend';
 import {
   getDb,
   setClientAndDb,
@@ -140,7 +140,7 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
     db.collection<WithId<InternalRequestLogEntry>>('request-log').insertMany(
       [...Array(22)].map((_, ndx) => ({
         ip: '1.2.3.4',
-        key: ndx % 2 ? null : NULL_KEY,
+        key: ndx % 2 ? null : DUMMY_KEY,
         method: ndx % 3 ? 'GET' : 'POST',
         route: 'fake/route',
         time: Date.now() + 10 ** 6,
@@ -153,7 +153,7 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
       .insertMany([
         { ip: '1.2.3.4', until: Date.now() + 1000 * 60 * 15 } as InternalLimitedLogEntry,
         { ip: '5.6.7.8', until: Date.now() + 1000 * 60 * 15 } as InternalLimitedLogEntry,
-        { key: NULL_KEY, until: Date.now() + 1000 * 60 * 60 } as InternalLimitedLogEntry
+        { key: DUMMY_KEY, until: Date.now() + 1000 * 60 * 60 } as InternalLimitedLogEntry
       ])
   ]);
 

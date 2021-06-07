@@ -15,7 +15,11 @@ import {
   PublicBark,
   InternalBark,
   UserId,
-  BarkId
+  BarkId,
+  NewBark,
+  NewUser,
+  PatchUser,
+  InternalApiKey
 } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { itemToObjectId, itemToStringId } from 'universe/backend/db';
@@ -464,17 +468,10 @@ describe('::createBark', () => {
   it('creates and returns a new bark', async () => {
     expect.hasAssertions();
 
-    const factory = itemFactory([
+    const items: NewBark[] = [
       {
         owner: dummyDbData.users[0]._id,
         content: '1',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
-      },
-      {
-        owner: new ObjectId(),
-        content: '2',
         private: false,
         barkbackTo: null,
         rebarkOf: null
@@ -499,120 +496,183 @@ describe('::createBark', () => {
         private: true,
         barkbackTo: null,
         rebarkOf: null
+      },
+      {
+        owner: dummyDbData.users[0]._id,
+        content: Array.from({ length: 280 })
+          .map(() => '6')
+          .join(''),
+        private: true,
+        barkbackTo: null,
+        rebarkOf: null
       }
-    ]);
+    ];
 
-    await testApiHandler({
-      handler: api.barks,
-      test: async ({ fetch }) => {
-        const responses = await Promise.all(
-          Array.from({ length: factory.count }).map((_) =>
-            fetch({
-              method: 'POST',
-              headers: { KEY, 'content-type': 'application/json' },
-              body: JSON.stringify(factory())
-            }).then(async (r) => [r.status, await r.json()])
-          )
-        );
+    const newBarks = await Promise.all(
+      items.map((data) => Backend.createBark({ key: Backend.DUMMY_KEY, data }))
+    );
 
-        expect(responses).toStrictEqual(
-          Array.from({ length: factory.count }).map(() => [
-            200,
-            expect.objectContaining({ bark: expect.anything() })
-          ])
-        );
+    const expectedInternalBarks = items.map<InternalBark>((item) => ({
+      ...item,
+      _id: expect.any(ObjectId),
+      totalBarkbacks: 0,
+      totalRebarks: 0,
+      totalLikes: 0,
+      createdAt: expect.any(Number),
+      deleted: false,
+      likes: [],
+      meta: expect.objectContaining({
+        creator: Backend.DUMMY_KEY,
+        likeability: expect.any(Number),
+        rebarkability: expect.any(Number),
+        barkbackability: expect.any(Number)
+      })
+    }));
 
-        expect(mockedCreateBark).toBeCalledTimes(factory.count);
-      }
-    });
+    expect(newBarks).toIncludeSameMembers(
+      items.map((item) => expect.objectContaining(item))
+    );
+
+    expect(
+      await (
+        await getDb()
+      )
+        .collection<InternalBark>('barks')
+        .find({ _id: { $in: newBarks.map((b) => new ObjectId(b.bark_id)) } })
+        .toArray()
+    ).toIncludeSameMembers(expectedInternalBarks);
   });
 
   it('errors if request body is invalid', async () => {
     expect.hasAssertions();
 
-    const yieldCount = 11;
-    const getInvalidData = (function* () {
-      yield {};
-      yield { data: 1 };
-      yield { content: '', createdAt: Date.now() };
-      yield {
-        owner: '',
-        content: '',
-        private: false
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: '',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
-      };
-      yield {
-        owner: new ObjectId(),
-        content: 'xyz',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: new ObjectId(),
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: new ObjectId()
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: false,
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: dummyDbData.barks[0]._id,
-        rebarkOf: dummyDbData.barks[1]._id
-      } as NewBark;
-    })();
+    const items: [NewBark, string][] = [
+      [undefined as unknown as NewBark, 'only JSON'],
+      ['string data' as unknown as NewBark, 'only JSON'],
+      [{} as unknown as NewBark, 'invalid'],
+      [{ data: 1 } as unknown as NewBark, 'invalid'],
+      [{ content: '', createdAt: Date.now() } as unknown as NewBark, 'invalid'],
+      [
+        {
+          owner: '',
+          content: '',
+          private: false
+        } as unknown as NewBark,
+        'invalid'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: '777',
+          private: false
+        } as unknown as NewBark,
+        'invalid'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: '',
+          private: false,
+          barkbackTo: null,
+          rebarkOf: null
+        } as unknown as NewBark,
+        'non-zero length string'
+      ],
+      [
+        {
+          owner: new ObjectId(),
+          content: 'abc',
+          private: false,
+          barkbackTo: null,
+          rebarkOf: null
+        } as unknown as NewBark,
+        'not found'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: '123',
+          private: false,
+          barkbackTo: new ObjectId(),
+          rebarkOf: null
+        } as unknown as NewBark,
+        'not found'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: 'xyz',
+          private: false,
+          barkbackTo: null,
+          rebarkOf: new ObjectId()
+        } as unknown as NewBark,
+        'not found'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: 'rst',
+          private: false,
+          barkbackTo: false,
+          rebarkOf: null
+        } as unknown as NewBark,
+        'invalid'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: 'def',
+          private: false,
+          barkbackTo: dummyDbData.barks[0]._id,
+          rebarkOf: dummyDbData.barks[1]._id
+        } as unknown as NewBark,
+        'barks must be'
+      ],
+      [
+        {
+          owner: dummyDbData.users[0]._id,
+          content: Array.from({ length: 281 })
+            .map(() => 'x')
+            .join(''),
+          private: false,
+          barkbackTo: null,
+          rebarkOf: null
+        } as unknown as NewBark,
+        '<= 280'
+      ]
+    ];
 
-    // TODO: test content too long/too short
-
-    await testApiHandler({
-      handler: api.barks,
-      test: async ({ fetch }) => {
-        const responses = await Promise.all(
-          Array.from({ length: yieldCount }).map((_) =>
-            fetch({
-              method: 'POST',
-              headers: { KEY, 'content-type': 'application/json' },
-              body: JSON.stringify(getInvalidData.next().value)
-            }).then((r) => r.status)
-          )
-        );
-
-        expect(responses).toStrictEqual(
-          Array.from({ length: yieldCount }).map((_) => 400)
-        );
-      }
-    });
+    await Promise.all(
+      items.map(([data, message]) =>
+        expect(
+          Backend.createBark({ key: Backend.DUMMY_KEY, data })
+        ).rejects.toMatchObject({ message: expect.stringContaining(message) })
+      )
+    );
   });
 
   it('updates summary system metadata', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+
+    await Backend.createBark({
+      key: Backend.DUMMY_KEY,
+      data: {
+        owner: dummyDbData.users[0]._id,
+        content: '1',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      }
+    });
+
+    expect(
+      await db
+        .collection<InternalInfo>('info')
+        .findOne({})
+        .then((r) => r?.totalBarks)
+    ).toBe(101);
   });
 });
 
@@ -1028,181 +1088,456 @@ describe('::createUser', () => {
   it('creates and returns a new user', async () => {
     expect.hasAssertions();
 
-    const yieldItems: NewUser[] = [
+    const items: NewUser[] = [
       {
-        owner: dummyDbData.users[0]._id,
-        content: '1',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
+        name: 'one name',
+        email: '1-one@email.address',
+        phone: '111-111-1111',
+        username: 'uzr-1'
       },
       {
-        owner: new ObjectId(),
-        content: '2',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
+        name: 'two name',
+        email: '2-two@email.address',
+        phone: null,
+        username: 'uzr-2-12345678901234'
       },
       {
-        owner: dummyDbData.users[0]._id,
-        content: '3',
-        private: false,
-        barkbackTo: dummyDbData.users[0]._id,
-        rebarkOf: null
-      },
-      {
-        owner: dummyDbData.users[0]._id,
-        content: '4',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: dummyDbData.users[0]._id
-      },
-      {
-        owner: dummyDbData.users[0]._id,
-        content: '5',
-        private: true,
-        barkbackTo: null,
-        rebarkOf: null
+        name: 'three name',
+        email: '3-three@email.address',
+        phone: '333.333.3333 x5467',
+        username: 'user_3'
       }
     ];
 
-    const yieldCount = yieldItems.length;
-    const getData = (function* () {
-      yield yieldItems.shift();
-    })();
+    const newUsers = await Promise.all(
+      items.map((data) => Backend.createUser({ key: Backend.DUMMY_KEY, data }))
+    );
 
-    await testApiHandler({
-      handler: api.users,
-      test: async ({ fetch }) => {
-        const responses = await Promise.all(
-          Array.from({ length: yieldCount }).map((_) =>
-            fetch({
-              method: 'POST',
-              headers: { KEY, 'content-type': 'application/json' },
-              body: JSON.stringify(getData.next().value)
-            }).then(async (r) => [r.status, (await r.json()).bark])
-          )
-        );
+    const expectedInternalUsers = items.map<InternalUser>((item) => ({
+      ...item,
+      _id: expect.any(ObjectId),
+      deleted: false,
+      bookmarked: [],
+      following: [],
+      packmates: [],
+      liked: [],
+      meta: expect.objectContaining({
+        creator: Backend.DUMMY_KEY,
+        followability: expect.any(Number),
+        influence: expect.any(Number)
+      })
+    }));
 
-        expect(responses).toStrictEqual(
-          Array.from({ length: yieldCount }).map((_, ndx) => [
-            200,
-            {
-              ...yieldItems[ndx],
-              user_id: expect.any(String),
-              createdAt: expect.any(Number),
-              likes: expect.any(Number),
-              reusers: expect.any(Number),
-              barkbacks: expect.any(Number),
-              deleted: false
-            } as PublicUser
-          ])
-        );
-      }
-    });
+    expect(newUsers).toIncludeSameMembers(
+      items.map((item) => expect.objectContaining(item))
+    );
+
+    expect(
+      await (
+        await getDb()
+      )
+        .collection<InternalUser>('users')
+        .find({ _id: { $in: newUsers.map((b) => new ObjectId(b.user_id)) } })
+        .toArray()
+    ).toIncludeSameMembers(expectedInternalUsers);
   });
 
   it('errors if request body is invalid', async () => {
     expect.hasAssertions();
 
-    const yieldCount = 11;
-    const getInvalidData = (function* () {
-      yield {};
-      yield { data: 1 };
-      yield { content: '', createdAt: Date.now() };
-      yield {
-        owner: '',
-        content: '',
-        private: false
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: '',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
-      };
-      yield {
-        owner: new ObjectId(),
-        content: 'xyz',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: new ObjectId(),
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: null,
-        rebarkOf: new ObjectId()
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: false,
-        rebarkOf: null
-      };
-      yield {
-        owner: dummyDbData.users[0]._id,
-        content: 'xyz',
-        private: false,
-        barkbackTo: dummyDbData.users[0]._id,
-        rebarkOf: dummyDbData.users[1]._id
-      } as NewUser;
-    })();
+    const items: [NewUser, string][] = [
+      [undefined as unknown as NewUser, 'only JSON'],
+      ['string data' as unknown as NewUser, 'only JSON'],
+      [{} as unknown as NewUser, '3 and 30'],
+      [{ data: 1 } as unknown as NewUser, '3 and 30'],
+      [{ name: null } as unknown as NewUser, '3 and 30'],
+      [{ name: 'my supercool name' } as unknown as NewUser, '5 and 50'],
+      [
+        {
+          name: '#&*@^(#@(^$&*#',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: 'tr',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: Array.from({ length: 31 })
+            .map(() => 'x')
+            .join(''),
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: null,
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'invalid@email address',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'bad-email-address.here',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'validemailaddressbutitisway2big@who.woulddothis.com',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '',
+          username: ''
+        } as unknown as NewUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773',
+          username: ''
+        } as unknown as NewUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773-$*#-&$^#',
+          username: ''
+        } as unknown as NewUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773-773-773',
+          username: ''
+        } as unknown as NewUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: ''
+        } as unknown as NewUser,
+        '5 and 20'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: 'fjdk'
+        } as unknown as NewUser,
+        '5 and 20'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: false
+        } as unknown as NewUser,
+        '5 and 20'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: Array.from({ length: 21 })
+            .map(() => 'x')
+            .join('')
+        } as unknown as NewUser,
+        '5 and 20'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: 'xunnamius',
+          admin: true
+        } as unknown as NewUser,
+        'unexpected properties'
+      ]
+    ];
 
-    // TODO: test bad name, email, phone, username
-    // TODO: test null phone
-
-    await testApiHandler({
-      handler: api.users,
-      test: async ({ fetch }) => {
-        const responses = await Promise.all(
-          Array.from({ length: yieldCount }).map((_) =>
-            fetch({
-              method: 'POST',
-              headers: { KEY, 'content-type': 'application/json' },
-              body: JSON.stringify(getInvalidData.next().value)
-            }).then((r) => r.status)
-          )
-        );
-
-        expect(responses).toStrictEqual(
-          Array.from({ length: yieldCount }).map((_) => 400)
-        );
-      }
-    });
+    await Promise.all(
+      items.map(([data, message]) =>
+        expect(
+          Backend.createUser({ key: Backend.DUMMY_KEY, data })
+        ).rejects.toMatchObject({ message: expect.stringContaining(message) })
+      )
+    );
   });
 
   it('updates summary system metadata', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+
+    await Backend.createUser({
+      key: Backend.DUMMY_KEY,
+      data: {
+        name: 'one name',
+        email: '1-one@email.address',
+        phone: '111-111-1111',
+        username: 'uzr-1'
+      }
+    });
+
+    expect(
+      await db
+        .collection<InternalInfo>('info')
+        .findOne({})
+        .then((r) => r?.totalUsers)
+    ).toBe(11);
   });
 });
 
 describe('::updateUser', () => {
-  it('user data is updated in the database', async () => {
+  it('updates an existing user in the database', async () => {
     expect.hasAssertions();
+
+    const items: PatchUser[] = [
+      {
+        name: 'one name',
+        email: '1-one@email.address',
+        phone: '111-111-1111'
+      },
+      {
+        name: 'two name',
+        email: '2-two@email.address',
+        phone: null
+      },
+      {
+        name: 'three name',
+        email: '3-three@email.address',
+        phone: '333.333.3333 x5467'
+      }
+    ];
+
+    await Promise.all(
+      items.map((data, ndx) =>
+        Backend.updateUser({ user_id: dummyDbData.users[ndx]._id, data })
+      )
+    );
+
+    const users = (await getDb()).collection<InternalUser>('users');
+    const patchedUserIds = itemToObjectId(dummyDbData.users.slice(0, items.length));
+
+    expect(
+      await users.find({ _id: { $in: patchedUserIds } }).toArray()
+    ).toIncludeSameMembers(items.map((item) => expect.objectContaining(item)));
   });
 
   it('errors if request body is invalid', async () => {
     expect.hasAssertions();
+
+    const items: [PatchUser, string][] = [
+      [undefined as unknown as PatchUser, 'only JSON'],
+      ['string data' as unknown as PatchUser, 'only JSON'],
+      [{} as unknown as PatchUser, '3 and 30'],
+      [{ data: 1 } as unknown as PatchUser, '3 and 30'],
+      [{ name: null } as unknown as PatchUser, '3 and 30'],
+      [{ name: 'my supercool name' } as unknown as PatchUser, '5 and 50'],
+      [
+        {
+          name: '#&*@^(#@(^$&*#',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: 'tr',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: Array.from({ length: 31 })
+            .map(() => 'x')
+            .join(''),
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '3 and 30'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: '',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: null,
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'invalid@email address',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'bad-email-address.here',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'validemailaddressbutitisway2big@who.woulddothis.com',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        '5 and 50'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '',
+          username: ''
+        } as unknown as PatchUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773',
+          username: ''
+        } as unknown as PatchUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773-$*#-&$^#',
+          username: ''
+        } as unknown as PatchUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '773-773-773',
+          username: ''
+        } as unknown as PatchUser,
+        'valid phone number'
+      ],
+      [
+        {
+          name: 'tre giles',
+          email: 'valid@email.address',
+          phone: '777-777-7777',
+          username: 'xunnamius'
+        } as unknown as PatchUser,
+        'unexpected properties'
+      ]
+    ];
+
+    await Promise.all(
+      items.map(([data, message]) =>
+        expect(
+          Backend.updateUser({ user_id: new ObjectId(), data })
+        ).rejects.toMatchObject({ message: expect.stringContaining(message) })
+      )
+    );
   });
 
-  it('rejects if id not found', async () => {
+  it('rejects if user_id not found', async () => {
     expect.hasAssertions();
+
+    const id = new ObjectId();
+
+    await expect(
+      Backend.updateUser({
+        user_id: id,
+        data: {
+          name: 'one name',
+          email: '1-one@email.address',
+          phone: '111-111-1111'
+        }
+      })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining(id.toString())
+    });
   });
 });
 
@@ -1247,12 +1582,26 @@ describe('::searchBarks', () => {
 describe('::getApiKeys', () => {
   it('returns all API keys (SHA-256 hashed)', async () => {
     expect.hasAssertions();
+
+    const keys = await Backend.getApiKeys();
+
+    expect(keys).toIncludeSameMembers(
+      dummyDbData.keys.map<InternalApiKey>((k) => ({
+        owner: expect.any(String),
+        key: expect.any(String)
+      }))
+    );
+
+    expect(keys).toSatisfyAll((k: InternalApiKey) => k.key.length == 64);
   });
 });
 
 describe('::isKeyAuthentic', () => {
   it('returns true iff an API key is found in the system', async () => {
     expect.hasAssertions();
+
+    expect(await Backend.isKeyAuthentic(Backend.NULL_KEY)).toBeFalse();
+    expect(await Backend.isKeyAuthentic(Backend.DUMMY_KEY)).toBeTrue();
   });
 });
 
@@ -1268,7 +1617,7 @@ describe('::addToRequestLog', () => {
     const req2 = {
       headers: {
         'x-forwarded-for': '8.8.8.8',
-        key: Backend.NULL_KEY
+        key: Backend.DUMMY_KEY
       },
       method: 'GET',
       url: '/api/route/path2'
@@ -1304,7 +1653,7 @@ describe('::addToRequestLog', () => {
 
     expect(log2).toStrictEqual({
       ip: '8.8.8.8',
-      key: Backend.NULL_KEY,
+      key: Backend.DUMMY_KEY,
       route: 'route/path2',
       method: 'GET',
       time: now,
@@ -1329,7 +1678,7 @@ describe('::isRateLimited', () => {
     const req2 = await Backend.isRateLimited({
       headers: {
         'x-forwarded-for': '8.8.8.8',
-        key: Backend.NULL_KEY
+        key: Backend.DUMMY_KEY
       },
       method: 'GET',
       url: '/api/route/path2'
@@ -1355,7 +1704,7 @@ describe('::isRateLimited', () => {
     const req5 = await Backend.isRateLimited({
       headers: {
         'x-forwarded-for': '1.2.3.4',
-        key: Backend.NULL_KEY
+        key: Backend.DUMMY_KEY
       },
       method: 'POST',
       url: '/api/route/path1'

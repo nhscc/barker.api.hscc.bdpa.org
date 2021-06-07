@@ -1,11 +1,10 @@
 import { setClientAndDb } from 'universe/backend/db';
+import { DUMMY_KEY } from 'universe/backend';
 import { setupTestDb } from 'testverse/db';
 import banHammer from 'externals/ban-hammer';
 
 import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
 import type { WithId } from 'mongodb';
-
-jest.setTimeout(10 ** 6);
 
 const { getDb, getNewClientAndDb } = setupTestDb();
 
@@ -17,24 +16,6 @@ const getRateLimits = async () =>
   (await getRateLimitsDb()).find().project({ _id: 0, ip: 1, key: 1 }).toArray();
 const getRateLimitUntils = async () =>
   (await getRateLimitsDb()).find().project({ _id: 0, until: 1 }).toArray();
-
-expect.extend({
-  toBeAround(actual, expected, precision) {
-    const pass = Math.abs(expected - actual) <= precision;
-
-    if (pass) {
-      return {
-        message: () => `expected ${actual} not to be with ±${precision} of ${expected}`,
-        pass: true
-      };
-    } else {
-      return {
-        message: () => `expected ${actual} to be with ±${precision} of ${expected}`,
-        pass: false
-      };
-    }
-  }
-});
 
 describe('external-scripts/ban-hammer', () => {
   it('rate limits only the ips and their keys that exceed BAN_HAMMER_MAX_REQUESTS_PER_WINDOW/BAN_HAMMER_RESOLUTION_WINDOW_SECONDS', async () => {
@@ -52,16 +33,13 @@ describe('external-scripts/ban-hammer', () => {
     setClientAndDb(await getNewClientAndDb());
     expect(await getRateLimits()).toIncludeSameMembers([
       { ip: '1.2.3.4' },
-      { key: '00000000-0000-0000-0000-000000000000' }
+      { key: DUMMY_KEY }
     ]);
 
     await (await getRateLimitsDb()).deleteMany({});
     await (
       await getRequestLogDb()
-    ).updateMany(
-      { key: '00000000-0000-0000-0000-000000000000' },
-      { $set: { ip: '9.8.7.6' } }
-    );
+    ).updateMany({ key: DUMMY_KEY }, { $set: { ip: '9.8.7.6' } });
 
     await banHammer();
 
@@ -69,7 +47,7 @@ describe('external-scripts/ban-hammer', () => {
     expect(await getRateLimits()).toIncludeSameMembers([
       { ip: '1.2.3.4' },
       { ip: '9.8.7.6' },
-      { key: '00000000-0000-0000-0000-000000000000' }
+      { key: DUMMY_KEY }
     ]);
 
     await (await getRateLimitsDb()).deleteMany({});
@@ -77,7 +55,7 @@ describe('external-scripts/ban-hammer', () => {
       await getRequestLogDb()
     ).insertOne({
       ip: '1.2.3.4',
-      key: '00000000-0000-0000-0000-000000000000',
+      key: DUMMY_KEY,
       method: 'PUT',
       resStatusCode: 200,
       route: 'jest/test',
@@ -96,7 +74,7 @@ describe('external-scripts/ban-hammer', () => {
     setClientAndDb(await getNewClientAndDb());
     expect(await getRateLimits()).toIncludeSameMembers([
       { ip: '1.2.3.4' },
-      { key: '00000000-0000-0000-0000-000000000000' }
+      { key: DUMMY_KEY }
     ]);
 
     await (await getRateLimitsDb()).deleteMany({});
@@ -120,10 +98,7 @@ describe('external-scripts/ban-hammer', () => {
 
     const now = ((_now: number) => _now - (_now % 5000) - 2000)(Date.now());
 
-    await requestLogDb.updateMany(
-      { key: '00000000-0000-0000-0000-000000000000' },
-      { $set: { ip: '9.8.7.6' } }
-    );
+    await requestLogDb.updateMany({ key: DUMMY_KEY }, { $set: { ip: '9.8.7.6' } });
     await requestLogDb.updateMany({}, { $set: { time: now } });
 
     process.env.BAN_HAMMER_MAX_REQUESTS_PER_WINDOW = '10';
@@ -139,7 +114,7 @@ describe('external-scripts/ban-hammer', () => {
 
     setClientAndDb(await getNewClientAndDb());
     expect(await getRateLimits()).toIncludeSameMembers([
-      { key: '00000000-0000-0000-0000-000000000000' },
+      { key: DUMMY_KEY },
       { ip: '9.8.7.6' },
       { ip: '1.2.3.4' }
     ]);
@@ -151,10 +126,7 @@ describe('external-scripts/ban-hammer', () => {
     await (await getRateLimitsDb()).deleteMany({});
     await (
       await getRequestLogDb()
-    ).updateMany(
-      { key: '00000000-0000-0000-0000-000000000000' },
-      { $set: { ip: '9.8.7.6' } }
-    );
+    ).updateMany({ key: DUMMY_KEY }, { $set: { ip: '9.8.7.6' } });
 
     const now = Date.now();
 
@@ -220,7 +192,7 @@ describe('external-scripts/ban-hammer', () => {
     setClientAndDb(await getNewClientAndDb());
     expect(await getRateLimits()).toIncludeSameMembers([
       { ip: '1.2.3.4' },
-      { key: '00000000-0000-0000-0000-000000000000' }
+      { key: DUMMY_KEY }
     ]);
   });
 });

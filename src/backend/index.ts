@@ -42,13 +42,27 @@ const emailRegex =
   /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
 const phoneRegex =
   /^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?$/;
-const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+const usernameRegex = /^[a-zA-Z0-9_-]{5,20}$/;
 
+/**
+ * Global (but only per serverless function instance) request counting state
+ */
 let requestCounter = 0;
 
+/**
+ * This key is guaranteed never to appear in the system and can be checked
+ * against.
+ */
 export const NULL_KEY = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * This key is only valid when running in a Jest test environment.
+ */
 export const DUMMY_KEY = '12349b61-83a7-4036-b060-213784b491';
 
+/**
+ * Bark properties that can be matched against with `searchBarks()`
+ */
 const matchableStrings = [
   'owner',
   'content',
@@ -62,6 +76,9 @@ const matchableStrings = [
   'rebarkOf'
 ];
 
+/**
+ * Whitelisted MongoDB sub-matchers that can be used with `searchBarks()`
+ */
 const matchableSubStrings = ['$gt', '$lt', '$gte', '$lte'];
 
 export const publicBarkProjection = {
@@ -331,7 +348,7 @@ export async function createBark({
   data: Partial<NewBark>;
 }): Promise<PublicBark> {
   if (!isObject(data)) {
-    throw new ValidationError('bad request body: only JSON content is allowed');
+    throw new ValidationError('only JSON content is allowed');
   } else if (!(data.owner instanceof ObjectId)) {
     throw new InvalidIdError('invalid user_id for `owner`');
   } else if (
@@ -354,8 +371,21 @@ export async function createBark({
 
   const { owner, content, private: p, barkbackTo, rebarkOf, ...rest } = data;
 
-  if (Object.keys(rest).length > 0)
-    throw new ValidationError('bad request body: unexpected properties encountered');
+  const db = await getDb();
+  const barks = db.collection<InternalBark>('barks');
+  const users = db.collection<InternalUser>('users');
+
+  if (Object.keys(rest).length > 0) {
+    throw new ValidationError('unexpected properties encountered');
+  } else if (barkbackTo && rebarkOf) {
+    throw new ValidationError('barks must be either a bark-back or a rebark');
+  } else if (!(await idExists(users, owner))) {
+    throw new ItemNotFoundError(owner);
+  } else if (barkbackTo && !(await idExists(barks, barkbackTo))) {
+    throw new ItemNotFoundError(barkbackTo);
+  } else if (rebarkOf && !(await idExists(barks, rebarkOf))) {
+    throw new ItemNotFoundError(rebarkOf);
+  }
 
   // * At this point, we can finally trust this data is not malicious
   const newBark: InternalBark = {
@@ -378,7 +408,7 @@ export async function createBark({
     }
   };
 
-  await (await getDb()).collection<InternalBark>('barks').insertOne(newBark);
+  await barks.insertOne(newBark);
   return getBarks({ bark_ids: [(newBark as WithId<InternalBark>)._id] }).then(
     (ids) => ids[0]
   );
@@ -800,34 +830,40 @@ export async function createUser({
   data: Partial<NewUser>;
 }): Promise<PublicUser> {
   if (!isObject(data)) {
-    throw new ValidationError('bad request body: only JSON content is allowed');
+    throw new ValidationError('only JSON content is allowed');
   } else if (
     typeof data.name != 'string' ||
-    !data.name.length ||
+    data.name.length < 3 ||
+    data.name.length > 30 ||
     !nameRegex.test(data.name)
   ) {
-    throw new ValidationError('`name` must be a non-zero length string');
+    throw new ValidationError(
+      '`name` must be an alphanumeric string between 3 and 30 characters'
+    );
   } else if (
     typeof data.email != 'string' ||
-    !data.email.length ||
+    data.email.length < 5 ||
+    data.email.length > 50 ||
     !emailRegex.test(data.email)
   ) {
-    throw new ValidationError('`email` must be a non-zero length string');
+    throw new ValidationError(
+      '`email` must be a valid email address between 5 and 50 characters'
+    );
   } else if (
     data.phone !== null &&
     (typeof data.phone != 'string' || !phoneRegex.test(data.phone))
   ) {
-    throw new ValidationError('`phone` must be a non-zero length string');
+    throw new ValidationError('`phone` must be a valid phone number');
   } else if (typeof data.username != 'string' || !usernameRegex.test(data.username)) {
     throw new ValidationError(
-      '`username` must be an alphanumeric string between 3 and 20 characters'
+      '`username` must be an alphanumeric string between 5 and 20 characters'
     );
   }
 
   const { email, name, phone, username, ...rest } = data;
 
   if (Object.keys(rest).length > 0)
-    throw new ValidationError('bad request body: unexpected properties encountered');
+    throw new ValidationError('unexpected properties encountered');
 
   // * At this point, we can finally trust this data is not malicious
   const newUser: InternalUser = {
@@ -851,6 +887,7 @@ export async function createUser({
   return getUser({ user_id: (newUser as WithId<InternalUser>)._id });
 }
 
+// TODO: factor out the validation code for both user creation and update (DRY)
 export async function updateUser({
   user_id,
   data
@@ -861,30 +898,36 @@ export async function updateUser({
   if (!(user_id instanceof ObjectId)) {
     throw new InvalidIdError(user_id);
   } else if (!isObject(data)) {
-    throw new ValidationError('bad request body: only JSON content is allowed');
+    throw new ValidationError('only JSON content is allowed');
   } else if (
     typeof data.name != 'string' ||
-    !data.name.length ||
+    data.name.length < 3 ||
+    data.name.length > 30 ||
     !nameRegex.test(data.name)
   ) {
-    throw new ValidationError('`name` must be a non-zero length string');
+    throw new ValidationError(
+      '`name` must be an alphanumeric string between 3 and 30 characters'
+    );
   } else if (
     typeof data.email != 'string' ||
-    !data.email.length ||
+    data.email.length < 5 ||
+    data.email.length > 50 ||
     !emailRegex.test(data.email)
   ) {
-    throw new ValidationError('`email` must be a non-zero length string');
+    throw new ValidationError(
+      '`email` must be a valid email address between 5 and 50 characters'
+    );
   } else if (
     data.phone !== null &&
     (typeof data.phone != 'string' || !phoneRegex.test(data.phone))
   ) {
-    throw new ValidationError('`phone` must be a non-zero length string');
+    throw new ValidationError('`phone` must be a valid phone number');
   }
 
   const { email, name, phone, ...rest } = data;
 
   if (Object.keys(rest).length > 0)
-    throw new ValidationError('bad request body: unexpected properties encountered');
+    throw new ValidationError('unexpected properties encountered');
 
   // * At this point, we can finally trust this data is not malicious
   const patchUser: PatchUser = { name, email, phone };
