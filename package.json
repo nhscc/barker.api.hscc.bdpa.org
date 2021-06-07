@@ -40,7 +40,7 @@
     }
   },
   "dependencies": {
-    "@babel/cli": "^7.14.3",
+    "@babel/cli": "^7.12.1",
     "@babel/core": "^7.14.3",
     "@babel/eslint-parser": "^7.14.4",
     "@babel/plugin-proposal-export-default-from": "^7.12.13",
@@ -75,8 +75,8 @@
     "@types/semver": "^7.3.6",
     "@types/test-listen": "^1.1.0",
     "@types/webpack": "^5.28.0",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
     "@xunnamius/types": "^1.0.3",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^27.0.2",
@@ -155,7 +155,7 @@
     "unique-random-array": "^3.0.0",
     "uuid": "^8.3.2",
     "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.0",
+    "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
