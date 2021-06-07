@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import sha256 from 'crypto-js/sha256';
 import { WithId, ObjectId } from 'mongodb';
 import * as Backend from 'universe/backend';
@@ -12,9 +13,12 @@ import {
   InternalUser,
   PublicUser,
   PublicBark,
-  InternalBark
+  InternalBark,
+  UserId,
+  BarkId
 } from 'types/global';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { itemToObjectId, itemToStringId } from 'universe/backend/db';
 
 const { getDb } = setupTestDb();
 
@@ -124,147 +128,335 @@ describe('::getBarks', () => {
 });
 
 describe('::deleteBarks', () => {
-  it('deletes one or more barks and updates system metadata', async () => {
+  it('deletes one or more barks', async () => {
     expect.hasAssertions();
 
+    const db = await getDb();
     const testIds = [[], [dummyDbData.barks[0]], dummyDbData.barks.slice(10, 20)].map(
       (barks) => barks.map((bark) => bark._id)
     );
 
+    await db
+      .collection('barks')
+      .updateMany({ _id: { $in: testIds.flat() } }, { $set: { deleted: false } });
+
     await Promise.all(testIds.map((bark_ids) => Backend.deleteBarks({ bark_ids })));
 
     expect(
-      await (
-        await getDb()
-      )
+      await db
         .collection('barks')
-        .find({ _id: { $in: testIds.flat() } })
+        .find({ _id: { $in: testIds.flat() }, deleted: false })
         .count()
     ).toBe(0);
   });
 
+  it('updates summary system metadata', async () => {
+    expect.hasAssertions();
+
+    const db = await getDb();
+    const testIds = itemToObjectId(
+      dummyDbData.barks.filter((bark) => !bark.deleted).slice(0, 10)
+    );
+
+    await Backend.deleteBarks({ bark_ids: testIds });
+
+    expect(
+      await db
+        .collection<InternalInfo>('info')
+        .findOne({})
+        .then((r) => r?.totalBarks)
+    ).toBe(90);
+  });
+
   it('rejects if bark_ids not found', async () => {
     expect.hasAssertions();
+
+    await expect(
+      Backend.deleteBarks({ bark_ids: [new ObjectId()] })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('some or all')
+    });
   });
 
   it('rejects if too many bark_id requested', async () => {
     expect.hasAssertions();
+
+    await withMockedEnv(
+      async () => {
+        await expect(
+          Backend.deleteBarks({ bark_ids: [new ObjectId(), new ObjectId()] })
+        ).rejects.toMatchObject({
+          message: expect.stringContaining('too many')
+        });
+      },
+      { RESULTS_PER_PAGE: '1' }
+    );
   });
 });
 
 describe('::getBarkLikesUserIds', () => {
-  it('returns user_ids that liked a bark in LIFO order', async () => {
+  it('returns user_ids that liked a bark', async () => {
     expect.hasAssertions();
+
+    const barks = dummyDbData.barks.map<[ObjectId, UserId[]]>((b) => [b._id, b.likes]);
+
+    for (const [bark_id, expectedIds] of barks) {
+      expect(await Backend.getBarkLikesUserIds({ bark_id, after: null })).toStrictEqual(
+        itemToStringId(expectedIds)
+      );
+    }
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
-  });
 
-  it('functions with barks that have never been liked', async () => {
-    expect.hasAssertions();
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getBarkLikesUserIds({
+            bark_id: dummyDbData.barks[10]._id,
+            after: dummyDbData.barks[10].likes[3]
+          })
+        ).toStrictEqual(itemToStringId(dummyDbData.barks[10].likes.slice(4, 7)));
+      },
+      { RESULTS_PER_PAGE: '3' }
+    );
   });
 
   it('rejects if bark_id not found', async () => {
     expect.hasAssertions();
+
+    const id = new ObjectId();
+
+    await expect(
+      Backend.getBarkLikesUserIds({ bark_id: id, after: null })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining(id.toString())
+    });
   });
 });
 
 describe('::getUserLikedBarkIds', () => {
-  it('returns bark_id of barks that a user liked in LIFO order', async () => {
+  it('returns bark_id of barks that a user liked', async () => {
     expect.hasAssertions();
+
+    const users = dummyDbData.users.map<[ObjectId, BarkId[]]>((u) => [u._id, u.liked]);
+
+    for (const [user_id, expectedIds] of users) {
+      expect(await Backend.getUserLikedBarkIds({ user_id, after: null })).toStrictEqual(
+        itemToStringId(expectedIds)
+      );
+    }
   });
 
   it('supports pagination', async () => {
     expect.hasAssertions();
+
+    await withMockedEnv(
+      async () => {
+        expect(
+          await Backend.getUserLikedBarkIds({
+            user_id: dummyDbData.users[0]._id,
+            after: dummyDbData.users[0].liked[3]
+          })
+        ).toStrictEqual(itemToStringId(dummyDbData.users[0].liked.slice(4, 7)));
+      },
+      { RESULTS_PER_PAGE: '3' }
+    );
   });
 
   it('functions when user has no liked barks', async () => {
     expect.hasAssertions();
+
+    await (await getDb())
+      .collection<InternalUser>('users')
+      .updateOne({ _id: dummyDbData.users[0]._id }, { $set: { liked: [] } });
+
+    expect(
+      await Backend.getUserLikedBarkIds({
+        user_id: dummyDbData.users[0]._id,
+        after: null
+      })
+    ).toStrictEqual([]);
   });
 
-  it('rejects if ID not found', async () => {
+  it('rejects if user_id not found', async () => {
     expect.hasAssertions();
+
+    const id = new ObjectId();
+
+    await expect(
+      Backend.getUserLikedBarkIds({ user_id: id, after: null })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining(id.toString())
+    });
   });
 });
 
 describe('::isBarkLiked', () => {
   it('returns true iff the bark is liked by the specified user', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, boolean][] = [
+      [dummyDbData.users[0]._id, dummyDbData.barks[0]._id, false],
+      [dummyDbData.users[0]._id, dummyDbData.barks[1]._id, true]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, expectedTruth]) =>
+        expect(Backend.isBarkLiked({ user_id, bark_id })).resolves.toBe(expectedTruth)
+      )
+    );
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.isBarkLiked({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
 describe('::unlikeBark', () => {
-  it('unlikes a bark', async () => {
+  it('unlikes a bark and updates bark and user metadata', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    const barks = await db.collection<InternalBark>('barks');
+    const users = await db.collection<InternalUser>('users');
+    const testBarks = itemToObjectId(dummyDbData.users[0].liked);
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked)
+    ).not.toStrictEqual([]);
+
+    expect(
+      await barks
+        .find({ _id: { $in: testBarks }, likes: dummyDbData.users[0]._id })
+        .count()
+    ).not.toStrictEqual(0);
+
+    await Promise.all(
+      testBarks.map((id) =>
+        Backend.unlikeBark({ user_id: dummyDbData.users[0]._id, bark_id: id })
+      )
+    );
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked)
+    ).toStrictEqual([]);
+
+    expect(
+      await barks
+        .find({ _id: { $in: testBarks }, likes: dummyDbData.users[0]._id })
+        .count()
+    ).toStrictEqual(0);
   });
 
   it('does not error if the user never liked the bark', async () => {
     expect.hasAssertions();
-  });
 
-  it('bark and user metadata is updated', async () => {
-    expect.hasAssertions();
-
-    const targetBark = dummyDbData.barks[99];
-
-    expect(dummyDbData.users[0].liked).not.toContain(new ObjectId().toString());
-
-    await testApiHandler({
-      params: { bark_id: new ObjectId().toString(), user_id: dummyDbData.users[0]._id },
-      handler: api.barksIdLikesId,
-      test: async ({ fetch }) => {
-        await fetch({ method: 'PUT', headers: { KEY } });
-
-        expect(
-          await (await getDb())
-            .collection('barks')
-            .findOne({ _id: new ObjectId().toString() })
-        ).toStrictEqual(
-          expect.objectContaining({
-            bark_id: new ObjectId().toString(),
-            likes: expect.not.arrayContaining([new ObjectId().toString()])
-          })
-        );
-
-        expect(
-          await (await getDb())
-            .collection('users')
-            .findOne({ _id: dummyDbData.users[0]._id })
-        ).toStrictEqual(
-          expect.objectContaining({
-            user_id: dummyDbData.users[0]._id,
-            liked: expect.not.arrayContaining([new ObjectId().toString()])
-          })
-        );
-      }
-    });
+    await expect(
+      Backend.unlikeBark({
+        user_id: dummyDbData.users[0]._id,
+        bark_id: dummyDbData.barks[0]._id
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.unlikeBark({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
 describe('::likeBark', () => {
-  it('likes a bark', async () => {
+  it('likes a bark and updates bark and user metadata', async () => {
     expect.hasAssertions();
+
+    const db = await getDb();
+    const barks = await db.collection<InternalBark>('barks');
+    const users = await db.collection<InternalUser>('users');
+    const originallyLikedBarks = itemToStringId(dummyDbData.users[0].liked);
+    const newlyLikedBarks = dummyDbData.barks
+      .filter((bark) => !originallyLikedBarks.includes(itemToStringId(bark)))
+      .map<ObjectId>(itemToObjectId);
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked.length)
+    ).toStrictEqual(originallyLikedBarks.length);
+
+    expect(
+      await barks
+        .find({ _id: { $in: newlyLikedBarks }, likes: dummyDbData.users[0]._id })
+        .count()
+    ).toStrictEqual(0);
+
+    await Promise.all(
+      newlyLikedBarks.map((id) =>
+        Backend.likeBark({ user_id: dummyDbData.users[0]._id, bark_id: id })
+      )
+    );
+
+    expect(
+      await users.findOne({ _id: dummyDbData.users[0]._id }).then((r) => r?.liked.length)
+    ).toStrictEqual(originallyLikedBarks.length + newlyLikedBarks.length);
+
+    expect(
+      await barks
+        .find({ _id: { $in: newlyLikedBarks }, likes: dummyDbData.users[0]._id })
+        .count()
+    ).toStrictEqual(newlyLikedBarks.length);
   });
 
   it('does not error if the user already liked the bark', async () => {
     expect.hasAssertions();
-  });
 
-  it('bark and user metadata is updated', async () => {
-    expect.hasAssertions();
+    await expect(
+      Backend.unlikeBark({
+        user_id: dummyDbData.users[0]._id,
+        bark_id: dummyDbData.users[0].liked[0]
+      })
+    ).toResolve();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.likeBark({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
@@ -419,13 +611,13 @@ describe('::createBark', () => {
     });
   });
 
-  it('system metadata is updated upon bark creation', async () => {
+  it('updates summary system metadata', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getAllUsers', () => {
-  it('returns all users in LIFO order', async () => {
+  it('returns all users', async () => {
     expect.hasAssertions();
   });
 
@@ -447,23 +639,27 @@ describe('::getUser', () => {
     expect.hasAssertions();
   });
 
-  it('rejects if ID not found', async () => {
+  it('rejects if id not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::deleteUser', () => {
-  it('system metadata is updated upon user deletion', async () => {
+  it('deletes a user', async () => {
     expect.hasAssertions();
   });
 
-  it('rejects if ID not found', async () => {
+  it('updates summary system metadata', async () => {
+    expect.hasAssertions();
+  });
+
+  it('rejects if id not found', async () => {
     expect.hasAssertions();
   });
 });
 
 describe('::getFollowingUserIds', () => {
-  it('returns users that a user is following in LIFO order', async () => {
+  it('returns users that a user is (directly) following', async () => {
     expect.hasAssertions();
   });
 
@@ -481,6 +677,21 @@ describe('::getFollowingUserIds', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, after, ndx]) =>
+        expect(
+          Backend.getFollowingUserIds({ user_id, after, includeIndirect: false })
+        ).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : after))
+        })
+      )
+    );
   });
 });
 
@@ -491,6 +702,21 @@ describe('::isUserFollowing', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, followed_id, ndx]) =>
+        expect(Backend.isUserFollowing({ user_id, followed_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : followed_id)
+          )
+        })
+      )
+    );
   });
 });
 
@@ -503,12 +729,27 @@ describe('::followUser', () => {
     expect.hasAssertions();
   });
 
-  it('bark and user metadata is updated', async () => {
+  it('user metadata is updated', async () => {
     expect.hasAssertions();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, followed_id, ndx]) =>
+        expect(Backend.followUser({ user_id, followed_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : followed_id)
+          )
+        })
+      )
+    );
   });
 });
 
@@ -521,17 +762,32 @@ describe('::unfollowUser', () => {
     expect.hasAssertions();
   });
 
-  it('bark and user metadata is updated', async () => {
+  it('user metadata is updated', async () => {
     expect.hasAssertions();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, followed_id, ndx]) =>
+        expect(Backend.unfollowUser({ user_id, followed_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : followed_id)
+          )
+        })
+      )
+    );
   });
 });
 
 describe('::getPackmateUserIds', () => {
-  it('returns packmates in LIFO order', async () => {
+  it('returns packmates', async () => {
     expect.hasAssertions();
   });
 
@@ -543,8 +799,21 @@ describe('::getPackmateUserIds', () => {
     expect.hasAssertions();
   });
 
-  it('rejects if id not found', async () => {
+  it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, after, ndx]) =>
+        expect(Backend.getPackmateUserIds({ user_id, after })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : after))
+        })
+      )
+    );
   });
 });
 
@@ -555,6 +824,21 @@ describe('::isUserPackmate', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, packmate_id, ndx]) =>
+        expect(Backend.isUserPackmate({ user_id, packmate_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : packmate_id)
+          )
+        })
+      )
+    );
   });
 });
 
@@ -567,12 +851,27 @@ describe('::addPackmate', () => {
     expect.hasAssertions();
   });
 
-  it('bark and user metadata is updated', async () => {
+  it('user metadata is updated', async () => {
     expect.hasAssertions();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, packmate_id, ndx]) =>
+        expect(Backend.addPackmate({ user_id, packmate_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : packmate_id)
+          )
+        })
+      )
+    );
   });
 });
 
@@ -585,17 +884,32 @@ describe('::removePackmate', () => {
     expect.hasAssertions();
   });
 
-  it('bark and user metadata is updated', async () => {
+  it('user metadata is updated', async () => {
     expect.hasAssertions();
   });
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, UserId, number][] = [
+      [new ObjectId(), dummyDbData.users[0]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, packmate_id, ndx]) =>
+        expect(Backend.removePackmate({ user_id, packmate_id })).rejects.toMatchObject({
+          message: expect.stringContaining(
+            itemToStringId(ndx == 0 ? user_id : packmate_id)
+          )
+        })
+      )
+    );
   });
 });
 
 describe('::getBookmarkedBarkIds', () => {
-  it('returns barks that a user bookmarked in LIFO order', async () => {
+  it('returns barks that a user bookmarked', async () => {
     expect.hasAssertions();
   });
 
@@ -609,6 +923,19 @@ describe('::getBookmarkedBarkIds', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, after, ndx]) =>
+        expect(Backend.getBookmarkedBarkIds({ user_id, after })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : after))
+        })
+      )
+    );
   });
 });
 
@@ -619,6 +946,19 @@ describe('::isBarkBookmarked', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.isBarkBookmarked({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
@@ -637,6 +977,19 @@ describe('::bookmarkBark', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.bookmarkBark({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
@@ -655,6 +1008,19 @@ describe('::unbookmarkBark', () => {
 
   it('rejects if ids not found', async () => {
     expect.hasAssertions();
+
+    const items: [UserId, BarkId, number][] = [
+      [new ObjectId(), dummyDbData.barks[1]._id, 0],
+      [dummyDbData.users[0]._id, new ObjectId(), 1]
+    ];
+
+    await Promise.all(
+      items.map(([user_id, bark_id, ndx]) =>
+        expect(Backend.unbookmarkBark({ user_id, bark_id })).rejects.toMatchObject({
+          message: expect.stringContaining(itemToStringId(ndx == 0 ? user_id : bark_id))
+        })
+      )
+    );
   });
 });
 
@@ -821,7 +1187,7 @@ describe('::createUser', () => {
     });
   });
 
-  it('system metadata is updated upon user creation', async () => {
+  it('updates summary system metadata', async () => {
     expect.hasAssertions();
   });
 });
@@ -841,7 +1207,7 @@ describe('::updateUser', () => {
 });
 
 describe('::searchBarks', () => {
-  it('returns all barks in LIFO order if no query params given', async () => {
+  it('returns all barks if no query params given', async () => {
     expect.hasAssertions();
   });
 

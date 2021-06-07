@@ -67,6 +67,7 @@ export const dummyDbData: DummyDbData = {
     liked: [],
     deleted: false,
     meta: {
+      creator: DUMMY_KEY,
       followability: 0,
       influence: 0
     }
@@ -99,6 +100,7 @@ dummyDbData.barks = Array.from({ length: 100 }).map<WithId<InternalBark>>((_, nd
   barkbackTo: ndx % 10 == 0 ? new ObjectId() : null,
   rebarkOf: ndx && ndx % 11 == 0 ? new ObjectId() : null,
   meta: {
+    creator: DUMMY_KEY,
     barkbackability: Math.random(),
     likeability: Math.random(),
     rebarkability: Math.random()

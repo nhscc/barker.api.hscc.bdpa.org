@@ -1,4 +1,4 @@
-import { AppError, KeyTypeError, makeNamedError } from 'named-app-errors';
+import { AppError, makeNamedError } from 'named-app-errors';
 
 export {
   AppError,

@@ -1,10 +1,10 @@
 import sha256 from 'crypto-js/sha256';
-import { Collection, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { getClientIp } from 'request-ip';
 import { getEnv } from 'universe/backend/env';
-import { getDb } from 'universe/backend/db';
+import { getDb, idExists, itemToStringId } from 'universe/backend/db';
 
 import {
   InvalidIdError,
@@ -35,10 +35,6 @@ import type {
 
 const isObject = (object: unknown) =>
   !Array.isArray(object) && object !== null && typeof object == 'object';
-
-const idExists = async (collection: Collection, id: ObjectId) => {
-  return !!(await collection.find({ _id: id }).project({ _id: 1 }).count());
-};
 
 const nameRegex = /^[a-zA-Z0-9 -]+$/;
 const emailRegex =
@@ -150,7 +146,7 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
     )
       .collection<InternalBark>('barks')
       .updateMany({ _id: { $in: bark_ids } }, { $set: { deleted: true } })
-      .then((r) => r.modifiedCount);
+      .then((r) => r.matchedCount);
 
     if (numUpdated != bark_ids.length) {
       throw new NotFoundError('some or all bark_ids could not be found');
@@ -193,8 +189,7 @@ export async function getBarkLikesUserIds({
           }
         })
         .next()
-        .then((r) => r?.likes.map((id) => id.toString()))) ??
-      toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.likes))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -234,8 +229,7 @@ export async function getUserLikedBarkIds({
           }
         })
         .next()
-        .then((r) => r?.likes.map((id) => id.toString()))) ??
-      toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.likes))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -317,8 +311,14 @@ export async function likeBark({
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await Promise.all([
-      users.updateOne({ _id: user_id }, { $addToSet: { liked: bark_id } }),
-      barks.updateOne({ _id: bark_id }, { $addToSet: { likes: user_id } })
+      users.updateOne(
+        { _id: user_id, liked: { $ne: bark_id } },
+        { $push: { liked: { $each: [bark_id], $position: 0 } } }
+      ),
+      barks.updateOne(
+        { _id: bark_id, liked: { $ne: bark_id } },
+        { $push: { likes: { $each: [user_id], $position: 0 } } }
+      )
     ]);
   }
 }
@@ -474,8 +474,7 @@ export async function getFollowingUserIds({
           }
         })
         .next()
-        .then((r) => r?.following.map((id) => id.toString()))) ??
-      toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.following))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -528,7 +527,10 @@ export async function followUser({
     if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
-    await users.updateOne({ _id: user_id }, { $pull: { following: followed_id } });
+    await users.updateOne(
+      { _id: user_id },
+      { $push: { following: { $each: [followed_id], $position: 0 } } }
+    );
   }
 }
 
@@ -588,8 +590,7 @@ export async function getPackmateUserIds({
           }
         })
         .next()
-        .then((r) => r?.packmates.map((id) => id.toString()))) ??
-      toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.packmates))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -642,7 +643,10 @@ export async function addPackmate({
     if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
-    await users.updateOne({ _id: user_id }, { $pull: { packmates: packmate_id } });
+    await users.updateOne(
+      { _id: user_id },
+      { $push: { packmates: { $each: [packmate_id], $position: 0 } } }
+    );
   }
 }
 
@@ -703,8 +707,7 @@ export async function getBookmarkedBarkIds({
           }
         })
         .next()
-        .then((r) => r?.following.map((id) => id.toString()))) ??
-      toss(new GuruMeditationError())
+        .then((r) => itemToStringId(r?.following))) ?? toss(new GuruMeditationError())
     );
   }
 }
@@ -759,7 +762,10 @@ export async function bookmarkBark({
     if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
-    await users.updateOne({ _id: user_id }, { $addToSet: { bookmarked: bark_id } });
+    await users.updateOne(
+      { _id: user_id },
+      { $push: { bookmarked: { $each: [bark_id], $position: 0 } } }
+    );
   }
 }
 
@@ -777,8 +783,9 @@ export async function unbookmarkBark({
   } else {
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
+    const barks = db.collection<InternalBark>('barks');
 
-    if (!(await idExists(users, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
     if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { bookmarked: bark_id } });

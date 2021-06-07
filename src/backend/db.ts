@@ -1,11 +1,15 @@
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db, ObjectId, Collection, WithId } from 'mongodb';
+import { GuruMeditationError } from 'named-app-errors';
+import { toss } from 'toss-expression';
 import { getEnv } from 'universe/backend/env';
+
+import type { Nullish } from '@ergodark/types';
 
 type InternalMemory = { client: MongoClient; db: Db } | null;
 let memory: InternalMemory = null;
 
 /**
- * Used to lazily create the database once on-demand instead of immediately when
+ * Lazily connects to the database once on-demand instead of immediately when
  * the app runs.
  */
 export async function getDb(params?: { external: true }) {
@@ -29,20 +33,18 @@ export async function getDb(params?: { external: true }) {
 }
 
 /**
- * Used to lazily create the database once on-demand instead of immediately when
- * the app runs. Returns the MongoClient instance used to connect to the
- * database.
+ * Returns the MongoClient instance used to connect to the database.
  *
- * @param params If `{external: true}`, external Mongo connect URI will be used
+ * @param params if `{external: true}`, external Mongo connect URI will be used
  */
 export async function getDbClient(params?: { external: true }) {
-  !memory && (await getDb(params));
-  // @ts-expect-error -- TypeScript doesn't realize memory will NOT be null
+  await getDb(params);
+  if (!memory) throw new GuruMeditationError('memory is missing');
   return memory.client;
 }
 
 /**
- * Used to kill the MongoClient and close any lingering database connections.
+ * Kills the MongoClient and closes any lingering database connections.
  */
 export async function closeDb() {
   memory?.client.isConnected() && (await memory?.client.close());
@@ -50,7 +52,8 @@ export async function closeDb() {
 }
 
 /**
- * Used for testing purposes. Sets the global db instance to something else.
+ * Sets the global db instance to something else. Used primarily for testing
+ * purposes.
  */
 export function setClientAndDb({ client, db }: { client: MongoClient; db: Db }) {
   memory = memory ?? ({} as NonNullable<InternalMemory>);
@@ -60,7 +63,7 @@ export function setClientAndDb({ client, db }: { client: MongoClient; db: Db }) 
 
 /**
  * Destroys all collections in the database. Can be called multiple times
- * safely.
+ * safely. Used primarily for testing purposes.
  */
 export async function destroyDb(db: Db) {
   await Promise.allSettled([
@@ -74,7 +77,8 @@ export async function destroyDb(db: Db) {
 }
 
 /**
- * This function is idempotent and can be called without worry of data loss.
+ * Initializes the database collections and indices. This function is idempotent
+ * and can be called without worry of data loss.
  */
 export async function initializeDb(db: Db) {
   await Promise.all([
@@ -92,4 +96,68 @@ export async function initializeDb(db: Db) {
   //   barks.createIndex({ y: 1 }),
   //   barks.createIndex({ z: 1 })
   // ]);
+}
+
+/**
+ * Checks if an item with `id` exists within `collection`.
+ */
+export async function idExists(collection: Collection, id: ObjectId) {
+  return !!(await collection.find({ _id: id }).project({ _id: 1 }).count());
+}
+
+export type IdItem<T extends ObjectId> = WithId<unknown> | string | T | Nullish;
+export type IdItemArray<T extends ObjectId> =
+  | WithId<unknown>[]
+  | string[]
+  | T[]
+  | Nullish;
+
+/**
+ * Reduces an `item` down to its `ObjectId` instance.
+ */
+export function itemToObjectId<T extends ObjectId>(item: IdItem<T>): T;
+/**
+ * Reduces an array of `item`s down to its `ObjectId` instances.
+ */
+export function itemToObjectId<T extends ObjectId>(item: IdItemArray<T>): T[];
+export function itemToObjectId<T extends ObjectId>(
+  item: IdItem<T> | IdItemArray<T>
+): T | T[] {
+  return item instanceof ObjectId
+    ? item
+    : Array.isArray(item)
+    ? item.map((i: unknown) => {
+        return (
+          i instanceof ObjectId
+            ? i
+            : typeof i == 'string'
+            ? new ObjectId(i)
+            : (i as WithId<unknown>)._id
+        ) as T;
+      })
+    : typeof item == 'string'
+    ? (new ObjectId(item) as T)
+    : item
+    ? (item._id as T)
+    : toss(
+        new GuruMeditationError(`no transform for item "${item}" (type "${typeof item}")`)
+      );
+}
+
+/**
+ * Reduces an `item` down to the string representation of its `ObjectId`
+ * instance.
+ */
+export function itemToStringId<T extends ObjectId>(item: IdItem<T>): string;
+/**
+ * Reduces an array of `item`s down to the string representations of their
+ * respective `ObjectId` instances.
+ */
+export function itemToStringId<T extends ObjectId>(item: IdItemArray<T>): string[];
+export function itemToStringId<T extends ObjectId>(
+  item: IdItem<T> | IdItemArray<T>
+): string | string[] {
+  return Array.isArray(item)
+    ? itemToObjectId<T>(item).map((i) => i.toString())
+    : itemToObjectId<T>(item).toString();
 }

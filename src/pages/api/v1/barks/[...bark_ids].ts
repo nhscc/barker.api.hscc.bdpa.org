@@ -1,5 +1,6 @@
 import { wrapHandler } from 'universe/backend/middleware';
 import { getBarks, deleteBarks } from 'universe/backend';
+import { itemToObjectId } from 'universe/backend/db';
 import { ObjectId } from 'mongodb';
 
 import {
@@ -19,8 +20,8 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       let bark_ids: ObjectId[] | undefined = undefined;
 
       try {
-        bark_ids = Array.from(new Set<string>(req.query.bark_ids as string[])).map(
-          (id) => new ObjectId(id)
+        bark_ids = itemToObjectId(
+          Array.from(new Set<string>(req.query.bark_ids as string[]))
         );
       } catch {
         sendHttpBadRequest(res, { error: 'invalid bark_id(s)' });
