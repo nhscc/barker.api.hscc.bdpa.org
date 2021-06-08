@@ -1,6 +1,6 @@
-[barker.api.hscc.bdpa.org][1] / external-scripts/generate-activity
+[barker.api.hscc.bdpa.org][1] / external-scripts/simulate-activity
 
-# Module: external-scripts/generate-activity
+# Module: external-scripts/simulate-activity
 
 ## Table of contents
 
@@ -26,9 +26,9 @@
 
 #### Defined in
 
-[external-scripts/generate-activity.ts:4][3]
+[external-scripts/simulate-activity.ts:4][3]
 
 [1]: ../README.md
-[2]: external_scripts_generate_activity.md#default
+[2]: external_scripts_simulate_activity.md#default
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/external-scripts/generate-activity.ts#L4
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/external-scripts/simulate-activity.ts#L4

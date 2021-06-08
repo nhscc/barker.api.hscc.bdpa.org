@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- _any_
+- `any`
 
   ↳ **UnixEpochMs**
 

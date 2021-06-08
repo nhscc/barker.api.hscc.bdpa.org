@@ -12,19 +12,23 @@
 
 ### default
 
-▸ **default**(`(destructured)`: AppProps): _Element_
+▸ **default**(`(destructured)`): `Element`
 
 #### Parameters
 
-| Name             | Type     |
-| :--------------- | :------- |
-| `(destructured)` | AppProps |
+| Name             | Type       |
+| :--------------- | :--------- |
+| `(destructured)` | `AppProps` |
 
-**Returns:** _Element_
+#### Returns
 
-Defined in: [src/pages/\_app.tsx:8][3]
+`Element`
+
+#### Defined in
+
+[src/pages/\_app.tsx:8][3]
 
 [1]: ../README.md
 [2]: src_pages__app.md#default
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/_app.tsx#L8
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/_app.tsx#L8

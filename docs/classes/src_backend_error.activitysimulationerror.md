@@ -1,14 +1,14 @@
-[barker.api.hscc.bdpa.org][1] / [src/backend/error][2] / ValidationError
+[barker.api.hscc.bdpa.org][1] / [src/backend/error][2] / ActivitySimulationError
 
-# Class: ValidationError
+# Class: ActivitySimulationError
 
-[src/backend/error][2].ValidationError
+[src/backend/error][2].ActivitySimulationError
 
 ## Hierarchy
 
 - [AppError][3]
 
-  ↳ **ValidationError**
+  ↳ **ActivitySimulationError**
 
 ## Table of contents
 
@@ -32,7 +32,7 @@
 
 ### constructor
 
-• **new ValidationError**(`message?`)
+• **new ActivitySimulationError**(`message?`)
 
 #### Parameters
 
@@ -46,7 +46,7 @@
 
 #### Defined in
 
-node_modules/named-app-errors/dist/modules/index.d.ts:30
+[src/backend/error.ts:40][12]
 
 ## Properties
 
@@ -56,7 +56,7 @@ node_modules/named-app-errors/dist/modules/index.d.ts:30
 
 #### Inherited from
 
-[AppError][3].[message][12]
+[AppError][3].[message][13]
 
 #### Defined in
 
@@ -70,7 +70,7 @@ node_modules/typescript/lib/lib.es5.d.ts:974
 
 #### Inherited from
 
-[AppError][3].[name][13]
+[AppError][3].[name][14]
 
 #### Defined in
 
@@ -84,7 +84,7 @@ node_modules/typescript/lib/lib.es5.d.ts:973
 
 #### Inherited from
 
-[AppError][3].[stack][14]
+[AppError][3].[stack][15]
 
 #### Defined in
 
@@ -99,7 +99,7 @@ node_modules/typescript/lib/lib.es5.d.ts:975
 
 Optional override for formatting stack traces
 
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][15]
+**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][16]
 
 #### Type declaration
 
@@ -118,7 +118,7 @@ Optional override for formatting stack traces
 
 #### Inherited from
 
-[AppError][3].[prepareStackTrace][16]
+[AppError][3].[prepareStackTrace][17]
 
 #### Defined in
 
@@ -132,7 +132,7 @@ node_modules/@types/node/globals.d.ts:11
 
 #### Inherited from
 
-[AppError][3].[stackTraceLimit][17]
+[AppError][3].[stackTraceLimit][18]
 
 #### Defined in
 
@@ -159,7 +159,7 @@ Create .stack property on a target object
 
 #### Inherited from
 
-[AppError][3].[captureStackTrace][18]
+[AppError][3].[captureStackTrace][19]
 
 #### Defined in
 
@@ -168,18 +168,20 @@ node_modules/@types/node/globals.d.ts:4
 [1]: ../README.md
 [2]: ../modules/src_backend_error.md
 [3]: src_backend_error.apperror.md
-[4]: src_backend_error.validationerror.md#constructor
-[5]: src_backend_error.validationerror.md#message
-[6]: src_backend_error.validationerror.md#name
-[7]: src_backend_error.validationerror.md#stack
-[8]: src_backend_error.validationerror.md#preparestacktrace
-[9]: src_backend_error.validationerror.md#stacktracelimit
-[10]: src_backend_error.validationerror.md#capturestacktrace
+[4]: src_backend_error.activitysimulationerror.md#constructor
+[5]: src_backend_error.activitysimulationerror.md#message
+[6]: src_backend_error.activitysimulationerror.md#name
+[7]: src_backend_error.activitysimulationerror.md#stack
+[8]: src_backend_error.activitysimulationerror.md#preparestacktrace
+[9]: src_backend_error.activitysimulationerror.md#stacktracelimit
+[10]: src_backend_error.activitysimulationerror.md#capturestacktrace
 [11]: src_backend_error.apperror.md#constructor
-[12]: src_backend_error.apperror.md#message
-[13]: src_backend_error.apperror.md#name
-[14]: src_backend_error.apperror.md#stack
-[15]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-[16]: src_backend_error.apperror.md#preparestacktrace
-[17]: src_backend_error.apperror.md#stacktracelimit
-[18]: src_backend_error.apperror.md#capturestacktrace
+[12]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/error.ts#L40
+[13]: src_backend_error.apperror.md#message
+[14]: src_backend_error.apperror.md#name
+[15]: src_backend_error.apperror.md#stack
+[16]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+[17]: src_backend_error.apperror.md#preparestacktrace
+[18]: src_backend_error.apperror.md#stacktracelimit
+[19]: src_backend_error.apperror.md#capturestacktrace

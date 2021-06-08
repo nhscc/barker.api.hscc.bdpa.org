@@ -6,171 +6,208 @@
 
 ## Hierarchy
 
-- _Error_
+- `Error`
 
   ↳ **AppError**
 
-  ↳↳ [_ActivityGenerationError_][3]
+  ↳↳ [NotFoundError][3]
 
-  ↳↳ [_IdTypeError_][4]
+  ↳↳ [ActivityGenerationError][4]
 
-  ↳↳ [_GuruMeditationError_][5]
+  ↳↳ [ActivitySimulationError][5]
 
-  ↳↳ [_HookError_][6]
+  ↳↳ [InvalidIdError][6]
 
-  ↳↳ [_FetchError_][7]
+  ↳↳ [FactoryExhaustionError][7]
 
-  ↳↳ [_NotAuthorizedError_][8]
+  ↳↳ [FetchError][8]
 
-  ↳↳ [_NotFoundError_][9]
+  ↳↳ [GuruMeditationError][9]
 
-  ↳↳ [_KeyError_][10]
+  ↳↳ [HookError][10]
 
-  ↳↳ [_ValidationError_][11]
+  ↳↳ [KeyError][11]
+
+  ↳↳ [NotAuthorizedError][12]
+
+  ↳↳ [ValidationError][13]
+
+  ↳↳ [ItemNotFoundError][14]
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor][12]
+- [constructor][15]
 
 ### Properties
 
-- [message][13]
-- [name][14]
-- [stack][15]
-- [prepareStackTrace][16]
-- [stackTraceLimit][17]
+- [message][16]
+- [name][17]
+- [stack][18]
+- [prepareStackTrace][19]
+- [stackTraceLimit][20]
 
 ### Methods
 
-- [captureStackTrace][18]
+- [captureStackTrace][21]
 
 ## Constructors
 
 ### constructor
 
-\+ **new AppError**(`message?`: _string_): [_AppError_][19]
+• **new AppError**(`message?`)
 
 #### Parameters
 
 | Name       | Type     |
 | :--------- | :------- |
-| `message?` | _string_ |
+| `message?` | `string` |
 
-**Returns:** [_AppError_][19]
+#### Inherited from
 
-Inherited from: Error.constructor
+Error.constructor
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:978
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:978
 
 ## Properties
 
 ### message
 
-• **message**: _string_
+• **message**: `string`
 
-Inherited from: Error.message
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:974
+Error.message
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:974
 
 ---
 
 ### name
 
-• **name**: _string_
+• **name**: `string`
 
-Inherited from: Error.name
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:973
+Error.name
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:973
 
 ---
 
 ### stack
 
-• `Optional` **stack**: _string_
+• `Optional` **stack**: `string`
 
-Inherited from: Error.stack
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:975
+Error.stack
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:975
 
 ---
 
 ### prepareStackTrace
 
-▪ `Static` `Optional` **prepareStackTrace**: (`err`: Error, `stackTraces`:
-CallSite\[]) => _any_
+▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`:
+`CallSite`\[]) => `any`
 
 Optional override for formatting stack traces
 
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][20]
+**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][22]
 
 #### Type declaration
 
-▸ (`err`: Error, `stackTraces`: CallSite\[]): _any_
+▸ (`err`, `stackTraces`): `any`
 
-#### Parameters
+##### Parameters
 
-| Name          | Type       |
-| :------------ | :--------- |
-| `err`         | Error      |
-| `stackTraces` | CallSite[] |
+| Name          | Type         |
+| :------------ | :----------- |
+| `err`         | `Error`      |
+| `stackTraces` | `CallSite`[] |
 
-**Returns:** _any_
+##### Returns
 
-Inherited from: Error.prepareStackTrace
+`any`
 
-Defined in: node_modules/@types/node/globals.d.ts:11
+#### Inherited from
+
+Error.prepareStackTrace
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:11
 
 ---
 
 ### stackTraceLimit
 
-▪ `Static` **stackTraceLimit**: _number_
+▪ `Static` **stackTraceLimit**: `number`
 
-Inherited from: Error.stackTraceLimit
+#### Inherited from
 
-Defined in: node_modules/@types/node/globals.d.ts:13
+Error.stackTraceLimit
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:13
 
 ## Methods
 
 ### captureStackTrace
 
-▸ `Static` **captureStackTrace**(`targetObject`: _object_, `constructorOpt?`:
-Function): _void_
+▸ `Static` **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
 
 Create .stack property on a target object
 
 #### Parameters
 
-| Name              | Type     |
-| :---------------- | :------- |
-| `targetObject`    | _object_ |
-| `constructorOpt?` | Function |
+| Name              | Type       |
+| :---------------- | :--------- |
+| `targetObject`    | `object`   |
+| `constructorOpt?` | `Function` |
 
-**Returns:** _void_
+#### Returns
 
-Inherited from: Error.captureStackTrace
+`void`
 
-Defined in: node_modules/@types/node/globals.d.ts:4
+#### Inherited from
+
+Error.captureStackTrace
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:4
 
 [1]: ../README.md
 [2]: ../modules/src_backend_error.md
-[3]: src_backend_error.activitygenerationerror.md
-[4]: src_backend_error.idtypeerror.md
-[5]: src_backend_error.gurumeditationerror.md
-[6]: src_backend_error.hookerror.md
-[7]: src_backend_error.fetcherror.md
-[8]: src_backend_error.notauthorizederror.md
-[9]: src_backend_error.notfounderror.md
-[10]: src_backend_error.keyerror.md
-[11]: src_backend_error.validationerror.md
-[12]: src_backend_error.apperror.md#constructor
-[13]: src_backend_error.apperror.md#message
-[14]: src_backend_error.apperror.md#name
-[15]: src_backend_error.apperror.md#stack
-[16]: src_backend_error.apperror.md#preparestacktrace
-[17]: src_backend_error.apperror.md#stacktracelimit
-[18]: src_backend_error.apperror.md#capturestacktrace
-[19]: src_backend_error.apperror.md
-[20]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+[3]: src_backend_error.notfounderror.md
+[4]: src_backend_error.activitygenerationerror.md
+[5]: src_backend_error.activitysimulationerror.md
+[6]: src_backend_error.invalididerror.md
+[7]: test_setup.factoryexhaustionerror.md
+[8]: src_backend_error.fetcherror.md
+[9]: src_backend_error.gurumeditationerror.md
+[10]: src_backend_error.hookerror.md
+[11]: src_backend_error.keyerror.md
+[12]: src_backend_error.notauthorizederror.md
+[13]: src_backend_error.validationerror.md
+[14]: src_backend_error.itemnotfounderror.md
+[15]: src_backend_error.apperror.md#constructor
+[16]: src_backend_error.apperror.md#message
+[17]: src_backend_error.apperror.md#name
+[18]: src_backend_error.apperror.md#stack
+[19]: src_backend_error.apperror.md#preparestacktrace
+[20]: src_backend_error.apperror.md#stacktracelimit
+[21]: src_backend_error.apperror.md#capturestacktrace
+[22]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces

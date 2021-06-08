@@ -23,18 +23,22 @@ Re-exports: [HttpStatusCode][5]
 
 ### ErrorJsonResponse
 
-Ƭ **ErrorJsonResponse**: _Record_\<string, unknown> & { `error`: _string_ ;
+Ƭ **ErrorJsonResponse**: `Record`\<string, unknown> & { `error`: `string` ;
 `success`: `false` }
 
-Defined in: [lib/next-respond/types.ts:2][6]
+#### Defined in
+
+[lib/next-respond/types.ts:2][6]
 
 ---
 
 ### SuccessJsonResponse
 
-Ƭ **SuccessJsonResponse**: _Record_\<string, unknown> & { `success`: `true` }
+Ƭ **SuccessJsonResponse**: `Record`\<string, unknown> & { `success`: `true` }
 
-Defined in: [lib/next-respond/types.ts:1][7]
+#### Defined in
+
+[lib/next-respond/types.ts:1][7]
 
 [1]: ../README.md
 [2]: lib_next_respond_types.md#httpstatuscode
@@ -42,6 +46,6 @@ Defined in: [lib/next-respond/types.ts:1][7]
 [4]: lib_next_respond_types.md#successjsonresponse
 [5]: lib_next_isomorphic_redirect_types.md#httpstatuscode
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/types.ts#L2
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-respond/types.ts#L2
 [7]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-respond/types.ts#L1
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-respond/types.ts#L1

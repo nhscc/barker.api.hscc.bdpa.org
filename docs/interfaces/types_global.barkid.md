@@ -6,13 +6,13 @@
 
 ## Hierarchy
 
-- _ObjectId_
+- `ObjectId`
 
   ↳ **BarkId**
 
-  ↳↳ [_PackmateId_][3]
+  ↳↳ [PackmateId][3]
 
-  ↳↳ [_FollowedId_][4]
+  ↳↳ [FollowedId][4]
 
 ## Table of contents
 
@@ -30,19 +30,23 @@
 
 ### generationTime
 
-• **generationTime**: _number_
+• **generationTime**: `number`
 
 The generation time of this ObjectId instance
 
-Inherited from: ObjectId.generationTime
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:365
+ObjectId.generationTime
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:365
 
 ## Methods
 
 ### equals
 
-▸ **equals**(`otherID`: _string_ | _ObjectId_): _boolean_
+▸ **equals**(`otherID`): `boolean`
 
 Compares the equality of this ObjectId with `otherID`.
 
@@ -50,48 +54,66 @@ Compares the equality of this ObjectId with `otherID`.
 
 | Name      | Type                   | Description                           |
 | :-------- | :--------------------- | :------------------------------------ |
-| `otherID` | _string_ \| _ObjectId_ | ObjectId instance to compare against. |
+| `otherID` | `string` \| `ObjectId` | ObjectId instance to compare against. |
 
-**Returns:** _boolean_
+#### Returns
+
+`boolean`
 
 the result of comparing two ObjectId's
 
-Inherited from: ObjectId.equals
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:391
+ObjectId.equals
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:391
 
 ---
 
 ### getTimestamp
 
-▸ **getTimestamp**(): Date
+▸ **getTimestamp**(): `Date`
 
 Returns the generation date (accurate up to the second) that this ID was
 generated.
 
-**Returns:** Date
+#### Returns
+
+`Date`
 
 the generation date
 
-Inherited from: ObjectId.getTimestamp
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:402
+ObjectId.getTimestamp
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:402
 
 ---
 
 ### toHexString
 
-▸ **toHexString**(): _string_
+▸ **toHexString**(): `string`
 
 Return the ObjectId id as a 24 byte hex string representation
 
-**Returns:** _string_
+#### Returns
+
+`string`
 
 return the 24 byte hex string representation.
 
-Inherited from: ObjectId.toHexString
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:407
+ObjectId.toHexString
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:407
 
 [1]: ../README.md
 [2]: ../modules/types_global.md

@@ -1,18 +1,12 @@
 [barker.api.hscc.bdpa.org][1] / [src/backend/error][2] / NotFoundError
 
-# Class: NotFoundError\<T>
+# Class: NotFoundError
 
 [src/backend/error][2].NotFoundError
 
-## Type parameters
-
-| Name | Default  |
-| :--- | :------- |
-| `T`  | _string_ |
-
 ## Hierarchy
 
-- [_AppError_][3]
+- [AppError][3]
 
   ↳ **NotFoundError**
 
@@ -38,115 +32,138 @@
 
 ### constructor
 
-\+ **new NotFoundError**\<T>(`reference?`: T): [_NotFoundError_][11]\<T>
-
-#### Type parameters
-
-| Name | Default  |
-| :--- | :------- |
-| `T`  | _string_ |
+• **new NotFoundError**(`message?`)
 
 #### Parameters
 
-| Name         | Type |
-| :----------- | :--- |
-| `reference?` | T    |
+| Name       | Type     |
+| :--------- | :------- |
+| `message?` | `string` |
 
-**Returns:** [_NotFoundError_][11]\<T>
+#### Overrides
 
-Overrides: [AppError][3]
+[AppError][3].[constructor][11]
 
-Defined in: node_modules/named-app-errors/dist/modules/index.d.ts:20
+#### Defined in
+
+[src/backend/error.ts:22][12]
 
 ## Properties
 
 ### message
 
-• **message**: _string_
+• **message**: `string`
 
-Inherited from: [AppError][3].[message][12]
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:974
+[AppError][3].[message][13]
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:974
 
 ---
 
 ### name
 
-• **name**: _string_
+• **name**: `string`
 
-Inherited from: [AppError][3].[name][13]
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:973
+[AppError][3].[name][14]
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:973
 
 ---
 
 ### stack
 
-• `Optional` **stack**: _string_
+• `Optional` **stack**: `string`
 
-Inherited from: [AppError][3].[stack][14]
+#### Inherited from
 
-Defined in: node_modules/typescript/lib/lib.es5.d.ts:975
+[AppError][3].[stack][15]
+
+#### Defined in
+
+node_modules/typescript/lib/lib.es5.d.ts:975
 
 ---
 
 ### prepareStackTrace
 
-▪ `Static` `Optional` **prepareStackTrace**: (`err`: Error, `stackTraces`:
-CallSite\[]) => _any_
+▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`:
+`CallSite`\[]) => `any`
 
 Optional override for formatting stack traces
 
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][15]
+**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][16]
 
 #### Type declaration
 
-▸ (`err`: Error, `stackTraces`: CallSite\[]): _any_
+▸ (`err`, `stackTraces`): `any`
 
-#### Parameters
+##### Parameters
 
-| Name          | Type       |
-| :------------ | :--------- |
-| `err`         | Error      |
-| `stackTraces` | CallSite[] |
+| Name          | Type         |
+| :------------ | :----------- |
+| `err`         | `Error`      |
+| `stackTraces` | `CallSite`[] |
 
-**Returns:** _any_
+##### Returns
 
-Inherited from: [AppError][3].[prepareStackTrace][16]
+`any`
 
-Defined in: node_modules/@types/node/globals.d.ts:11
+#### Inherited from
+
+[AppError][3].[prepareStackTrace][17]
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:11
 
 ---
 
 ### stackTraceLimit
 
-▪ `Static` **stackTraceLimit**: _number_
+▪ `Static` **stackTraceLimit**: `number`
 
-Inherited from: [AppError][3].[stackTraceLimit][17]
+#### Inherited from
 
-Defined in: node_modules/@types/node/globals.d.ts:13
+[AppError][3].[stackTraceLimit][18]
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:13
 
 ## Methods
 
 ### captureStackTrace
 
-▸ `Static` **captureStackTrace**(`targetObject`: _object_, `constructorOpt?`:
-Function): _void_
+▸ `Static` **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
 
 Create .stack property on a target object
 
 #### Parameters
 
-| Name              | Type     |
-| :---------------- | :------- |
-| `targetObject`    | _object_ |
-| `constructorOpt?` | Function |
+| Name              | Type       |
+| :---------------- | :--------- |
+| `targetObject`    | `object`   |
+| `constructorOpt?` | `Function` |
 
-**Returns:** _void_
+#### Returns
 
-Inherited from: [AppError][3]
+`void`
 
-Defined in: node_modules/@types/node/globals.d.ts:4
+#### Inherited from
+
+[AppError][3].[captureStackTrace][19]
+
+#### Defined in
+
+node_modules/@types/node/globals.d.ts:4
 
 [1]: ../README.md
 [2]: ../modules/src_backend_error.md
@@ -158,10 +175,13 @@ Defined in: node_modules/@types/node/globals.d.ts:4
 [8]: src_backend_error.notfounderror.md#preparestacktrace
 [9]: src_backend_error.notfounderror.md#stacktracelimit
 [10]: src_backend_error.notfounderror.md#capturestacktrace
-[11]: src_backend_error.notfounderror.md
-[12]: src_backend_error.apperror.md#message
-[13]: src_backend_error.apperror.md#name
-[14]: src_backend_error.apperror.md#stack
-[15]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-[16]: src_backend_error.apperror.md#preparestacktrace
-[17]: src_backend_error.apperror.md#stacktracelimit
+[11]: src_backend_error.apperror.md#constructor
+[12]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/error.ts#L22
+[13]: src_backend_error.apperror.md#message
+[14]: src_backend_error.apperror.md#name
+[15]: src_backend_error.apperror.md#stack
+[16]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+[17]: src_backend_error.apperror.md#preparestacktrace
+[18]: src_backend_error.apperror.md#stacktracelimit
+[19]: src_backend_error.apperror.md#capturestacktrace

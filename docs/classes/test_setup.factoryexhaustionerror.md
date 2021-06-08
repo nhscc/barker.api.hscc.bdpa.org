@@ -1,14 +1,14 @@
-[barker.api.hscc.bdpa.org][1] / [src/backend/error][2] / ValidationError
+[barker.api.hscc.bdpa.org][1] / [test/setup][2] / FactoryExhaustionError
 
-# Class: ValidationError
+# Class: FactoryExhaustionError
 
-[src/backend/error][2].ValidationError
+[test/setup][2].FactoryExhaustionError
 
 ## Hierarchy
 
 - [AppError][3]
 
-  ↳ **ValidationError**
+  ↳ **FactoryExhaustionError**
 
 ## Table of contents
 
@@ -32,7 +32,7 @@
 
 ### constructor
 
-• **new ValidationError**(`message?`)
+• **new FactoryExhaustionError**(`message?`)
 
 #### Parameters
 
@@ -40,13 +40,13 @@
 | :--------- | :------- |
 | `message?` | `string` |
 
-#### Overrides
+#### Inherited from
 
 [AppError][3].[constructor][11]
 
 #### Defined in
 
-node_modules/named-app-errors/dist/modules/index.d.ts:30
+node_modules/typescript/lib/lib.es5.d.ts:978
 
 ## Properties
 
@@ -166,15 +166,15 @@ Create .stack property on a target object
 node_modules/@types/node/globals.d.ts:4
 
 [1]: ../README.md
-[2]: ../modules/src_backend_error.md
+[2]: ../modules/test_setup.md
 [3]: src_backend_error.apperror.md
-[4]: src_backend_error.validationerror.md#constructor
-[5]: src_backend_error.validationerror.md#message
-[6]: src_backend_error.validationerror.md#name
-[7]: src_backend_error.validationerror.md#stack
-[8]: src_backend_error.validationerror.md#preparestacktrace
-[9]: src_backend_error.validationerror.md#stacktracelimit
-[10]: src_backend_error.validationerror.md#capturestacktrace
+[4]: test_setup.factoryexhaustionerror.md#constructor
+[5]: test_setup.factoryexhaustionerror.md#message
+[6]: test_setup.factoryexhaustionerror.md#name
+[7]: test_setup.factoryexhaustionerror.md#stack
+[8]: test_setup.factoryexhaustionerror.md#preparestacktrace
+[9]: test_setup.factoryexhaustionerror.md#stacktracelimit
+[10]: test_setup.factoryexhaustionerror.md#capturestacktrace
 [11]: src_backend_error.apperror.md#constructor
 [12]: src_backend_error.apperror.md#message
 [13]: src_backend_error.apperror.md#name
