@@ -1,4 +1,4 @@
-import * as UR from './index';
+import * as UR from 'multiverse/next-use-redirection';
 
 describe('use-redirection', () => {
   void UR;

@@ -1,4 +1,4 @@
-import * as NIR from './index';
+import * as NIR from 'multiverse/next-isomorphic-redirect';
 
 describe('next-isomorphic-redirect', () => {
   void NIR;

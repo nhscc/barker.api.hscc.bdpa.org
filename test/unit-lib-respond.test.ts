@@ -1,4 +1,4 @@
-import * as NR from './index';
+import * as NR from 'multiverse/next-respond';
 
 describe('next-respond', () => {
   void NR;
