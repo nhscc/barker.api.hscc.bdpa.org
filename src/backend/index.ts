@@ -4,7 +4,7 @@ import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { getClientIp } from 'request-ip';
 import { getEnv } from 'universe/backend/env';
-import { getDb, idExists, itemToObjectId, itemToStringId } from 'universe/backend/db';
+import { getDb, itemExists, itemToObjectId, itemToStringId } from 'universe/backend/db';
 
 import {
   InvalidIdError,
@@ -254,9 +254,9 @@ export async function getBarkLikesUserIds({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) {
+    if (!(await itemExists(barks, bark_id))) {
       throw new ItemNotFoundError(bark_id);
-    } else if (after && !(await idExists(users, after))) {
+    } else if (after && !(await itemExists(users, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -294,9 +294,9 @@ export async function getUserLikedBarkIds({
     const users = db.collection<InternalUser>('users');
     const barks = db.collection<InternalBark>('barks');
 
-    if (!(await idExists(users, user_id))) {
+    if (!(await itemExists(users, user_id))) {
       throw new ItemNotFoundError(user_id);
-    } else if (after && !(await idExists(barks, after))) {
+    } else if (after && !(await itemExists(barks, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -334,8 +334,8 @@ export async function isBarkLiked({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await barks
@@ -365,8 +365,8 @@ export async function unlikeBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await Promise.all([
       users.updateOne({ _id: user_id }, { $pull: { liked: bark_id } }),
@@ -394,8 +394,8 @@ export async function likeBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await Promise.all([
       users.updateOne(
@@ -419,8 +419,6 @@ export async function createBark({
 }): Promise<PublicBark> {
   if (!isObject(data)) {
     throw new ValidationError('only JSON content is allowed');
-  } else if (!(data.owner instanceof ObjectId)) {
-    throw new InvalidIdError('invalid user_id for `owner`');
   } else if (
     typeof data.content != 'string' ||
     !data.content.length ||
@@ -431,13 +429,31 @@ export async function createBark({
     );
   } else if (typeof data.private != 'boolean') {
     throw new ValidationError('`private` must be a boolean');
-  } else if (data.barkbackTo !== null && !(data.barkbackTo instanceof ObjectId)) {
-    throw new ValidationError('invalid bark_id for `barkbackTo`');
-  } else if (data.rebarkOf !== null && !(data.rebarkOf instanceof ObjectId)) {
-    throw new ValidationError('invalid bark_id for `rebarkOf`');
   } else if (!key || typeof key != 'string') {
     throw new InvalidKeyError();
   }
+
+  try {
+    data.owner = new ObjectId(data.owner);
+  } catch {
+    throw new ValidationError('invalid user_id for `owner`');
+  }
+
+  if (data.barkbackTo) {
+    try {
+      data.barkbackTo = new ObjectId(data.barkbackTo);
+    } catch {
+      throw new ValidationError('invalid user_id for `barkbackTo`');
+    }
+  } else data.barkbackTo = null;
+
+  if (data.rebarkOf) {
+    try {
+      data.rebarkOf = new ObjectId(data.rebarkOf);
+    } catch {
+      throw new ValidationError('invalid user_id for `rebarkOf`');
+    }
+  } else data.rebarkOf = null;
 
   const { owner, content, private: p, barkbackTo, rebarkOf, ...rest } = data;
 
@@ -449,11 +465,11 @@ export async function createBark({
     throw new ValidationError('unexpected properties encountered');
   } else if (barkbackTo && rebarkOf) {
     throw new ValidationError('barks must be either a bark-back or a rebark');
-  } else if (!(await idExists(users, owner))) {
+  } else if (!(await itemExists(users, owner))) {
     throw new ItemNotFoundError(owner);
-  } else if (barkbackTo && !(await idExists(barks, barkbackTo))) {
+  } else if (barkbackTo && !(await itemExists(barks, barkbackTo))) {
     throw new ItemNotFoundError(barkbackTo);
-  } else if (rebarkOf && !(await idExists(barks, rebarkOf))) {
+  } else if (rebarkOf && !(await itemExists(barks, rebarkOf))) {
     throw new ItemNotFoundError(rebarkOf);
   }
 
@@ -503,7 +519,7 @@ export async function getAllUsers({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (after && !(await idExists(users, after))) {
+    if (after && !(await itemExists(users, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -539,7 +555,7 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
     await users.updateOne({ _id: user_id }, { $set: { deleted: true } });
     await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: -1 } });
   }
@@ -564,9 +580,9 @@ export async function getFollowingUserIds({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, user_id))) {
+    if (!(await itemExists(users, user_id))) {
       throw new ItemNotFoundError(user_id);
-    } else if (after && !(await idExists(users, after))) {
+    } else if (after && !(await itemExists(users, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -608,8 +624,8 @@ export async function isUserFollowing({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -640,8 +656,8 @@ export async function followUser({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
       { _id: user_id },
@@ -665,8 +681,8 @@ export async function unfollowUser({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, followed_id))) throw new ItemNotFoundError(followed_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { following: followed_id } });
   }
@@ -687,9 +703,9 @@ export async function getPackmateUserIds({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, user_id))) {
+    if (!(await itemExists(users, user_id))) {
       throw new ItemNotFoundError(user_id);
-    } else if (after && !(await idExists(users, after))) {
+    } else if (after && !(await itemExists(users, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -726,8 +742,8 @@ export async function isUserPackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -758,8 +774,8 @@ export async function addPackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
       { _id: user_id },
@@ -783,8 +799,8 @@ export async function removePackmate({
     const db = await getDb();
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(users, packmate_id))) throw new ItemNotFoundError(packmate_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { packmates: packmate_id } });
   }
@@ -806,9 +822,9 @@ export async function getBookmarkedBarkIds({
     const users = db.collection<InternalUser>('users');
     const barks = db.collection<InternalBark>('barks');
 
-    if (!(await idExists(users, user_id))) {
+    if (!(await itemExists(users, user_id))) {
       throw new ItemNotFoundError(user_id);
-    } else if (after && !(await idExists(barks, after))) {
+    } else if (after && !(await itemExists(barks, after))) {
       throw new ItemNotFoundError(after);
     }
 
@@ -846,8 +862,8 @@ export async function isBarkBookmarked({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     return (
       (await users
@@ -877,8 +893,8 @@ export async function bookmarkBark({
     const barks = db.collection<InternalBark>('barks');
     const users = db.collection<InternalUser>('users');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
       { _id: user_id },
@@ -903,8 +919,8 @@ export async function unbookmarkBark({
     const users = db.collection<InternalUser>('users');
     const barks = db.collection<InternalBark>('barks');
 
-    if (!(await idExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
-    if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+    if (!(await itemExists(barks, bark_id))) throw new ItemNotFoundError(bark_id);
+    if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne({ _id: user_id }, { $pull: { bookmarked: bark_id } });
   }
@@ -950,8 +966,20 @@ export async function createUser({
 
   const { email, name, phone, username, ...rest } = data;
 
-  if (Object.keys(rest).length > 0)
+  if (Object.keys(rest).length > 0) {
     throw new ValidationError('unexpected properties encountered');
+  }
+
+  const db = await getDb();
+  const users = await db.collection<InternalUser>('users');
+
+  if (await itemExists(users, username, 'username')) {
+    throw new ValidationError('a user with that username already exists');
+  } else if (await itemExists(users, email, 'email')) {
+    throw new ValidationError('a user with that email address already exists');
+  } else if (phone && (await itemExists(users, phone, 'phone'))) {
+    throw new ValidationError('a user with that phone number already exists');
+  }
 
   // * At this point, we can finally trust this data is not malicious
   const newUser: InternalUser = {
@@ -971,8 +999,7 @@ export async function createUser({
     }
   };
 
-  const db = await getDb();
-  await db.collection<InternalUser>('users').insertOne(newUser);
+  await users.insertOne(newUser);
   await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: 1 } });
 
   return getUser({ user_id: (newUser as WithId<InternalUser>)._id });
@@ -1026,7 +1053,7 @@ export async function updateUser({
   const db = await getDb();
   const users = db.collection<InternalUser>('users');
 
-  if (!(await idExists(users, user_id))) throw new ItemNotFoundError(user_id);
+  if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
   await users.updateOne({ _id: user_id }, { $set: patchUser });
 }
 

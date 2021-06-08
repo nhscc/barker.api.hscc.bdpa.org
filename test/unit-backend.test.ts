@@ -595,24 +595,39 @@ describe('::createBark', () => {
     const items: [NewBark, string][] = [
       [undefined as unknown as NewBark, 'only JSON'],
       ['string data' as unknown as NewBark, 'only JSON'],
-      [{} as unknown as NewBark, 'invalid'],
-      [{ data: 1 } as unknown as NewBark, 'invalid'],
-      [{ content: '', createdAt: Date.now() } as unknown as NewBark, 'invalid'],
+      [{} as unknown as NewBark, 'non-zero length string'],
+      [{ data: 1 } as unknown as NewBark, 'non-zero length string'],
+      [
+        { content: '', createdAt: Date.now() } as unknown as NewBark,
+        'non-zero length string'
+      ],
       [
         {
           owner: '',
           content: '',
           private: false
         } as unknown as NewBark,
+        'non-zero length string'
+      ],
+      [
+        {
+          owner: 'fds',
+          content: 'fds',
+          private: false,
+          barkbackTo: null,
+          rebarkOf: null
+        } as unknown as NewBark,
         'invalid'
       ],
       [
         {
           owner: dummyDbData.users[0]._id,
-          content: '777',
-          private: false
+          content: '',
+          private: false,
+          barkbackTo: null,
+          rebarkOf: null
         } as unknown as NewBark,
-        'invalid'
+        'non-zero length string'
       ],
       [
         {
@@ -654,16 +669,16 @@ describe('::createBark', () => {
         } as unknown as NewBark,
         'not found'
       ],
-      [
-        {
-          owner: dummyDbData.users[0]._id,
-          content: 'rst',
-          private: false,
-          barkbackTo: false,
-          rebarkOf: null
-        } as unknown as NewBark,
-        'invalid'
-      ],
+      // [                  // OK
+      //   {
+      //     owner: dummyDbData.users[0]._id,
+      //     content: 'rst',
+      //     private: false,
+      //     barkbackTo: false,
+      //     rebarkOf: null
+      //   } as unknown as NewBark,
+      //   'invalid'
+      // ],
       [
         {
           owner: dummyDbData.users[0]._id,
