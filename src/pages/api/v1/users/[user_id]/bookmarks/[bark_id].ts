@@ -54,7 +54,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     {
       req,
       res,
-      methods: ['GET'],
+      methods: ['GET', 'DELETE', 'PUT'],
       apiVersion: 1
     }
   );
