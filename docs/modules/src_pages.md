@@ -13,35 +13,46 @@
 
 ### default
 
-▸ **default**(`(destructured)`: Props): _Element_
+▸ **default**(`(destructured)`): `Element`
 
 #### Parameters
 
-| Name             | Type  |
-| :--------------- | :---- |
-| `(destructured)` | Props |
+| Name             | Type                                                             |
+| :--------------- | :--------------------------------------------------------------- |
+| `(destructured)` | `Awaited`<ReturnType<typeof [getServerSideProps][3]>>[`"props"`] |
 
-**Returns:** _Element_
+#### Returns
 
-Defined in: [src/pages/index.tsx:39][4]
+`Element`
+
+#### Defined in
+
+[src/pages/index.tsx:39][4]
 
 ---
 
 ### getServerSideProps
 
-▸ **getServerSideProps**(): _Promise_<{ `props`: { `isInProduction`: _boolean_ ;
-`nodeEnv`: _string_ ; `previouslyHydratedDb`: _boolean_ ; `shouldHydrateDb`:
-_boolean_ } }>
+▸ **getServerSideProps**(`(destructured)`): `Promise`<`Object`>
 
-**Returns:** _Promise_<{ `props`: { `isInProduction`: _boolean_ ; `nodeEnv`:
-_string_ ; `previouslyHydratedDb`: _boolean_ ; `shouldHydrateDb`: _boolean_ } }>
+#### Parameters
 
-Defined in: [src/pages/index.tsx:15][5]
+| Name             | Type                        |
+| :--------------- | :-------------------------- |
+| `(destructured)` | `GetServerSidePropsContext` |
+
+#### Returns
+
+`Promise`<`Object`>
+
+#### Defined in
+
+[src/pages/index.tsx:13][5]
 
 [1]: ../README.md
 [2]: src_pages.md#default
 [3]: src_pages.md#getserversideprops
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/index.tsx#L39
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/index.tsx#L39
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/index.tsx#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/index.tsx#L13

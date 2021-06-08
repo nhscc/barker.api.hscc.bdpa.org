@@ -17,29 +17,33 @@ src/pages/api/v1/users/%5Buser_id%5D/pack/%5Bpackmate_id%5D
 
 ### config
 
-Re-exports: [config][4]
+Renames and exports: [defaultConfig][4]
 
 ## Functions
 
 ### default
 
-▸ **default**(`req`: NextApiRequest, `res`: NextApiResponse): _Promise_\<void>
+▸ **default**(`req`, `res`): `Promise`\<void>
 
 #### Parameters
 
-| Name  | Type            |
-| :---- | :-------------- |
-| `req` | NextApiRequest  |
-| `res` | NextApiResponse |
+| Name  | Type              |
+| :---- | :---------------- |
+| `req` | `NextApiRequest`  |
+| `res` | `NextApiResponse` |
 
-**Returns:** _Promise_\<void>
+#### Returns
 
-Defined in: [src/pages/api/v1/users/\[user_id\]/pack/\[packmate_id\].ts:8][5]
+`Promise`\<void>
+
+#### Defined in
+
+[src/pages/api/v1/users/\[user_id\]/pack/\[packmate_id\].ts:14][5]
 
 [1]: ../README.md
 [2]: src_pages_api_v1_users__user_id__pack__packmate_id_.md#config
 [3]: src_pages_api_v1_users__user_id__pack__packmate_id_.md#default
-[4]: src_backend_middleware.md#config
+[4]: src_backend_middleware.md#defaultconfig
 
 [5]:
-https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/pages/api/v1/users/[user_id]/pack/[packmate_id].ts#L8
+https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/api/v1/users/[user_id]/pack/[packmate_id].ts#L14

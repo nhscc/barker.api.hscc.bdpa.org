@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- [_BarkId_][3]
+- [BarkId][3]
 
   ↳ **FollowedId**
 
@@ -26,19 +26,23 @@
 
 ### generationTime
 
-• **generationTime**: _number_
+• **generationTime**: `number`
 
 The generation time of this ObjectId instance
 
-Inherited from: [BarkId][3].[generationTime][8]
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:365
+[BarkId][3].[generationTime][8]
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:365
 
 ## Methods
 
 ### equals
 
-▸ **equals**(`otherID`: _string_ | _ObjectId_): _boolean_
+▸ **equals**(`otherID`): `boolean`
 
 Compares the equality of this ObjectId with `otherID`.
 
@@ -46,48 +50,66 @@ Compares the equality of this ObjectId with `otherID`.
 
 | Name      | Type                   | Description                           |
 | :-------- | :--------------------- | :------------------------------------ |
-| `otherID` | _string_ \| _ObjectId_ | ObjectId instance to compare against. |
+| `otherID` | `string` \| `ObjectId` | ObjectId instance to compare against. |
 
-**Returns:** _boolean_
+#### Returns
+
+`boolean`
 
 the result of comparing two ObjectId's
 
-Inherited from: [BarkId][3]
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:391
+[BarkId][3].[equals][9]
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:391
 
 ---
 
 ### getTimestamp
 
-▸ **getTimestamp**(): Date
+▸ **getTimestamp**(): `Date`
 
 Returns the generation date (accurate up to the second) that this ID was
 generated.
 
-**Returns:** Date
+#### Returns
+
+`Date`
 
 the generation date
 
-Inherited from: [BarkId][3]
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:402
+[BarkId][3].[getTimestamp][10]
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:402
 
 ---
 
 ### toHexString
 
-▸ **toHexString**(): _string_
+▸ **toHexString**(): `string`
 
 Return the ObjectId id as a 24 byte hex string representation
 
-**Returns:** _string_
+#### Returns
+
+`string`
 
 return the 24 byte hex string representation.
 
-Inherited from: [BarkId][3]
+#### Inherited from
 
-Defined in: node_modules/@types/bson/index.d.ts:407
+[BarkId][3].[toHexString][11]
+
+#### Defined in
+
+node_modules/@types/bson/index.d.ts:407
 
 [1]: ../README.md
 [2]: ../modules/types_global.md
@@ -97,3 +119,6 @@ Defined in: node_modules/@types/bson/index.d.ts:407
 [6]: types_global.followedid.md#gettimestamp
 [7]: types_global.followedid.md#tohexstring
 [8]: types_global.barkid.md#generationtime
+[9]: types_global.barkid.md#equals
+[10]: types_global.barkid.md#gettimestamp
+[11]: types_global.barkid.md#tohexstring

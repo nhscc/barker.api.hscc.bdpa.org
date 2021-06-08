@@ -4,118 +4,60 @@
 
 ## Table of contents
 
-### Type aliases
-
-- [AsyncHanCallback][2]
-- [GenHanParams][3]
-
 ### Variables
 
-- [config][4]
+- [defaultConfig][2]
 
 ### Functions
 
-- [handleEndpoint][5]
-- [sendHttpContrivedError][6]
-
-## Type aliases
-
-### AsyncHanCallback
-
-Ƭ **AsyncHanCallback**: (`params`: [_NextApiState_][7]) => _Promise_\<void>
-
-#### Type declaration
-
-▸ (`params`: [_NextApiState_][7]): _Promise_\<void>
-
-#### Parameters
-
-| Name     | Type                |
-| :------- | :------------------ |
-| `params` | [_NextApiState_][7] |
-
-**Returns:** _Promise_\<void>
-
-Defined in: [src/backend/middleware.ts:37][8]
-
----
-
-### GenHanParams
-
-Ƭ **GenHanParams**: [_NextApiState_][7] & { `apiVersion?`: _number_ ; `methods`:
-_string_\[] }
-
-Defined in: [src/backend/middleware.ts:38][9]
+- [wrapHandler][3]
 
 ## Variables
 
-### config
+### defaultConfig
 
-• `Const` **config**: _object_
+• `Const` **defaultConfig**: `PageConfig`
 
-#### Type declaration
+**`see`** [https://nextjs.org/docs/api-routes/api-middlewares#custom-config][4]
 
-| Name                       | Type     |
-| :------------------------- | :------- |
-| `api`                      | _object_ |
-| `api.bodyParser`           | _object_ |
-| `api.bodyParser.sizeLimit` | _number_ |
+#### Defined in
 
-Defined in: [src/backend/middleware.ts:64][10]
+[src/backend/middleware.ts:48][5]
 
 ## Functions
 
-### handleEndpoint
+### wrapHandler
 
-▸ **handleEndpoint**(`fn`: [_AsyncHanCallback_][2], `(destructured)`:
-[_GenHanParams_][3]): _Promise_\<void>
+▸ **wrapHandler**(`handler`, `(destructured)`): `Promise`\<void>
 
-Generic middleware to handle any api endpoint. You can give it an empty async
-handler function to trigger a 501 not implemented (to stub out API endpoints).
+Generic middleware "glue" to handle api endpoints with consistent behavior like
+safe exception handling.
 
-#### Parameters
-
-| Name             | Type                    |
-| :--------------- | :---------------------- |
-| `fn`             | [_AsyncHanCallback_][2] |
-| `(destructured)` | [_GenHanParams_][3]     |
-
-**Returns:** _Promise_\<void>
-
-Defined in: [src/backend/middleware.ts:73][11]
-
----
-
-### sendHttpContrivedError
-
-▸ **sendHttpContrivedError**(`res`: NextApiResponse, `responseJson?`:
-_Record_\<string, unknown>): _void_
+Passing `undefined` as `handler` or not calling `res.send()` in your handler
+will trigger an `HTTP 501 Not Implemented` response. This can be used to to stub
+out endpoints for later implementation.
 
 #### Parameters
 
-| Name            | Type                      |
-| :-------------- | :------------------------ |
-| `res`           | NextApiResponse           |
-| `responseJson?` | _Record_<string, unknown> |
+| Name             | Type                                                                    |
+| :--------------- | :---------------------------------------------------------------------- |
+| `handler`        | `undefined` \| (`params`: [NextApiState][6]) => `Promise`<void>         |
+| `(destructured)` | [NextApiState][6] & { `apiVersion?`: `number` ; `methods`: `string`[] } |
 
-**Returns:** _void_
+#### Returns
 
-Defined in: [src/backend/middleware.ts:53][12]
+`Promise`\<void>
+
+#### Defined in
+
+[src/backend/middleware.ts:60][7]
 
 [1]: ../README.md
-[2]: src_backend_middleware.md#asynchancallback
-[3]: src_backend_middleware.md#genhanparams
-[4]: src_backend_middleware.md#config
-[5]: src_backend_middleware.md#handleendpoint
-[6]: src_backend_middleware.md#sendhttpcontrivederror
-[7]: types_global.md#nextapistate
-[8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L37
-[9]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L38
-[10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L64
-[11]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L73
-[12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/middleware.ts#L53
+[2]: src_backend_middleware.md#defaultconfig
+[3]: src_backend_middleware.md#wraphandler
+[4]: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+[5]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/middleware.ts#L48
+[6]: types_global.md#nextapistate
+[7]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/middleware.ts#L60

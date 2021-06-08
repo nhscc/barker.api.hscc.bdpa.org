@@ -12,43 +12,47 @@
 
 ### getEnv
 
-▸ **getEnv**(`loud?`: _boolean_): _object_
+▸ **getEnv**(`loud?`): `Object`
 
 #### Parameters
 
 | Name   | Type      | Default value |
 | :----- | :-------- | :------------ |
-| `loud` | _boolean_ | false         |
+| `loud` | `boolean` | false         |
 
-**Returns:** _object_
+#### Returns
+
+`Object`
 
 | Name                                      | Type               |
 | :---------------------------------------- | :----------------- |
-| `API_ROOT_URI`                            | _string_           |
-| `BAN_HAMMER_DEFAULT_BAN_TIME_MINUTES`     | `null` \| _number_ |
-| `BAN_HAMMER_MAX_REQUESTS_PER_WINDOW`      | `null` \| _number_ |
-| `BAN_HAMMER_RECIDIVISM_PUNISH_MULTIPLIER` | `null` \| _number_ |
-| `BAN_HAMMER_RESOLUTION_WINDOW_SECONDS`    | `null` \| _number_ |
-| `BAN_HAMMER_WILL_BE_CALLED_EVERY_SECONDS` | `null` \| _number_ |
-| `DEBUG_MODE`                              | _boolean_          |
-| `DISABLED_API_VERSIONS`                   | _string_[]         |
-| `DISALLOWED_METHODS`                      | _string_[]         |
-| `EXTERNAL_SCRIPTS_BE_VERBOSE`             | _boolean_          |
-| `EXTERNAL_SCRIPTS_MONGODB_URI`            | _string_           |
-| `HYDRATE_DB_ON_STARTUP`                   | _boolean_          |
-| `IGNORE_RATE_LIMITS`                      | _boolean_          |
-| `LOCKOUT_ALL_KEYS`                        | _boolean_          |
-| `MAX_CONTENT_LENGTH_BYTES`                | _number_           |
-| `MONGODB_MS_PORT`                         | `null` \| _number_ |
-| `MONGODB_URI`                             | _string_           |
-| `NODE_ENV`                                | _string_           |
-| `PRUNE_DATA_MAX_LOGS`                     | `null` \| _number_ |
-| `REQUESTS_PER_CONTRIVED_ERROR`            | _number_           |
-| `RESULTS_PER_PAGE`                        | _number_           |
+| `API_ROOT_URI`                            | `string`           |
+| `BAN_HAMMER_DEFAULT_BAN_TIME_MINUTES`     | `null` \| `number` |
+| `BAN_HAMMER_MAX_REQUESTS_PER_WINDOW`      | `null` \| `number` |
+| `BAN_HAMMER_RECIDIVISM_PUNISH_MULTIPLIER` | `null` \| `number` |
+| `BAN_HAMMER_RESOLUTION_WINDOW_SECONDS`    | `null` \| `number` |
+| `BAN_HAMMER_WILL_BE_CALLED_EVERY_SECONDS` | `null` \| `number` |
+| `DEBUG_MODE`                              | `boolean`          |
+| `DISABLED_API_VERSIONS`                   | `string`[]         |
+| `DISALLOWED_METHODS`                      | `string`[]         |
+| `EXTERNAL_SCRIPTS_BE_VERBOSE`             | `boolean`          |
+| `EXTERNAL_SCRIPTS_MONGODB_URI`            | `string`           |
+| `HYDRATE_DB_ON_STARTUP`                   | `boolean`          |
+| `IGNORE_RATE_LIMITS`                      | `boolean`          |
+| `LOCKOUT_ALL_KEYS`                        | `boolean`          |
+| `MAX_CONTENT_LENGTH_BYTES`                | `number`           |
+| `MONGODB_MS_PORT`                         | `null` \| `number` |
+| `MONGODB_URI`                             | `string`           |
+| `NODE_ENV`                                | `string`           |
+| `PRUNE_DATA_MAX_LOGS`                     | `null` \| `number` |
+| `REQUESTS_PER_CONTRIVED_ERROR`            | `number`           |
+| `RESULTS_PER_PAGE`                        | `number`           |
 
-Defined in: [src/backend/env.ts:5][3]
+#### Defined in
+
+[src/backend/env.ts:27][3]
 
 [1]: ../README.md
 [2]: src_backend_env.md#getenv
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/src/backend/env.ts#L5
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/env.ts#L27

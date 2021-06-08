@@ -15,32 +15,36 @@
 
 ### BackendRedirectConfig
 
-Ƭ **BackendRedirectConfig**: _object_
+Ƭ **BackendRedirectConfig**: `Object`
 
 #### Type declaration
 
-| Name         | Type                  |
-| :----------- | :-------------------- |
-| `immediate?` | _boolean_             |
-| `res`        | NextApiResponse       |
-| `status?`    | [_HttpStatusCode_][4] |
+| Name         | Type                |
+| :----------- | :------------------ |
+| `immediate?` | `boolean`           |
+| `res`        | `NextApiResponse`   |
+| `status?`    | [HttpStatusCode][4] |
 
-Defined in: [lib/next-isomorphic-redirect/types.ts:9][6]
+#### Defined in
+
+[lib/next-isomorphic-redirect/types.ts:9][6]
 
 ---
 
 ### FrontendRedirectConfig
 
-Ƭ **FrontendRedirectConfig**: _object_
+Ƭ **FrontendRedirectConfig**: `Object`
 
 #### Type declaration
 
 | Name            | Type      |
 | :-------------- | :-------- |
-| `bypassRouter?` | _boolean_ |
-| `replace?`      | _boolean_ |
+| `bypassRouter?` | `boolean` |
+| `replace?`      | `boolean` |
 
-Defined in: [lib/next-isomorphic-redirect/types.ts:4][7]
+#### Defined in
+
+[lib/next-isomorphic-redirect/types.ts:4][7]
 
 ---
 
@@ -56,16 +60,20 @@ Defined in: [lib/next-isomorphic-redirect/types.ts:4][7]
 `504` | `505` | `506` | `507` | `508` | `509` | `510` | `511` | `555` | `598` |
 `599`
 
-Defined in: node_modules/@ergodark/types/dist/modules/index.d.ts:21
+#### Defined in
+
+node_modules/@ergodark/types/dist/modules/index.d.ts:21
 
 ---
 
 ### IsomorphicRedirectConfig
 
-Ƭ **IsomorphicRedirectConfig**: [_FrontendRedirectConfig_][3] &
-[_BackendRedirectConfig_][2]
+Ƭ **IsomorphicRedirectConfig**: [FrontendRedirectConfig][3] &
+[BackendRedirectConfig][2]
 
-Defined in: [lib/next-isomorphic-redirect/types.ts:15][8]
+#### Defined in
+
+[lib/next-isomorphic-redirect/types.ts:15][8]
 
 [1]: ../README.md
 [2]: lib_next_isomorphic_redirect_types.md#backendredirectconfig
@@ -73,8 +81,8 @@ Defined in: [lib/next-isomorphic-redirect/types.ts:15][8]
 [4]: lib_next_isomorphic_redirect_types.md#httpstatuscode
 [5]: lib_next_isomorphic_redirect_types.md#isomorphicredirectconfig
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L9
 [7]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L4
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L4
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/lib/next-isomorphic-redirect/types.ts#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L15

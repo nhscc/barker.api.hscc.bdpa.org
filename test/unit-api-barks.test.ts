@@ -22,12 +22,15 @@ import EndpointBarks, { config as ConfigBarks } from 'universe/pages/api/v1/bark
 import EndpointBarksIds, {
   config as ConfigBarksIds
 } from 'universe/pages/api/v1/barks/[...bark_ids]';
+
 import EndpointBarksSearch, {
   config as ConfigBarksSearch
 } from 'universe/pages/api/v1/barks/search';
+
 import EndpointBarksIdLikes, {
   config as ConfigBarksIdLikes
 } from 'universe/pages/api/v1/barks/[bark_id]/likes';
+
 import EndpointBarksIdLikesId, {
   config as ConfigBarksIdLikesId
 } from 'universe/pages/api/v1/barks/[bark_id]/likes/[user_id]';

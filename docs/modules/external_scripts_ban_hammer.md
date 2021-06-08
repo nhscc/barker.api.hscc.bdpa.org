@@ -12,19 +12,23 @@
 
 ### default
 
-▸ **default**(`isCLI?`: _boolean_): _Promise_\<void>
+▸ **default**(`isCLI?`): `Promise`\<void>
 
 #### Parameters
 
 | Name    | Type      | Default value |
 | :------ | :-------- | :------------ |
-| `isCLI` | _boolean_ | false         |
+| `isCLI` | `boolean` | false         |
 
-**Returns:** _Promise_\<void>
+#### Returns
 
-Defined in: [external-scripts/ban-hammer.ts:8][3]
+`Promise`\<void>
+
+#### Defined in
+
+[external-scripts/ban-hammer.ts:8][3]
 
 [1]: ../README.md
 [2]: external_scripts_ban_hammer.md#default
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/37281dd/external-scripts/ban-hammer.ts#L8
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/external-scripts/ban-hammer.ts#L8
