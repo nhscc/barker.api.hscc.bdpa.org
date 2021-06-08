@@ -99,10 +99,25 @@ export async function initializeDb(db: Db) {
 }
 
 /**
- * Checks if an item with `id` exists within `collection`.
+ * Checks if an item identified by some `key` (default identifier is `"_id"`)
+ * exists within `collection`.
  */
-export async function idExists(collection: Collection, id: ObjectId) {
-  return !!(await collection.find({ _id: id }).project({ _id: 1 }).count());
+export async function itemExists(
+  collection: Collection,
+  id: ObjectId,
+  key?: '_id' | 'owner' | 'rebarkOf' | 'barkbackTo'
+): Promise<boolean>;
+export async function itemExists(
+  collection: Collection,
+  id: string,
+  key: string
+): Promise<boolean>;
+export async function itemExists(
+  collection: Collection,
+  id: ObjectId | string,
+  key = '_id'
+): Promise<boolean> {
+  return (await collection.find({ [key]: id }).count()) != 0;
 }
 
 export type IdItem<T extends ObjectId> = WithId<unknown> | string | T | Nullish;
