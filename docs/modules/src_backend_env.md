@@ -32,7 +32,7 @@
 | `BAN_HAMMER_RECIDIVISM_PUNISH_MULTIPLIER` | `null` \| `number` |
 | `BAN_HAMMER_RESOLUTION_WINDOW_SECONDS`    | `null` \| `number` |
 | `BAN_HAMMER_WILL_BE_CALLED_EVERY_SECONDS` | `null` \| `number` |
-| `DEBUG_MODE`                              | `boolean`          |
+| `DEBUG_INSPECTING`                        | `boolean`          |
 | `DISABLED_API_VERSIONS`                   | `string`[]         |
 | `DISALLOWED_METHODS`                      | `string`[]         |
 | `EXTERNAL_SCRIPTS_BE_VERBOSE`             | `boolean`          |

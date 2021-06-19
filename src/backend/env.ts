@@ -80,9 +80,7 @@ export function getEnv(loud = false) {
       !!process.env.HYDRATE_DB_ON_STARTUP &&
       process.env.HYDRATE_DB_ON_STARTUP !== 'false',
     API_ROOT_URI: (process.env.API_ROOT_URI || '').toString(),
-    DEBUG_MODE:
-      process.env.TERM_PROGRAM == 'vscode' ||
-      /--debug|--inspect/.test(process.execArgv.join(' '))
+    DEBUG_INSPECTING: !!process.env.VSCODE_INSPECTOR_OPTIONS
   };
 
   if (loud && env.NODE_ENV == 'development') {
