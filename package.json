@@ -98,6 +98,7 @@
     "dotenv": "^10.0.0",
     "dotenv-webpack": "^7.0.3",
     "eslint": "^7.29.0",
+    "eslint-config-next": "^11.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-import-resolver-typescript": "^2.4.0",
     "eslint-plugin-import": "^2.23.4",
