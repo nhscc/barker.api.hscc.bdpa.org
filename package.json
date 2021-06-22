@@ -73,7 +73,7 @@
     "@types/mongodb": "^3.6.18",
     "@types/node": "^15.12.4",
     "@types/react": "^17.0.11",
-    "@types/request-ip": "^0.0.35",
+    "@types/request-ip": "^0.0.36",
     "@types/semver": "^7.3.6",
     "@types/test-listen": "^1.1.0",
     "@types/webpack": "^5.28.0",
