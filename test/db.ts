@@ -174,7 +174,8 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
  * Setup a test version of the database using jest lifecycle hooks.
  *
  * @param defer If `true`, `beforeEach` and `afterEach` lifecycle hooks are
- * skipped. `beforeEach` is run once
+ * skipped and the database is initialized and hydrated once before all tests
+ * are run. **In this mode, all tests will share the same database state!**
  */
 export function setupTestDb(defer = false) {
   const port = getEnv().DEBUG_INSPECTING ? getEnv().MONGODB_MS_PORT : undefined;
