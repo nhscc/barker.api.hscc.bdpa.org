@@ -141,7 +141,9 @@ describe('generic correctness tests', () => {
 
 getFixtures(api).forEach(async (expected, ndx) => {
   // eslint-disable-next-line jest/prefer-expect-assertions
-  it(`#${ndx + 1} ${expected.handler.url} [${expected.method}]`, async () => {
+  it(`#${ndx + 1} [${expected.method}] ${expected.handler.url}${
+    expected.subject ? ` ${expected.subject}` : ''
+  }`, async () => {
     if (!lastRunSuccess) return;
 
     expect.hasAssertions();
@@ -154,16 +156,6 @@ getFixtures(api).forEach(async (expected, ndx) => {
 
     const requestBody =
       typeof expected.body == 'function' ? expected.body(memory) : expected.body;
-
-    const expectedStatus =
-      typeof expected.response.status == 'function'
-        ? expected.response.status(memory)
-        : expected.response.status;
-
-    const expectedJson =
-      typeof expected.response.json == 'function'
-        ? expected.response.json(memory)
-        : expected.response.json;
 
     await withMockedEnv(
       async () => {
@@ -182,18 +174,35 @@ getFixtures(api).forEach(async (expected, ndx) => {
                 : {})
             });
 
+            const expectedStatus =
+              typeof expected.response.status == 'function'
+                ? expected.response.status(res.status, memory)
+                : expected.response.status;
+
             const json = await res.json();
-            if (res.status != expectedStatus) {
-              // eslint-disable-next-line no-console
-              console.warn('unexpected status for result:', json);
+
+            if (expectedStatus) {
+              if (res.status != expectedStatus) {
+                // eslint-disable-next-line no-console
+                console.warn('unexpected status for result:', json);
+              }
+
+              // eslint-disable-next-line jest/no-conditional-expect
+              expect(res.status).toBe(expectedStatus);
+              // eslint-disable-next-line jest/no-conditional-expect
+              expect(json.success)[res.status == 200 ? 'toBeTrue' : 'toBeFalsy']();
+              delete json.success;
             }
 
-            expect(res.status).toBe(expectedStatus);
-            expect(json.success)[res.status == 200 ? 'toBeTrue' : 'toBeFalsy']();
+            const expectedJson =
+              typeof expected.response.json == 'function'
+                ? expected.response.json(json, memory)
+                : expected.response.json;
 
-            delete json.success;
-            expect(json).toStrictEqual(expectedJson);
-
+            if (expectedJson) {
+              // eslint-disable-next-line jest/no-conditional-expect
+              expect(json).toStrictEqual(expectedJson);
+            }
             const memorize = { status: res.status, json } as TestResult;
             memory.push(memorize);
             memory.latest = memorize;
