@@ -170,7 +170,13 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
   return newData;
 }
 
-export function setupTestDb() {
+/**
+ * Setup a test version of the database using jest lifecycle hooks.
+ *
+ * @param defer If `true`, `beforeEach` and `afterEach` lifecycle hooks are
+ * skipped. `beforeEach` is run once
+ */
+export function setupTestDb(defer = false) {
   const port = getEnv().DEBUG_INSPECTING ? getEnv().MONGODB_MS_PORT : undefined;
 
   const server = new MongoMemoryServer({
@@ -197,20 +203,24 @@ export function setupTestDb() {
     return { client, db };
   };
 
-  beforeAll(async () => {
-    setClientAndDb(await getNewClientAndDb());
-  });
-
-  beforeEach(async () => {
+  const initializeAndHydrate = async () => {
     const db = await getDb();
     await initializeDb(db);
     await hydrateDb(db, dummyDbData);
+  };
+
+  beforeAll(async () => {
+    setClientAndDb(await getNewClientAndDb());
+    if (defer) await initializeAndHydrate();
   });
 
-  afterEach(async () => {
-    const db = await getDb();
-    await destroyDb(db);
-  });
+  if (!defer) {
+    beforeEach(initializeAndHydrate);
+    afterEach(async () => {
+      const db = await getDb();
+      await destroyDb(db);
+    });
+  }
 
   afterAll(async () => {
     const client = await getDbClient();
