@@ -223,7 +223,7 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
     const db = await getDb();
     const numUpdated = await db
       .collection<InternalBark>('barks')
-      .updateMany({ _id: { $in: bark_ids } }, { $set: { deleted: true } })
+      .updateMany({ _id: { $in: bark_ids }, deleted: false }, { $set: { deleted: true } })
       .then((r) => r.matchedCount);
 
     await db
@@ -231,7 +231,7 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
       .updateOne({}, { $inc: { totalBarks: -numUpdated } });
 
     if (numUpdated != bark_ids.length) {
-      throw new NotFoundError('some or all bark_ids could not be found');
+      throw new NotFoundError('some or all bark_ids were not deleted');
     }
   }
 }
@@ -369,7 +369,7 @@ export async function unlikeBark({
     await Promise.all([
       users.updateOne({ _id: user_id }, { $pull: { liked: bark_id } }),
       barks.updateOne(
-        { _id: bark_id },
+        { _id: bark_id, likes: { $in: [user_id] } },
         { $pull: { likes: user_id }, $inc: { totalLikes: -1 } }
       )
     ]);
@@ -397,11 +397,11 @@ export async function likeBark({
 
     await Promise.all([
       users.updateOne(
-        { _id: user_id, liked: { $ne: bark_id } },
+        { _id: user_id, liked: { $nin: [bark_id] } },
         { $push: { liked: { $each: [bark_id], $position: 0 } } }
       ),
       barks.updateOne(
-        { _id: bark_id, liked: { $ne: bark_id } },
+        { _id: bark_id, likes: { $nin: [user_id] } },
         { $push: { likes: { $each: [user_id], $position: 0 } }, $inc: { totalLikes: 1 } }
       )
     ]);
@@ -554,8 +554,14 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
     const users = db.collection<InternalUser>('users');
 
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
-    await users.updateOne({ _id: user_id }, { $set: { deleted: true } });
-    await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: -1 } });
+
+    const numUpdated = await users
+      .updateOne({ _id: user_id, deleted: false }, { $set: { deleted: true } })
+      .then((r) => r.matchedCount);
+
+    await db
+      .collection<InternalInfo>('info')
+      .updateOne({}, { $inc: { totalUsers: -numUpdated } });
   }
 }
 
@@ -1045,11 +1051,17 @@ export async function updateUser({
   if (Object.keys(rest).length > 0)
     throw new ValidationError('unexpected properties encountered');
 
-  // * At this point, we can finally trust this data is not malicious
-  const patchUser: PatchUser = { name, email, phone };
-
   const db = await getDb();
   const users = db.collection<InternalUser>('users');
+
+  if (await itemExists(users, email, 'email')) {
+    throw new ValidationError('a user with that email address already exists');
+  } else if (phone && (await itemExists(users, phone, 'phone'))) {
+    throw new ValidationError('a user with that phone number already exists');
+  }
+
+  // * At this point, we can finally trust this data is not malicious
+  const patchUser: PatchUser = { name, email, phone };
 
   if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
   await users.updateOne({ _id: user_id }, { $set: patchUser });

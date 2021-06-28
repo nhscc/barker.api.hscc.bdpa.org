@@ -404,14 +404,20 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: { user_id: 'blah-blah-blah' },
       method: 'GET',
-      response: { status: 400 }
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('invalid user_id "blah-blah-blah"') }
+      }
     },
     {
       subject: 'fetch non-existent user',
       handler: api.usersId,
       params: { user_id: new ObjectId().toHexString() },
       method: 'GET',
-      response: { status: 404 }
+      response: {
+        status: 404,
+        json: { error: expect.stringContaining('not found') }
+      }
     },
     {
       subject: 'valid delete user',
@@ -511,8 +517,16 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         };
       },
       method: 'PUT',
-      body: { username: 'ewarren' },
-      response: { status: 400 }
+      body: {
+        username: 'ewarren',
+        name: 'Elizabeth Warren',
+        email: 'liz@ewarren.com',
+        phone: '978-555-5555'
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('unexpected properties') }
+      }
     },
     {
       subject: "can't circumvent uniqueness constraint",
@@ -523,8 +537,11 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         };
       },
       method: 'PUT',
-      body: { email: 'test2@test.com' },
-      response: { status: 400 }
+      body: { email: 'test2@test.com', name: 'Elizabeth Warren', phone: '978-555-5555' },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('with that email') }
+      }
     },
     {
       subject: "can't circumvent uniqueness constraint",
@@ -535,8 +552,25 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         };
       },
       method: 'PUT',
-      body: { email: 'h@hillaryclinton.com' },
-      response: { status: 400 }
+      body: {
+        email: 'h@hillaryclinton.com',
+        name: 'Elizabeth Warren',
+        phone: '978-555-5555'
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('with that email') }
+      }
+    },
+    {
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
     },
     {
       subject: "can't circumvent uniqueness constraint",
@@ -547,8 +581,11 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         };
       },
       method: 'PUT',
-      body: { email: '555-666-7777' },
-      response: { status: 400 }
+      body: { name: 'Elizabeth Warren', phone: '555-666-7777', email: 'fake@email.com' },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('with that phone number') }
+      }
     },
     {
       subject: 'get user like count',
@@ -562,7 +599,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: {
         status: 200,
         json: {
-          user: { liked: 0 }
+          user: expect.objectContaining({ liked: 0 })
         }
       }
     }
