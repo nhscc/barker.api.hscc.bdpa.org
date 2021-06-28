@@ -131,12 +131,51 @@ const memory: TestResultset = [
 memory.latest = memory[0];
 memory.getResultAt = () => memory[0];
 
-// ? Fail fast and fail early
+// ? Fail fast and early
 let lastRunSuccess = true;
 
 describe('generic correctness tests', () => {
-  test.todo('all endpoints fail on bad authentication');
-  test.todo('server sends HTTP 555 at proper cadence');
+  Object.values(api).forEach((endpoint) => {
+    it(`${endpoint.url} fails on bad authentication`, async () => {
+      expect.hasAssertions();
+
+      await withMockedEnv(
+        async () => {
+          await testApiHandler({
+            handler: endpoint,
+            test: async ({ fetch }) => {
+              await expect(fetch().then((r) => r.status)).resolves.toBe(401);
+            }
+          });
+        },
+        {
+          REQUESTS_PER_CONTRIVED_ERROR: '10',
+          IGNORE_RATE_LIMITS: 'true'
+        }
+      );
+    });
+
+    it(`${endpoint.url} fails if rate limited`, async () => {
+      expect.hasAssertions();
+
+      await withMockedEnv(
+        async () => {
+          await testApiHandler({
+            handler: endpoint,
+            test: async ({ fetch }) => {
+              await expect(
+                fetch({ headers: { key: DUMMY_KEY } }).then((r) => r.status)
+              ).resolves.toBe(429);
+            }
+          });
+        },
+        {
+          REQUESTS_PER_CONTRIVED_ERROR: '10',
+          IGNORE_RATE_LIMITS: 'false'
+        }
+      );
+    });
+  });
 });
 
 getFixtures(api).forEach(async (expected, ndx) => {
@@ -203,6 +242,7 @@ getFixtures(api).forEach(async (expected, ndx) => {
               // eslint-disable-next-line jest/no-conditional-expect
               expect(json).toStrictEqual(expectedJson);
             }
+
             const memorize = { status: res.status, json } as TestResult;
             memory.push(memorize);
             memory.latest = memorize;
