@@ -38,9 +38,7 @@ const isObject = (object: unknown) =>
   !Array.isArray(object) && object !== null && typeof object == 'object';
 
 const nameRegex = /^[a-zA-Z0-9 -]+$/;
-const emailRegex =
-  // eslint-disable-next-line no-control-regex
-  /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
+const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 const phoneRegex =
   /^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?$/;
 const usernameRegex = /^[a-zA-Z0-9_-]{5,20}$/;
@@ -225,7 +223,7 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
     const db = await getDb();
     const numUpdated = await db
       .collection<InternalBark>('barks')
-      .updateMany({ _id: { $in: bark_ids } }, { $set: { deleted: true } })
+      .updateMany({ _id: { $in: bark_ids }, deleted: false }, { $set: { deleted: true } })
       .then((r) => r.matchedCount);
 
     await db
@@ -233,7 +231,7 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
       .updateOne({}, { $inc: { totalBarks: -numUpdated } });
 
     if (numUpdated != bark_ids.length) {
-      throw new NotFoundError('some or all bark_ids could not be found');
+      throw new NotFoundError('some or all bark_ids were not deleted');
     }
   }
 }
@@ -371,7 +369,7 @@ export async function unlikeBark({
     await Promise.all([
       users.updateOne({ _id: user_id }, { $pull: { liked: bark_id } }),
       barks.updateOne(
-        { _id: bark_id },
+        { _id: bark_id, likes: { $in: [user_id] } },
         { $pull: { likes: user_id }, $inc: { totalLikes: -1 } }
       )
     ]);
@@ -399,11 +397,11 @@ export async function likeBark({
 
     await Promise.all([
       users.updateOne(
-        { _id: user_id, liked: { $ne: bark_id } },
+        { _id: user_id, liked: { $nin: [bark_id] } },
         { $push: { liked: { $each: [bark_id], $position: 0 } } }
       ),
       barks.updateOne(
-        { _id: bark_id, liked: { $ne: bark_id } },
+        { _id: bark_id, likes: { $nin: [user_id] } },
         { $push: { likes: { $each: [user_id], $position: 0 } }, $inc: { totalLikes: 1 } }
       )
     ]);
@@ -556,8 +554,14 @@ export async function deleteUser({ user_id }: { user_id: ObjectId }): Promise<vo
     const users = db.collection<InternalUser>('users');
 
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
-    await users.updateOne({ _id: user_id }, { $set: { deleted: true } });
-    await db.collection<InternalInfo>('info').updateOne({}, { $inc: { totalUsers: -1 } });
+
+    const numUpdated = await users
+      .updateOne({ _id: user_id, deleted: false }, { $set: { deleted: true } })
+      .then((r) => r.matchedCount);
+
+    await db
+      .collection<InternalInfo>('info')
+      .updateOne({}, { $inc: { totalUsers: -numUpdated } });
   }
 }
 
@@ -1047,11 +1051,17 @@ export async function updateUser({
   if (Object.keys(rest).length > 0)
     throw new ValidationError('unexpected properties encountered');
 
-  // * At this point, we can finally trust this data is not malicious
-  const patchUser: PatchUser = { name, email, phone };
-
   const db = await getDb();
   const users = db.collection<InternalUser>('users');
+
+  if (await itemExists(users, email, 'email')) {
+    throw new ValidationError('a user with that email address already exists');
+  } else if (phone && (await itemExists(users, phone, 'phone'))) {
+    throw new ValidationError('a user with that phone number already exists');
+  }
+
+  // * At this point, we can finally trust this data is not malicious
+  const patchUser: PatchUser = { name, email, phone };
 
   if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
   await users.updateOne({ _id: user_id }, { $set: patchUser });
