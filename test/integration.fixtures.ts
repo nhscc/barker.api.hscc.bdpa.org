@@ -22,6 +22,7 @@ export type NextApiHandlerMixin = NextApiHandler<unknown> & {
 /**
  * A single test result stored in `memory`.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TestResult<T = any> = {
   status: number;
   json: T | undefined;
