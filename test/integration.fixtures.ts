@@ -11,7 +11,8 @@ import { ObjectId } from 'mongodb';
 // TODO: add an `id` param that allows getResultAt using that `id` (along with
 // TODO: index)
 
-const tossError = () => toss(new Error('sanity check failed'));
+// TODO: document functionality: RUN_ONLY='#, ##,###,...'
+// TODO: "fail fast" should be optional
 
 export type NextApiHandlerMixin = NextApiHandler<unknown> & {
   config?: PageConfig;
@@ -45,7 +46,8 @@ export type TestResultset = TestResult[] & {
    *
    * @param index Specify a previous test result index starting at 1 (not zero!)
    */
-  getResultAt: <T = unknown>(index: number) => TestResult<T>;
+  getResultAt<T = unknown>(index: number): TestResult<T>;
+  getResultAt<T = unknown>(index: number, prop: string): T;
 };
 
 /**
@@ -53,6 +55,11 @@ export type TestResultset = TestResult[] & {
  * for correctness.
  */
 export type TestFixture = {
+  /**
+   * The test index X (as in "#X") that is reported to the user when a test
+   * fails.
+   */
+  displayIndex: number;
   /**
    * A very brief couple of words added to the end of the test title.
    */
@@ -107,8 +114,11 @@ export type TestFixture = {
 export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixture[] {
   const initialBarkCount = dummyDbData.barks.length;
   const initialUserCount = dummyDbData.users.length;
+  const runOnly = process.env.RUN_ONLY?.split(',')
+    .map((n) => parseInt(n))
+    .sort((a, b) => a - b);
 
-  return [
+  const fixtures: Omit<TestFixture, 'displayIndex'>[] = [
     {
       subject: 'get metadata',
       handler: api.info,
@@ -160,7 +170,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(-2).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(-2, 'user.user_id')
         };
       },
       method: 'GET',
@@ -354,10 +364,11 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: {
         status: 200,
         json: (json, { getResultAt }) => {
-          const users = (json?.users as PublicUser[]) || tossError();
+          const users =
+            (json?.users as PublicUser[]) || toss(new Error('missing "users" in result'));
 
           expect(users[0]).toStrictEqual({
-            user_id: getResultAt<{ user: PublicUser }>(5).json?.user.user_id,
+            user_id: getResultAt<string>(5, 'user.user_id'),
             name: 'Test User 2',
             email: 'test2@test.com',
             phone: '555-666-7777',
@@ -370,7 +381,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           });
 
           expect(users[1]).toStrictEqual({
-            user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id,
+            user_id: getResultAt<string>(4, 'user.user_id'),
             name: 'Test User',
             email: 'test@test.com',
             phone: '123-555-6666',
@@ -383,7 +394,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           });
 
           expect(users[2]).toStrictEqual({
-            user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id,
+            user_id: getResultAt<string>(1, 'user.user_id'),
             name: 'Hillary Clinton',
             email: 'h@hillaryclinton.com',
             phone: '773-555-7777',
@@ -424,7 +435,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(1, 'user.user_id')
         };
       },
       method: 'DELETE',
@@ -454,7 +465,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(1, 'user.user_id')
         };
       },
       method: 'GET',
@@ -468,7 +479,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(1, 'user.user_id')
         };
       },
       method: 'DELETE',
@@ -497,7 +508,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'PUT',
@@ -513,7 +524,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'PUT',
@@ -533,7 +544,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'PUT',
@@ -548,7 +559,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'PUT',
@@ -577,7 +588,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'PUT',
@@ -592,7 +603,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.usersId,
       params: ({ getResultAt }) => {
         return {
-          user_id: getResultAt<{ user: PublicUser }>(4).json?.user.user_id || tossError()
+          user_id: getResultAt<string>(4, 'user.user_id')
         };
       },
       method: 'GET',
@@ -602,19 +613,142 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           user: expect.objectContaining({ liked: 0 })
         }
       }
+    },
+    {
+      subject: 'valid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>(4, 'user.user_id'),
+        content: 'Hello, Barker world!',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      }),
+      response: {
+        status: 200,
+        json: (_, { getResultAt }) => ({
+          bark: {
+            owner: getResultAt<string>(4, 'user.user_id'),
+            content: 'Hello, Barker world!',
+            createdAt: expect.any(Number),
+            deleted: false,
+            private: false,
+            barkbackTo: null,
+            rebarkOf: null,
+            bark_id: expect.any(String),
+            likes: 0,
+            rebarks: 0,
+            barkbacks: 0
+          }
+        })
+      }
+    },
+    {
+      subject: 'confirm metadata',
+      handler: api.info,
+      method: 'GET',
+      response: {
+        status: 200,
+        json: { totalBarks: initialBarkCount + 1, totalUsers: initialUserCount + 2 }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: '60d6501dc703d70008603dc9',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      },
+      response: {
+        status: 404,
+        json: { error: expect.stringContaining('owner user_id not found') }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: 'bad-key',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('owner user_id invalid') }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: '5ec8adf06e38137ff2e58770',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: '60d6501dc703d70008603dc9',
+        rebarkOf: null
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('barkbackTo user_id not found') }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: '5ec8adf06e38137ff2e58770',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: 'bad-key',
+        rebarkOf: null
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('barkbackTo user_id invalid') }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: '5ec8adf06e38137ff2e58770',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: '60d6501dc703d70008603dc9'
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('rebarkOf user_id not found') }
+      }
+    },
+    {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: {
+        owner: '5ec8adf06e38137ff2e58770',
+        content: 'Hello, bark world!',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: 'bad-key'
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('rebarkOf user_id invalid') }
+      }
     }
-    // {
-    //   subject: 'create new bark'
-    // },
-    // {
-    //   subject: 'confirm metadata',
-    //   handler: api.info,
-    //   method: 'GET',
-    //   response: {
-    //     status: 200,
-    //     json: { totalBarks: initialBarkCount + 1, totalUsers: initialUserCount + 2 }
-    //   }
-    // },
     // {
     //   subject: 'like new bark'
     // },
@@ -644,12 +778,12 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'DELETE',
     //   response: { status: 200 }
-    // },
+    // }
     // {
     //   subject: 'get users who liked bark'
     // },
@@ -676,7 +810,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'GET',
@@ -690,7 +824,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'DELETE',
@@ -737,7 +871,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'DELETE',
@@ -781,7 +915,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'DELETE',
@@ -825,7 +959,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   handler: api.usersId,
     //   params: ({ getResultAt }) => {
     //     return {
-    //       user_id: getResultAt<{ user: PublicUser }>(1).json?.user.user_id || tossError()
+    //       user_id: getResultAt<string>(1, 'user.user_id')
     //     };
     //   },
     //   method: 'DELETE',
@@ -892,4 +1026,13 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     //   subject: 'search returns expected barks'
     // }
   ];
+
+  return fixtures.filter<TestFixture>((test, ndx): test is TestFixture => {
+    const displayIndex = ndx + 1;
+    if (runOnly && !runOnly.includes(displayIndex)) return false;
+    (test as TestFixture).displayIndex = !runOnly
+      ? displayIndex
+      : runOnly.shift() ?? toss(new Error('ran out of RUN_ONLY indices'));
+    return true;
+  });
 }
