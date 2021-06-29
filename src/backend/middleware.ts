@@ -46,8 +46,38 @@ const runCorsMiddleware = (req: NextApiRequest, res: NextApiResponse) => {
  * @see https://nextjs.org/docs/api-routes/api-middlewares#custom-config
  */
 export const defaultConfig: PageConfig = {
-  api: { bodyParser: { sizeLimit: getEnv().MAX_CONTENT_LENGTH_BYTES } }
+  api: {
+    bodyParser: {
+      get sizeLimit() {
+        return getEnv().MAX_CONTENT_LENGTH_BYTES;
+      }
+    }
+  }
 };
+
+export async function handleError(res: NextApiResponse, error: { message: string }) {
+  const errorJson = error?.message ? { error: error.message } : {};
+
+  if (error instanceof GuruMeditationError) {
+    sendHttpError(res, {
+      error: 'sanity check failed: please report exactly what you did just now!'
+    });
+  } else if (
+    error instanceof InvalidIdError ||
+    error instanceof InvalidKeyError ||
+    error instanceof ValidationError
+  ) {
+    sendHttpBadRequest(res, errorJson);
+  } else if (error instanceof NotAuthorizedError) {
+    sendHttpUnauthorized(res, errorJson);
+  } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
+    sendHttpNotFound(res, errorJson);
+  } else if (error instanceof AppError) {
+    sendHttpError(res, errorJson);
+  } else {
+    sendHttpError(res);
+  }
+}
 
 /**
  * Generic middleware "glue" to handle api endpoints with consistent behavior
@@ -117,24 +147,6 @@ export async function wrapHandler(
       }
     }
   } catch (error) {
-    if (error instanceof GuruMeditationError) {
-      sendHttpError(finalRes, {
-        error: 'sanity check failed: please report exactly what you did just now!'
-      });
-    } else if (
-      error instanceof InvalidIdError ||
-      error instanceof InvalidKeyError ||
-      error instanceof ValidationError
-    ) {
-      sendHttpBadRequest(finalRes, error.message ? { error: error.message } : {});
-    } else if (error instanceof NotAuthorizedError) {
-      sendHttpUnauthorized(finalRes);
-    } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
-      sendHttpNotFound(finalRes);
-    } else if (error instanceof AppError) {
-      sendHttpError(finalRes, error.message ? { error: error.message } : {});
-    } else {
-      sendHttpError(finalRes);
-    }
+    await handleError(res, error);
   }
 }

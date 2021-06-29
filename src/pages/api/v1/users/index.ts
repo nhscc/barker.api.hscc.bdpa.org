@@ -1,6 +1,7 @@
 import { wrapHandler } from 'universe/backend/middleware';
 import { createUser, getAllUsers } from 'universe/backend';
-import { sendHttpBadRequest, sendHttpOk } from 'multiverse/next-respond';
+import { sendHttpOk } from 'multiverse/next-respond';
+import { ValidationError } from 'universe/backend/error';
 import { ObjectId } from 'mongodb';
 
 import type { NextApiResponse, NextApiRequest } from 'next';
@@ -17,16 +18,12 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       try {
         after = req.query.after ? new ObjectId(req.query.after.toString()) : null;
       } catch {
-        sendHttpBadRequest(res, {
-          error: `invalid user_id "${req.query.after.toString()}"`
-        });
+        throw new ValidationError(`invalid user_id "${req.query.after.toString()}"`);
       }
 
-      if (after !== undefined) {
-        if (req.method == 'GET') {
-          sendHttpOk(res, { users: await getAllUsers({ after }) });
-        } else sendHttpOk(res, { user: await createUser({ key, data: req.body }) });
-      }
+      if (req.method == 'GET') {
+        sendHttpOk(res, { users: await getAllUsers({ after }) });
+      } else sendHttpOk(res, { user: await createUser({ key, data: req.body }) });
     },
     { req, res, methods: ['GET', 'POST'], apiVersion: 1 }
   );

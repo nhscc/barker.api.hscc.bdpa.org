@@ -5,6 +5,7 @@ import banHammer from 'externals/ban-hammer';
 
 import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
 import type { WithId } from 'mongodb';
+import { GuruMeditationError } from 'universe/backend/error';
 
 const { getDb, getNewClientAndDb } = setupTestDb();
 
@@ -66,7 +67,7 @@ describe('external-scripts/ban-hammer', () => {
     await banHammer();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getRateLimits()).toHaveLength(0);
+    expect(await getRateLimits()).toBeArrayOfSize(0);
 
     process.env.BAN_HAMMER_RESOLUTION_WINDOW_SECONDS = '5'; // ? 5000ms
     await banHammer();
@@ -83,7 +84,7 @@ describe('external-scripts/ban-hammer', () => {
     await banHammer();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getRateLimits()).toHaveLength(0);
+    expect(await getRateLimits()).toBeArrayOfSize(0);
   });
 
   it('rate limits with respect to BAN_HAMMER_WILL_BE_CALLED_EVERY_SECONDS', async () => {
@@ -94,7 +95,7 @@ describe('external-scripts/ban-hammer', () => {
     const requestLogDb = await getRequestLogDb();
     const requestLogEntry = await requestLogDb.find().limit(1).next();
 
-    if (!requestLogEntry) throw new Error('No request-log entry found?!');
+    if (!requestLogEntry) throw new GuruMeditationError('No request-log entry found?!');
 
     const now = ((_now: number) => _now - (_now % 5000) - 2000)(Date.now());
 
@@ -107,7 +108,7 @@ describe('external-scripts/ban-hammer', () => {
     await banHammer();
 
     setClientAndDb(await getNewClientAndDb());
-    expect(await getRateLimits()).toHaveLength(0);
+    expect(await getRateLimits()).toBeArrayOfSize(0);
 
     process.env.BAN_HAMMER_WILL_BE_CALLED_EVERY_SECONDS = '8'; // ? vs 5000 + 2000 ms
     await banHammer();
@@ -137,7 +138,7 @@ describe('external-scripts/ban-hammer', () => {
     const expectUntils = async (length: number, minutes: number, multi: number) => {
       const untils = await getRateLimitUntils();
 
-      expect(untils).toHaveLength(length);
+      expect(untils).toBeArrayOfSize(length);
 
       untils.forEach((u) => {
         // ? If tests are failing, try make toBeAround param #2 to be > 1000
@@ -166,7 +167,7 @@ describe('external-scripts/ban-hammer', () => {
   it('does not replace longer bans with shorter bans', async () => {
     expect.hasAssertions();
 
-    expect(await getRateLimits()).toHaveLength(3);
+    expect(await getRateLimits()).toBeArrayOfSize(3);
 
     await (
       await getRateLimitsDb()
@@ -184,7 +185,7 @@ describe('external-scripts/ban-hammer', () => {
   it('deletes outdated entries outside the punishment period', async () => {
     expect.hasAssertions();
 
-    expect(await getRateLimits()).toHaveLength(3);
+    expect(await getRateLimits()).toBeArrayOfSize(3);
 
     await (await getRateLimitsDb()).updateMany({ ip: '5.6.7.8' }, { $set: { until: 0 } });
     await banHammer();

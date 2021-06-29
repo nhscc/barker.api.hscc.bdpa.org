@@ -3,15 +3,13 @@ import { WithId, ObjectId } from 'mongodb';
 import * as Backend from 'universe/backend';
 import { getEnv } from 'universe/backend/env';
 import { setupTestDb, dummyDbData } from 'testverse/db';
-import { mockEnvFactory } from 'testverse/setup';
+import { mockEnvFactory, toPublicUser, toPublicBark } from 'testverse/setup';
 
 import {
   InternalRequestLogEntry,
   InternalLimitedLogEntry,
   InternalInfo,
   InternalUser,
-  PublicUser,
-  PublicBark,
   InternalBark,
   UserId,
   BarkId,
@@ -27,33 +25,6 @@ import { toss } from 'toss-expression';
 const { getDb } = setupTestDb();
 
 const withMockedEnv = mockEnvFactory({}, { replace: false });
-
-const toPublicUser = (internal: WithId<InternalUser>): PublicUser => ({
-  user_id: internal._id.toString(),
-  name: internal.name,
-  email: internal.email,
-  phone: internal.phone,
-  username: internal.username,
-  packmates: internal.packmates.length,
-  following: internal.following.length,
-  bookmarked: internal.bookmarked.length,
-  liked: internal.liked.length,
-  deleted: internal.deleted
-});
-
-const toPublicBark = (internal: WithId<InternalBark>): PublicBark => ({
-  bark_id: internal._id.toString(),
-  likes: internal.totalLikes,
-  rebarks: internal.totalRebarks,
-  barkbacks: internal.totalBarkbacks,
-  owner: internal.owner,
-  content: internal.content,
-  createdAt: internal.createdAt,
-  deleted: internal.deleted,
-  private: internal.private,
-  barkbackTo: internal.barkbackTo,
-  rebarkOf: internal.rebarkOf
-});
 
 describe('::getSystemInfo', () => {
   it('returns summary system metadata', async () => {
@@ -172,14 +143,12 @@ describe('::deleteBarks', () => {
     ).toStrictEqual(dummyDbData.info.totalBarks - 10);
   });
 
-  it('rejects if bark_ids not found', async () => {
+  it('does not reject if bark_ids not found', async () => {
     expect.hasAssertions();
 
     await expect(
       Backend.deleteBarks({ bark_ids: [new ObjectId()] })
-    ).rejects.toMatchObject({
-      message: expect.stringContaining('some or all')
-    });
+    ).resolves.toBeUndefined();
   });
 
   it('rejects if too many bark_id requested', async () => {

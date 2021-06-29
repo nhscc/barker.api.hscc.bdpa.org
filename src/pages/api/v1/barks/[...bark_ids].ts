@@ -1,13 +1,9 @@
 import { wrapHandler } from 'universe/backend/middleware';
 import { getBarks, deleteBarks } from 'universe/backend';
 import { itemToObjectId } from 'universe/backend/db';
+import { sendHttpOk } from 'multiverse/next-respond';
+import { NotFoundError, ValidationError } from 'universe/backend/error';
 import { ObjectId } from 'mongodb';
-
-import {
-  sendHttpBadRequest,
-  sendHttpNotFound,
-  sendHttpOk
-} from 'multiverse/next-respond';
 
 import type { NextApiResponse, NextApiRequest } from 'next';
 
@@ -24,20 +20,18 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
           Array.from(new Set<string>(req.query.bark_ids as string[]))
         );
       } catch {
-        sendHttpBadRequest(res, { error: 'invalid bark_id(s)' });
+        throw new ValidationError('invalid bark_id(s)');
       }
 
-      if (bark_ids !== undefined) {
-        if (req.method == 'GET') {
-          const barks = await getBarks({ bark_ids });
+      if (req.method == 'GET') {
+        const barks = await getBarks({ bark_ids });
 
-          if (barks.length != bark_ids.length) {
-            sendHttpNotFound(res, { error: 'duplicate bark_id(s)' });
-          } else sendHttpOk(res, { barks });
-        } else {
-          await deleteBarks({ bark_ids });
-          sendHttpOk(res);
-        }
+        if (barks.length != bark_ids.length) {
+          throw new NotFoundError('duplicate bark_id(s)');
+        } else sendHttpOk(res, { barks });
+      } else {
+        await deleteBarks({ bark_ids });
+        sendHttpOk(res);
       }
     },
     {

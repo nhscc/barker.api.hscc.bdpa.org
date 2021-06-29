@@ -229,10 +229,6 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
     await db
       .collection<InternalInfo>('info')
       .updateOne({}, { $inc: { totalBarks: -numUpdated } });
-
-    if (numUpdated != bark_ids.length) {
-      throw new NotFoundError('some or all bark_ids were not deleted');
-    }
   }
 }
 
@@ -664,7 +660,7 @@ export async function followUser({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, following: { $nin: [followed_id] } },
       { $push: { following: { $each: [followed_id], $position: 0 } } }
     );
   }
@@ -782,7 +778,7 @@ export async function addPackmate({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, packmates: { $nin: [packmate_id] } },
       { $push: { packmates: { $each: [packmate_id], $position: 0 } } }
     );
   }
@@ -901,7 +897,7 @@ export async function bookmarkBark({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, bookmarked: { $nin: [bark_id] } },
       { $push: { bookmarked: { $each: [bark_id], $position: 0 } } }
     );
   }
@@ -1163,7 +1159,7 @@ export async function searchBarks({
         !Array.isArray(val) &&
         matchableStrings.includes(ki) &&
         (val instanceof ObjectId ||
-          ['number', 'string'].includes(typeof val) ||
+          ['number', 'string', 'boolean'].includes(typeof val) ||
           (isObject(val) && test() && valNotEmpty))
       );
     });
