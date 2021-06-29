@@ -46,7 +46,13 @@ const runCorsMiddleware = (req: NextApiRequest, res: NextApiResponse) => {
  * @see https://nextjs.org/docs/api-routes/api-middlewares#custom-config
  */
 export const defaultConfig: PageConfig = {
-  api: { bodyParser: { sizeLimit: getEnv().MAX_CONTENT_LENGTH_BYTES } }
+  api: {
+    bodyParser: {
+      get sizeLimit() {
+        return getEnv().MAX_CONTENT_LENGTH_BYTES;
+      }
+    }
+  }
 };
 
 /**
