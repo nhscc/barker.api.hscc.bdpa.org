@@ -1249,7 +1249,7 @@ export async function isRateLimited(req: NextApiRequest) {
 
   return {
     limited: !!limited,
-    retryAfter: (limited?.until || Date.now()) - Date.now()
+    retryAfter: Math.max(0, (limited?.until || Date.now()) - Date.now())
   };
 }
 
