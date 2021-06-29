@@ -1991,7 +1991,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: {
         status: 200,
         json: (json) => {
-          expect(json?.barks as PublicBark[]).toStrictEqual(
+          expect(json?.barks as PublicBark[]).toIncludeSameMembers(
             dummyDbData.barks
               .filter(
                 (bark) =>
@@ -2007,7 +2007,27 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'search via match, regexMatch, pagination'
+      subject: 'search via match, regexMatch, pagination',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        match: JSON.stringify({
+          barkbacks: { $gte: 25 },
+          rebarks: { $lte: 75 },
+          deleted: false
+        }),
+        regexMatch: JSON.stringify({ content: '\\d\\d' }),
+        after: getResultAt<PublicBark[]>(-1, 'barks')[1].bark_id
+      }),
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect((json?.barks as PublicBark[])[0].bark_id).toStrictEqual(
+            getResultAt<PublicBark[]>(-1, 'barks')[2].bark_id
+          );
+          return undefined;
+        }
+      }
     }
   ];
 
