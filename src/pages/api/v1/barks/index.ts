@@ -1,6 +1,7 @@
 import { wrapHandler } from 'universe/backend/middleware';
 import { createBark, searchBarks } from 'universe/backend';
-import { sendHttpBadRequest, sendHttpOk } from 'multiverse/next-respond';
+import { sendHttpOk } from 'multiverse/next-respond';
+import { ValidationError } from 'universe/backend/error';
 import { ObjectId } from 'mongodb';
 
 import type { NextApiResponse, NextApiRequest } from 'next';
@@ -17,22 +18,18 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       try {
         after = req.query.after ? new ObjectId(req.query.after.toString()) : null;
       } catch {
-        sendHttpBadRequest(res, {
-          error: `invalid bark_id "${req.query.after.toString()}"`
-        });
+        throw new ValidationError(`invalid bark_id "${req.query.after.toString()}"`);
       }
 
-      if (after !== undefined) {
-        if (req.method == 'GET') {
-          sendHttpOk(res, {
-            barks: await searchBarks({
-              after,
-              match: {},
-              regexMatch: {}
-            })
-          });
-        } else sendHttpOk(res, { bark: await createBark({ key, data: req.body }) });
-      }
+      if (req.method == 'GET') {
+        sendHttpOk(res, {
+          barks: await searchBarks({
+            after,
+            match: {},
+            regexMatch: {}
+          })
+        });
+      } else sendHttpOk(res, { bark: await createBark({ key, data: req.body }) });
     },
     { req, res, methods: ['GET', 'POST'], apiVersion: 1 }
   );

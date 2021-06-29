@@ -1,12 +1,8 @@
 import { wrapHandler } from 'universe/backend/middleware';
 import { isBarkLiked } from 'universe/backend';
+import { sendHttpNotFound, sendHttpOk } from 'multiverse/next-respond';
+import { ValidationError } from 'universe/backend/error';
 import { ObjectId } from 'mongodb';
-
-import {
-  sendHttpBadRequest,
-  sendHttpNotFound,
-  sendHttpOk
-} from 'multiverse/next-respond';
 
 import type { NextApiResponse, NextApiRequest } from 'next';
 
@@ -22,25 +18,19 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       try {
         bark_id = new ObjectId(req.query.bark_id.toString());
       } catch {
-        sendHttpBadRequest(res, {
-          error: `invalid bark_id "${req.query.bark_id.toString()}"`
-        });
+        throw new ValidationError(`invalid bark_id "${req.query.bark_id.toString()}"`);
       }
 
-      if (bark_id !== undefined) {
-        try {
-          user_id = new ObjectId(req.query.user_id.toString());
-        } catch {
-          sendHttpBadRequest(res, {
-            error: `invalid user_id "${req.query.user_id.toString()}"`
-          });
-        }
+      try {
+        user_id = new ObjectId(req.query.user_id.toString());
+      } catch {
+        throw new ValidationError(`invalid user_id "${req.query.user_id.toString()}"`);
+      }
 
-        if (user_id !== undefined) {
-          (await isBarkLiked({ bark_id, user_id }))
-            ? sendHttpOk(res)
-            : sendHttpNotFound(res);
-        }
+      if (user_id !== undefined) {
+        (await isBarkLiked({ bark_id, user_id }))
+          ? sendHttpOk(res)
+          : sendHttpNotFound(res);
       }
     },
     {
