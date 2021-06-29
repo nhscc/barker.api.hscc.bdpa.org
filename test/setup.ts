@@ -58,6 +58,7 @@ expect.extend({
 
 // TODO: XXX: add these brand new tools to where they're supposed to be!
 
+// TODO: XXX: this one specifically should become part of next-api-glue itself!
 export function asMockedNextApiMiddleware(
   wrapHandler: typeof import('universe/backend/middleware')['wrapHandler']
 ) {
@@ -67,7 +68,7 @@ export function asMockedNextApiMiddleware(
     try {
       fn && (await fn({ req, res }));
     } catch (error) {
-      // ! This must be imported dynamically or jest will hang and mocking fail
+      // ! This must be imported dynamically or jest will hang & mocks will fail
       await (
         await jest.requireActual('universe/backend/middleware')
       ).handleError(res, error);

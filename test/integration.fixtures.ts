@@ -6,7 +6,10 @@ import { toss } from 'toss-expression';
 import { ObjectId } from 'mongodb';
 
 // TODO: turn a lot of this into some kind of package; needs to be generic
-// TODO: enough to handle various use cases though :)
+// TODO: enough to handle various use cases though :) Maybe
+// TODO: @xunnamius/test-factory for the generic version, along with
+// TODO: @xunnamius/test-factory-next, @xunnamius/test-factory-next-api (below),
+// TODO: @xunnamius/test-factory-X plugins
 
 // TODO: add an `id` param that allows getResultAt using that `id` (along with
 // TODO: index)
