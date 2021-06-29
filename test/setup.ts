@@ -68,7 +68,9 @@ export function asMockedNextApiMiddleware(
       fn && (await fn({ req, res }));
     } catch (error) {
       // ! This must be imported dynamically or jest will hang and mocking fail
-      await (await import('universe/backend/middleware')).handleError(res, error);
+      await (
+        await jest.requireActual('universe/backend/middleware')
+      ).handleError(res, error);
     } finally {
       // ! This must happen or jest tests will hang and mongomemserv will choke.
       // ! Also note that this isn't a NextApiResponse but a ServerResponse!
