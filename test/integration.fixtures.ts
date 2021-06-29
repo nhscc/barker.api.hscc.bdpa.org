@@ -4,6 +4,7 @@ import type { PublicBark, PublicUser } from 'types/global';
 import type { NextApiHandler, PageConfig } from 'next';
 import { toss } from 'toss-expression';
 import { ObjectId } from 'mongodb';
+import { getEnv } from 'universe/backend/env';
 
 // TODO: turn a lot of this into some kind of package; needs to be generic
 // TODO: enough to handle various use cases though :) Maybe
@@ -1412,40 +1413,86 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 404 }
     },
     {
-      subject: 'bookmark bark'
-    },
-    {
-      subject: 'bookmark bookmarked bark (noop)'
-    },
-    {
-      subject: 'is-bookmarked endpoint 200s'
-    },
-    {
-      subject: 'confirm bookmarked count'
-    },
-    {
-      subject: 'get bookmarked barks'
-    },
-    {
-      subject: 'unbookmark bark'
-    },
-    {
-      subject: 'unbookmark unbookmarked bark (noop)',
-      handler: api.usersId,
-      method: 'DELETE',
+      subject: 'bookmark bark',
+      handler: api.usersIdBookmarksId,
+      method: 'PUT',
       params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
       }),
       response: { status: 200 }
     },
     {
-      subject: 'is-bookmarked endpoint 404s'
+      subject: 'bookmark bookmarked bark (noop)',
+      handler: api.usersIdBookmarksId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'confirm bookmarked count'
+      subject: 'is-bookmarked endpoint 200s',
+      handler: api.usersIdBookmarksId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'get bookmarked barks'
+      subject: 'confirm bookmarked count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).bookmarked).toBe(1);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'get bookmarked barks',
+      handler: api.usersIdBookmarks,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(json?.barks as string[]).toStrictEqual([
+            dummyDbData.barks[0]._id.toHexString()
+          ]);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'unbookmark bark',
+      handler: api.usersIdBookmarksId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'unbookmark unbookmarked bark (noop)',
+      handler: api.usersIdBookmarksId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 200 }
     },
     {
       // * #100
@@ -1459,40 +1506,143 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
+      subject: 'is-bookmarked endpoint 404s',
+      handler: api.usersIdBookmarksId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 404 }
+    },
+    {
+      subject: 'confirm bookmarked count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).bookmarked).toBe(0);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'get bookmarked barks',
+      handler: api.usersIdBookmarks,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: { barks: [] }
+      }
+    },
+    {
       subject: 'pagination',
-      handler: api.barks
+      handler: api.barks,
+      method: 'GET',
+      params: {
+        after: dummyDbData.barks[29]._id.toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.barks as PublicBark[])[0].bark_id).toEqual(
+            dummyDbData.barks[28]._id.toHexString()
+          );
+          return undefined;
+        }
+      }
     },
     {
       subject: 'page size = max id count',
-      handler: api.barksIds
+      handler: api.barksIds,
+      method: 'GET',
+      params: {
+        bark_ids: Array.from({ length: getEnv().RESULTS_PER_PAGE + 1 }).map(() =>
+          new ObjectId().toHexString()
+        )
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('too many') }
+      }
     },
     {
       subject: 'pagination',
-      handler: api.barksIdLikes
+      handler: api.barksIdLikes,
+      method: 'GET',
+      params: {
+        bark_id: dummyDbData.barks[29]._id.toHexString(),
+        after: dummyDbData.barks[29].likes[0].toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.users as string[])[0]).toEqual(
+            dummyDbData.barks[29].likes[1].toHexString()
+          );
+          return undefined;
+        }
+      }
     },
     {
       subject: 'pagination',
-      handler: api.users
+      handler: api.users,
+      method: 'GET',
+      params: {
+        after: dummyDbData.users[4]._id.toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.users as PublicUser[])[0].user_id).toEqual(
+            dummyDbData.users[3]._id.toHexString()
+          );
+          return undefined;
+        }
+      }
     },
     {
       subject: 'pagination',
-      handler: api.usersIdLiked
+      handler: api.usersIdLiked,
+      method: 'GET',
+      params: {
+        user_id: dummyDbData.users[4]._id.toHexString(),
+        after: dummyDbData.users[4].liked[0].toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.barks as string[])[0]).toEqual(
+            dummyDbData.users[4].liked[1].toHexString()
+          );
+          return undefined;
+        }
+      }
     },
     {
       subject: 'pagination',
-      handler: api.usersIdFollowing
-    },
-    {
-      subject: 'pagination',
-      handler: api.usersIdPack
-    },
-    {
-      subject: 'pagination',
-      handler: api.usersIdBookmarks
-    },
-    {
-      subject: 'pagination',
-      handler: api.barksSearch
+      handler: api.usersIdFollowing,
+      method: 'GET',
+      params: {
+        user_id: dummyDbData.users[4]._id.toHexString(),
+        after: dummyDbData.users[4].following[0].toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.users as string[])[0]).toEqual(
+            dummyDbData.users[4].following[1].toHexString()
+          );
+          return undefined;
+        }
+      }
     },
     {
       // * #110
@@ -1503,6 +1653,49 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: {
         status: 555,
         json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdPack,
+      method: 'GET',
+      params: {
+        user_id: dummyDbData.users[4]._id.toHexString(),
+        after: dummyDbData.users[4].packmates[0].toHexString()
+      },
+      response: {
+        status: 200,
+        json: { users: [] }
+      }
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdBookmarks,
+      method: 'GET',
+      params: {
+        user_id: dummyDbData.users[4]._id.toHexString(),
+        after: dummyDbData.users[4].bookmarked[0].toHexString()
+      },
+      response: {
+        status: 200,
+        json: { barks: [] }
+      }
+    },
+    {
+      subject: 'pagination',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        after: dummyDbData.barks[29]._id.toHexString()
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.barks as PublicBark[])[0].bark_id).toEqual(
+            dummyDbData.barks[28]._id.toHexString()
+          );
+          return undefined;
+        }
       }
     },
     {

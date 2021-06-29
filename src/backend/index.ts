@@ -897,7 +897,7 @@ export async function bookmarkBark({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, bookmarked: { $nin: [bark_id] } },
       { $push: { bookmarked: { $each: [bark_id], $position: 0 } } }
     );
   }
