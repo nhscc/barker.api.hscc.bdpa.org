@@ -162,6 +162,7 @@
     "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
+    "dot-prop": "^5.3.0",
     "threads": "^1.6.5",
     "threads-plugin": "^1.4.0",
     "unique-filename": "^1.1.1"
