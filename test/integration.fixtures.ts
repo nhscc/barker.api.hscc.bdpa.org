@@ -670,7 +670,9 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       },
       response: {
         status: 404,
-        json: { error: expect.stringContaining('owner user_id not found') }
+        json: {
+          error: expect.stringContaining('"60d6501dc703d70008603dc9" was not found')
+        }
       }
     },
     {
@@ -686,71 +688,85 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       },
       response: {
         status: 400,
-        json: { error: expect.stringContaining('owner user_id invalid') }
+        json: { error: expect.stringContaining('invalid') }
       }
     },
     {
       subject: 'invalid create bark',
       handler: api.barks,
       method: 'POST',
-      body: {
-        owner: '5ec8adf06e38137ff2e58770',
-        content: 'Hello, bark world!',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>(4, 'user.user_id'),
+        content: 'Hello, Barker world!',
         private: false,
         barkbackTo: '60d6501dc703d70008603dc9',
         rebarkOf: null
-      },
+      }),
       response: {
-        status: 400,
-        json: { error: expect.stringContaining('barkbackTo user_id not found') }
+        status: 404,
+        json: {
+          error: expect.stringContaining('"60d6501dc703d70008603dc9" was not found')
+        }
       }
     },
     {
       subject: 'invalid create bark',
       handler: api.barks,
       method: 'POST',
-      body: {
-        owner: '5ec8adf06e38137ff2e58770',
-        content: 'Hello, bark world!',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>(4, 'user.user_id'),
+        content: 'Hello, Barker world!',
         private: false,
         barkbackTo: 'bad-key',
         rebarkOf: null
-      },
+      }),
       response: {
         status: 400,
-        json: { error: expect.stringContaining('barkbackTo user_id invalid') }
+        json: { error: expect.stringContaining('invalid') }
       }
     },
     {
       subject: 'invalid create bark',
       handler: api.barks,
       method: 'POST',
-      body: {
-        owner: '5ec8adf06e38137ff2e58770',
-        content: 'Hello, bark world!',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>(4, 'user.user_id'),
+        content: 'Hello, Barker world!',
         private: false,
         barkbackTo: null,
         rebarkOf: '60d6501dc703d70008603dc9'
-      },
+      }),
       response: {
-        status: 400,
-        json: { error: expect.stringContaining('rebarkOf user_id not found') }
+        status: 404,
+        json: {
+          error: expect.stringContaining('"60d6501dc703d70008603dc9" was not found')
+        }
+      }
+    },
+    {
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
       }
     },
     {
       subject: 'invalid create bark',
       handler: api.barks,
       method: 'POST',
-      body: {
-        owner: '5ec8adf06e38137ff2e58770',
-        content: 'Hello, bark world!',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>(4, 'user.user_id'),
+        content: 'Hello, Barker world!',
         private: false,
         barkbackTo: null,
         rebarkOf: 'bad-key'
-      },
+      }),
       response: {
         status: 400,
-        json: { error: expect.stringContaining('rebarkOf user_id invalid') }
+        json: { error: expect.stringContaining('invalid') }
       }
     }
     // {
