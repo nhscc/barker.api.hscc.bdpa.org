@@ -172,14 +172,12 @@ describe('::deleteBarks', () => {
     ).toStrictEqual(dummyDbData.info.totalBarks - 10);
   });
 
-  it('rejects if bark_ids not found', async () => {
+  it('does not reject if bark_ids not found', async () => {
     expect.hasAssertions();
 
     await expect(
       Backend.deleteBarks({ bark_ids: [new ObjectId()] })
-    ).rejects.toMatchObject({
-      message: expect.stringContaining('some or all')
-    });
+    ).resolves.toBeUndefined();
   });
 
   it('rejects if too many bark_id requested', async () => {

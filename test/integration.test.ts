@@ -65,6 +65,7 @@ import type {
   TestResultset,
   TestResult
 } from 'testverse/integration.fixtures';
+import { toss } from 'toss-expression';
 
 // ? Setup and hydrate the in-memory mongo instance (we're gonna need it)
 setupTestDb(true);
@@ -131,6 +132,7 @@ const memory: TestResultset = [
 
 memory.latest = memory[0];
 memory.getResultAt = () => memory[0];
+memory.idMap = {};
 
 // ? Fail fast and early
 let lastRunSuccess = true;
@@ -179,24 +181,54 @@ describe('generic correctness tests', () => {
   });
 });
 
-getFixtures(api).forEach(async (expected, ndx) => {
+let countSkippedTests = 0;
+
+afterAll(() => {
+  if (countSkippedTests)
+    // eslint-disable-next-line no-console
+    console.warn(`${countSkippedTests} tests were skipped!`);
+});
+
+getFixtures(api).forEach(async (expected) => {
+  if (!expected.displayIndex) {
+    throw new Error('fixture is missing required property "displayIndex"');
+  }
+
+  const shouldSkip =
+    !expected.subject ||
+    !expected.handler ||
+    !expected.method ||
+    !expected.response ||
+    typeof expected.response.status != 'number';
+
   // eslint-disable-next-line jest/prefer-expect-assertions
-  it(`#${expected.displayIndex} [${expected.method}] ${expected.handler.url}${
-    expected.subject ? ` ${expected.subject}` : ''
+  it(`${shouldSkip ? '<SKIPPED> ' : ''}#${expected.displayIndex} ${
+    expected.method ? '[' + expected.method + '] ' : ''
+  }${expected.handler?.url ? expected.handler.url + ' ' : ''}${
+    expected.subject || ''
   }`, async () => {
-    if (!lastRunSuccess && process.env.FAIL_FAST) return;
+    if (shouldSkip || (!lastRunSuccess && process.env.FAIL_FAST)) {
+      countSkippedTests++;
+      return;
+    }
 
     expect.hasAssertions();
     lastRunSuccess = false;
 
     memory.getResultAt = <T = unknown>(
-      index: number,
+      index: number | string,
       prop?: string
     ): TestResult<T> | T => {
-      const result: TestResult<T> = memory[1 + index + (index < 0 ? ndx : 0)];
-      const retval = prop ? dotPath<T>(result.json, prop) : result;
+      const result: TestResult<T> =
+        typeof index == 'string'
+          ? memory.idMap[index]
+          : memory[index + (index < 0 ? expected.displayIndex : 1)];
 
-      if (retval === undefined) {
+      const retval = prop ? dotPath<T>(result?.json, prop) : result;
+
+      if (!result) {
+        throw new Error(`no result at index "${index}"`);
+      } else if (retval === undefined) {
         throw new Error(
           `${prop ? 'prop path "' + prop + '" ' : ''}return value cannot be undefined`
         );
@@ -214,7 +246,7 @@ getFixtures(api).forEach(async (expected, ndx) => {
     await withMockedEnv(
       async () => {
         await testApiHandler({
-          handler: expected.handler,
+          handler: expected.handler || toss(new Error('sanity check failed')),
           params: requestParams,
           requestPatcher: (req) => (req.headers.key = DUMMY_KEY),
           test: async ({ fetch }) => {
@@ -229,9 +261,9 @@ getFixtures(api).forEach(async (expected, ndx) => {
             });
 
             const expectedStatus =
-              typeof expected.response.status == 'function'
+              typeof expected.response?.status == 'function'
                 ? expected.response.status(res.status, memory)
-                : expected.response.status;
+                : expected.response?.status;
 
             const json = await res.json();
 
@@ -249,9 +281,9 @@ getFixtures(api).forEach(async (expected, ndx) => {
             }
 
             const expectedJson =
-              typeof expected.response.json == 'function'
+              typeof expected.response?.json == 'function'
                 ? expected.response.json(json, memory)
-                : expected.response.json;
+                : expected.response?.json;
 
             if (expectedJson) {
               // eslint-disable-next-line jest/no-conditional-expect
@@ -259,9 +291,10 @@ getFixtures(api).forEach(async (expected, ndx) => {
             }
 
             const memorize = { status: res.status, json } as TestResult;
-            memory.push(memorize);
-            memory.latest = memorize;
 
+            if (expected.id) memory.idMap[expected.id] = memorize;
+            memory[expected.displayIndex] = memorize;
+            memory.latest = memorize;
             lastRunSuccess = true;
           }
         });
