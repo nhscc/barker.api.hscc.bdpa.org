@@ -1,11 +1,21 @@
 /* eslint-disable no-await-in-loop */
-import { randomInt } from 'crypto';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { getEnv } from 'universe/backend/env';
+import { toss } from 'toss-expression';
+
+import {
+  DUMMY_KEY,
+  isKeyAuthentic,
+  addToRequestLog,
+  isDueForContrivedError,
+  isRateLimited
+} from 'universe/backend';
+
 import {
   wrapHandler,
   defaultConfig as middlewareConfig
 } from 'universe/backend/middleware';
-import { getEnv } from 'universe/backend/env';
+
 import {
   asMockedFunction,
   isolatedImport,
@@ -26,16 +36,7 @@ import {
   ActivitySimulationError
 } from 'universe/backend/error';
 
-import {
-  DUMMY_KEY,
-  isKeyAuthentic,
-  addToRequestLog,
-  isDueForContrivedError,
-  isRateLimited
-} from 'universe/backend';
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { toss } from 'toss-expression';
 
 jest.mock('universe/backend');
 
@@ -92,10 +93,8 @@ describe('::handleEndpoint', () => {
     });
   });
 
-  it('injects contrived errors at the required rate', async () => {
+  it('injects contrived errors when due', async () => {
     expect.hasAssertions();
-
-    const getMethod = () => ['GET', 'POST', 'PUT', 'DELETE'][randomInt(3)];
 
     await testApiHandler({
       requestPatcher: (req) => (req.headers.key = DUMMY_KEY),
@@ -103,18 +102,18 @@ describe('::handleEndpoint', () => {
         wrapHandler(noop, {
           req,
           res,
-          methods: ['GET', 'POST', 'PUT', 'DELETE']
+          methods: ['GET', 'POST', 'PUT']
         })
       ),
       test: async ({ fetch }) => {
         expect(
           [
             void mockIsDueForContrivedError.mockReturnValue(false),
-            await fetch({ method: getMethod() }).then((r) => r.status),
+            await fetch({ method: 'GET' }).then((r) => r.status),
             void mockIsDueForContrivedError.mockReturnValue(true),
-            await fetch({ method: getMethod() }).then((r) => r.status),
+            await fetch({ method: 'POST' }).then((r) => r.status),
             void mockIsDueForContrivedError.mockReturnValue(false),
-            await fetch({ method: getMethod() }).then((r) => r.status)
+            await fetch({ method: 'PUT' }).then((r) => r.status)
           ].filter(Boolean)
         ).toStrictEqual([200, 555, 200]);
       }
