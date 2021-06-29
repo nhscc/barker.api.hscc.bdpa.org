@@ -1,7 +1,7 @@
 // import 'expect-puppeteer'
 import { name as pkgName, version as pkgVersion } from '../package.json';
 import { verifyEnvironment } from '../expect-env';
-import { AppError } from 'universe/backend/error';
+import { AppError, GuruMeditationError } from 'universe/backend/error';
 import { sendHttpErrorResponse } from 'multiverse/next-respond';
 import { tmpdir } from 'os';
 import { promises as fs } from 'fs';
@@ -17,6 +17,8 @@ import type { ExecaReturnValue } from 'execa';
 import type { AnyFunction, AnyVoid, HttpStatusCode } from '@ergodark/types';
 import type { Debugger } from 'debug';
 import type { SimpleGit } from 'simple-git';
+import type { WithId } from 'mongodb';
+import type { InternalBark, InternalUser, PublicBark, PublicUser } from 'types/global';
 
 const { writeFile, access: accessFile } = fs;
 const debug = debugFactory(`${pkgName}:jest-setup`);
@@ -35,6 +37,37 @@ try {
 }
 
 verifyEnvironment();
+
+export function toPublicUser(internal: WithId<InternalUser>): PublicUser {
+  return {
+    user_id: internal._id.toString(),
+    name: internal.name,
+    email: internal.email,
+    phone: internal.phone,
+    username: internal.username,
+    packmates: internal.packmates.length,
+    following: internal.following.length,
+    bookmarked: internal.bookmarked.length,
+    liked: internal.liked.length,
+    deleted: internal.deleted
+  };
+}
+
+export function toPublicBark(internal: WithId<InternalBark>): PublicBark {
+  return {
+    bark_id: internal._id.toString(),
+    likes: internal.totalLikes,
+    rebarks: internal.totalRebarks,
+    barkbacks: internal.totalBarkbacks,
+    owner: internal.owner,
+    content: internal.content,
+    createdAt: internal.createdAt,
+    deleted: internal.deleted,
+    private: internal.private,
+    barkbackTo: internal.barkbackTo,
+    rebarkOf: internal.rebarkOf
+  };
+}
 
 // TODO: XXX: is toBeAround still needed given we're using type-fest?
 
@@ -502,7 +535,9 @@ export function webpackTestFixture(): MockFixture {
     description: 'setting up webpack jest integration test',
     setup: async (ctx) => {
       if (typeof ctx.options.webpackVersion != 'string') {
-        throw new Error('invalid or missing options.webpackVersion, expected string');
+        throw new GuruMeditationError(
+          'invalid or missing options.webpackVersion, expected string'
+        );
       }
 
       const indexPath = Object.keys(ctx.fileContents).find((path) =>
@@ -510,10 +545,14 @@ export function webpackTestFixture(): MockFixture {
       );
 
       if (!indexPath)
-        throw new Error('could not find initial contents for src/index file');
+        throw new GuruMeditationError(
+          'could not find initial contents for src/index file'
+        );
 
       if (!ctx.fileContents['webpack.config.js'])
-        throw new Error('could not find initial contents for webpack.config.js file');
+        throw new GuruMeditationError(
+          'could not find initial contents for webpack.config.js file'
+        );
 
       await Promise.all([
         writeFile(`${ctx.root}/${indexPath}`, ctx.fileContents[indexPath]),
@@ -559,7 +598,9 @@ export function nodeImportTestFixture(): MockFixture {
       );
 
       if (!indexPath)
-        throw new Error('could not find initial contents for src/index file');
+        throw new GuruMeditationError(
+          'could not find initial contents for src/index file'
+        );
 
       await writeFile(`${ctx.root}/${indexPath}`, ctx.fileContents[indexPath]);
 
@@ -587,7 +628,9 @@ export function gitRepositoryFixture(): MockFixture {
     description: 'configuring fixture root to be a git repository',
     setup: async (ctx) => {
       if (ctx.options.setupGit && typeof ctx.options.setupGit != 'function') {
-        throw new Error('invalid or missing options.setupGit, expected function');
+        throw new GuruMeditationError(
+          'invalid or missing options.setupGit, expected function'
+        );
       }
 
       ctx.git = gitFactory({ baseDir: ctx.root });
@@ -609,7 +652,9 @@ export function dummyDirectoriesFixture(): MockFixture {
     description: 'creating dummy directories under fixture root',
     setup: async (ctx) => {
       if (!Array.isArray(ctx.options.directoryPaths)) {
-        throw new Error('invalid or missing options.directoryPaths, expected array');
+        throw new GuruMeditationError(
+          'invalid or missing options.directoryPaths, expected array'
+        );
       }
 
       await Promise.all(

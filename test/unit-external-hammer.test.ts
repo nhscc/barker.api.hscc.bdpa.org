@@ -5,6 +5,7 @@ import banHammer from 'externals/ban-hammer';
 
 import type { InternalRequestLogEntry, InternalLimitedLogEntry } from 'types/global';
 import type { WithId } from 'mongodb';
+import { GuruMeditationError } from 'universe/backend/error';
 
 const { getDb, getNewClientAndDb } = setupTestDb();
 
@@ -94,7 +95,7 @@ describe('external-scripts/ban-hammer', () => {
     const requestLogDb = await getRequestLogDb();
     const requestLogEntry = await requestLogDb.find().limit(1).next();
 
-    if (!requestLogEntry) throw new Error('No request-log entry found?!');
+    if (!requestLogEntry) throw new GuruMeditationError('No request-log entry found?!');
 
     const now = ((_now: number) => _now - (_now % 5000) - 2000)(Date.now());
 

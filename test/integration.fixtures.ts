@@ -1,10 +1,12 @@
+import { ObjectId } from 'mongodb';
+import { toss } from 'toss-expression';
+import { toPublicBark } from './setup';
 import { dummyDbData } from 'testverse/db';
+import { getEnv } from 'universe/backend/env';
+import { GuruMeditationError } from 'universe/backend/error';
 
 import type { PublicBark, PublicUser } from 'types/global';
 import type { NextApiHandler, PageConfig } from 'next';
-import { toss } from 'toss-expression';
-import { ObjectId } from 'mongodb';
-import { getEnv } from 'universe/backend/env';
 
 // TODO: turn a lot of this into some kind of package; needs to be generic
 // TODO: enough to handle various use cases though :) Maybe
@@ -135,10 +137,29 @@ export type TestFixture = {
 export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixture[] {
   const initialBarkCount = dummyDbData.barks.length;
   const initialUserCount = dummyDbData.users.length;
+
+  const stringifyIds = (bark: PublicBark) => ({
+    ...bark,
+    owner: bark.owner.toHexString(),
+    barkbackTo: bark.barkbackTo?.toHexString() || null,
+    rebarkOf: bark.rebarkOf?.toHexString() || null,
+    deleted: expect.any(Boolean)
+  });
+
   const targetedForDeletion = dummyDbData.barks
     .slice(0, 10)
     .filter((bark) => !bark.deleted)
     .map((bark) => bark._id.toHexString());
+
+  if (!targetedForDeletion.length) throw new GuruMeditationError();
+
+  const targetWithBarkbackTo =
+    dummyDbData.barks.find((bark) => !!bark.barkbackTo)?.barkbackTo ||
+    toss(new GuruMeditationError());
+
+  const targetWithRebarkOf =
+    dummyDbData.barks.find((bark) => !!bark.rebarkOf)?.rebarkOf ||
+    toss(new GuruMeditationError());
 
   const runOnly = process.env.RUN_ONLY?.split(',')
     .map((n) => parseInt(n))
@@ -780,6 +801,22 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
+      subject: 'invalid create bark',
+      handler: api.barks,
+      method: 'POST',
+      body: ({ getResultAt }) => ({
+        owner: getResultAt<string>('user-test-1', 'user.user_id'),
+        content: '',
+        private: false,
+        barkbackTo: null,
+        rebarkOf: null
+      }),
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('non-zero') }
+      }
+    },
+    {
       subject: 'like bark',
       handler: api.barksIdLikesId,
       method: 'PUT',
@@ -869,6 +906,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 200 }
     },
     {
+      // * #50
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'get users who liked bark',
       handler: api.barksIdLikes,
       method: 'GET',
@@ -883,17 +931,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           ]);
           return undefined;
         }
-      }
-    },
-    {
-      // * #50
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
       }
     },
     {
@@ -993,6 +1030,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
+      // * #60
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'delete some barks',
       handler: api.barksIds,
       method: 'DELETE',
@@ -1003,17 +1051,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         ]
       }),
       response: { status: 200 }
-    },
-    {
-      // * #60
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
-      }
     },
     {
       subject: 'get deleted barks',
@@ -1114,6 +1151,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 200 }
     },
     {
+      // * #70
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'confirm following count',
       handler: api.usersId,
       method: 'GET',
@@ -1126,17 +1174,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           expect((json?.user as PublicUser).following).toBe(1);
           return undefined;
         }
-      }
-    },
-    {
-      // * #70
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
       }
     },
     {
@@ -1247,16 +1284,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 404 }
     },
     {
-      subject: 'add packmate',
-      handler: api.usersIdPackId,
-      method: 'PUT',
-      params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
-        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
-      }),
-      response: { status: 200 }
-    },
-    {
       // * #80
       subject: 'handle contrived',
       handler: api.users,
@@ -1266,6 +1293,16 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 555,
         json: { error: expect.stringContaining('contrived') }
       }
+    },
+    {
+      subject: 'add packmate',
+      handler: api.usersIdPackId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
       subject: 'add added packmate (noop)',
@@ -1365,6 +1402,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 404 }
     },
     {
+      // * #90
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'confirm packmate count',
       handler: api.usersId,
       method: 'GET',
@@ -1377,17 +1425,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           expect((json?.user as PublicUser).packmates).toBe(0);
           return undefined;
         }
-      }
-    },
-    {
-      // * #90
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
       }
     },
     {
@@ -1485,16 +1522,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 200 }
     },
     {
-      subject: 'unbookmark unbookmarked bark (noop)',
-      handler: api.usersIdBookmarksId,
-      method: 'DELETE',
-      params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
-        bark_id: dummyDbData.barks[0]._id.toHexString()
-      }),
-      response: { status: 200 }
-    },
-    {
       // * #100
       subject: 'handle contrived',
       handler: api.users,
@@ -1504,6 +1531,16 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 555,
         json: { error: expect.stringContaining('contrived') }
       }
+    },
+    {
+      subject: 'unbookmark unbookmarked bark (noop)',
+      handler: api.usersIdBookmarksId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 200 }
     },
     {
       subject: 'is-bookmarked endpoint 404s',
@@ -1574,7 +1611,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.barksIdLikes,
       method: 'GET',
       params: {
@@ -1592,7 +1629,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.users,
       method: 'GET',
       params: {
@@ -1609,7 +1646,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.usersIdLiked,
       method: 'GET',
       params: {
@@ -1627,7 +1664,18 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      // * #110
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'FIFO pagination',
       handler: api.usersIdFollowing,
       method: 'GET',
       params: {
@@ -1645,18 +1693,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      // * #110
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
-      }
-    },
-    {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.usersIdPack,
       method: 'GET',
       params: {
@@ -1669,7 +1706,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.usersIdBookmarks,
       method: 'GET',
       params: {
@@ -1682,7 +1719,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'pagination',
+      subject: 'FIFO pagination',
       handler: api.barksSearch,
       method: 'GET',
       params: {
@@ -1699,19 +1736,278 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'search returns expected barks'
+      subject: 'search via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({ content: '#28 bark contents' })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.barks as PublicBark[])[0].bark_id).toEqual(
+            dummyDbData.barks
+              .find((bark) => bark.content == '#28 bark contents')
+              ?._id.toHexString() || toss(new GuruMeditationError())
+          );
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'search returns expected barks'
+      subject: 'search gt via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({ likes: { $gt: 50 } })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(
+            (json?.barks as PublicBark[]).map((bark) => bark.bark_id)
+          ).toIncludeSameMembers(
+            dummyDbData.barks
+              .filter((bark) => bark.totalLikes > 50)
+              .map((bark) => bark._id.toHexString())
+          );
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'search returns expected barks'
+      subject: 'search gte via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({ likes: { $gte: 25 } })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(
+            (json?.barks as PublicBark[]).map((bark) => bark.bark_id)
+          ).toIncludeSameMembers(
+            dummyDbData.barks
+              .filter((bark) => bark.totalLikes >= 25)
+              .map((bark) => bark._id.toHexString())
+          );
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'search returns expected barks'
+      subject: 'search lt via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({ likes: { $lt: 75, $gt: 0 } })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(
+            (json?.barks as PublicBark[]).map((bark) => bark.bark_id)
+          ).toIncludeSameMembers(
+            dummyDbData.barks
+              .filter((bark) => bark.totalLikes < 75 && bark.totalLikes > 0)
+              .map((bark) => bark._id.toHexString())
+          );
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'search returns expected barks'
+      subject: 'search lte via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({ likes: { $lte: 100, $gt: 0 } })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(
+            (json?.barks as PublicBark[]).map((bark) => bark.bark_id)
+          ).toIncludeSameMembers(
+            dummyDbData.barks
+              .filter((bark) => bark.totalLikes <= 100 && bark.totalLikes > 0)
+              .map((bark) => bark._id.toHexString())
+          );
+          return undefined;
+        }
+      }
+    },
+    {
+      // * #120
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'search via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        regexMatch: JSON.stringify({ content: '^[^#]' })
+      },
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect((json?.barks as PublicBark[]).map((bark) => bark.bark_id)).toStrictEqual(
+            [getResultAt<string>('bark-user-test-1', 'bark.bark_id')]
+          );
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'search owner user_id via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        regexMatch: JSON.stringify({
+          owner: getResultAt<string>('bark-user-test-1', 'bark.owner')
+        })
+      }),
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect(json?.barks as PublicBark[]).toStrictEqual([
+            { ...getResultAt<PublicBark>('bark-user-test-1', 'bark'), deleted: true }
+          ]);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'search multiple owner user_ids via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        regexMatch: JSON.stringify({
+          owner:
+            getResultAt<string>('bark-user-test-1', 'bark.owner') +
+            '|' +
+            dummyDbData.users[0]._id.toHexString()
+        })
+      }),
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect(json?.barks as PublicBark[]).toIncludeSameMembers([
+            { ...getResultAt<PublicBark>('bark-user-test-1', 'bark'), deleted: true },
+            ...dummyDbData.barks
+              .filter((bark) => bark.owner.equals(dummyDbData.users[0]._id))
+              .map((bark) => stringifyIds(toPublicBark(bark)))
+          ]);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'search barkbackTo bark_id via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        regexMatch: JSON.stringify({ barkbackTo: targetWithBarkbackTo })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(json?.barks as PublicBark[]).toStrictEqual(
+            dummyDbData.barks
+              .filter((bark) => bark.barkbackTo == targetWithBarkbackTo)
+              .map((bark) => stringifyIds(toPublicBark(bark)))
+          );
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'search rebarkOf bark_id via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        regexMatch: JSON.stringify({ rebarkOf: targetWithRebarkOf })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(json?.barks as PublicBark[]).toStrictEqual(
+            dummyDbData.barks
+              .filter((bark) => bark.rebarkOf == targetWithRebarkOf)
+              .map((bark) => stringifyIds(toPublicBark(bark)))
+          );
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'cannot search bark_ids via match',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        match: JSON.stringify({
+          bark_id: getResultAt<string>('bark-user-test-1', 'bark.bark_id')
+        })
+      }),
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('illegal X_id') }
+      }
+    },
+    {
+      subject: 'cannot search bark_ids via regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        regexMatch: JSON.stringify({
+          bark_id: getResultAt<string>('bark-user-test-1', 'bark.bark_id')
+        })
+      }),
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('illegal X_id') }
+      }
+    },
+    {
+      subject: 'search via match and regexMatch',
+      handler: api.barksSearch,
+      method: 'GET',
+      params: {
+        match: JSON.stringify({
+          barkbacks: { $gte: 25 },
+          rebarks: { $lte: 75 },
+          deleted: false
+        }),
+        regexMatch: JSON.stringify({ content: '\\d\\d' })
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(json?.barks as PublicBark[]).toStrictEqual(
+            dummyDbData.barks
+              .filter(
+                (bark) =>
+                  bark.totalBarkbacks >= 25 &&
+                  bark.totalRebarks <= 75 &&
+                  !bark.deleted &&
+                  /\d\d/.test(bark.content)
+              )
+              .map((bark) => stringifyIds(toPublicBark(bark)))
+          );
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'search via match, regexMatch, pagination'
     }
   ];
 

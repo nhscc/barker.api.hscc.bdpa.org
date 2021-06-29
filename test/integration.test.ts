@@ -1,5 +1,7 @@
 import { testApiHandler } from 'next-test-api-route-handler';
 import { get as dotPath } from 'dot-prop';
+import { toss } from 'toss-expression';
+import { GuruMeditationError } from 'universe/backend/error';
 import { mockEnvFactory } from 'testverse/setup';
 import { setupTestDb } from 'testverse/db';
 import { getFixtures } from 'testverse/integration.fixtures';
@@ -65,7 +67,6 @@ import type {
   TestResultset,
   TestResult
 } from 'testverse/integration.fixtures';
-import { toss } from 'toss-expression';
 
 // ? Setup and hydrate the in-memory mongo instance (we're gonna need it)
 setupTestDb(true);
@@ -191,7 +192,7 @@ afterAll(() => {
 
 getFixtures(api).forEach(async (expected) => {
   if (!expected.displayIndex) {
-    throw new Error('fixture is missing required property "displayIndex"');
+    throw new GuruMeditationError('fixture is missing required property "displayIndex"');
   }
 
   const shouldSkip =
@@ -227,9 +228,9 @@ getFixtures(api).forEach(async (expected) => {
       const retval = prop ? dotPath<T>(result?.json, prop) : result;
 
       if (!result) {
-        throw new Error(`no result at index "${index}"`);
+        throw new GuruMeditationError(`no result at index "${index}"`);
       } else if (retval === undefined) {
-        throw new Error(
+        throw new GuruMeditationError(
           `${prop ? 'prop path "' + prop + '" ' : ''}return value cannot be undefined`
         );
       }
@@ -246,7 +247,7 @@ getFixtures(api).forEach(async (expected) => {
     await withMockedEnv(
       async () => {
         await testApiHandler({
-          handler: expected.handler || toss(new Error('sanity check failed')),
+          handler: expected.handler || toss(new GuruMeditationError()),
           params: requestParams,
           requestPatcher: (req) => (req.headers.key = DUMMY_KEY),
           test: async ({ fetch }) => {

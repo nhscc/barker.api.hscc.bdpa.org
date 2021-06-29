@@ -1,5 +1,13 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { DUMMY_KEY } from 'universe/backend';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import cloneDeep from 'clone-deep';
+import { randomInt } from 'crypto';
+import { toss } from 'toss-expression';
+import { usernames } from '../data/corpus.json';
+import { getEnv } from 'universe/backend/env';
+import { GuruMeditationError } from 'universe/backend/error';
+
 import {
   getDb,
   setClientAndDb,
@@ -7,11 +15,6 @@ import {
   initializeDb,
   getDbClient
 } from 'universe/backend/db';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import cloneDeep from 'clone-deep';
-import { getEnv } from 'universe/backend/env';
-import { usernames } from '../data/corpus.json';
-import { randomInt } from 'crypto';
 
 import type { Db, WithId } from 'mongodb';
 
@@ -23,7 +26,6 @@ import type {
   InternalUser,
   InternalInfo
 } from 'types/global';
-import { toss } from 'toss-expression';
 
 export type DummyDbData = {
   keys: WithId<InternalApiKey>[];
@@ -199,7 +201,7 @@ export function setupTestDb(defer = false) {
     const client = await MongoClient.connect(uri, { useUnifiedTopology: true });
     const db = client.db();
 
-    if (!db) throw new Error('unable to connect to database');
+    if (!db) throw new GuruMeditationError('unable to connect to database');
 
     return { client, db };
   };
