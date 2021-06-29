@@ -1159,7 +1159,7 @@ export async function searchBarks({
         !Array.isArray(val) &&
         matchableStrings.includes(ki) &&
         (val instanceof ObjectId ||
-          ['number', 'string'].includes(typeof val) ||
+          ['number', 'string', 'boolean'].includes(typeof val) ||
           (isObject(val) && test() && valNotEmpty))
       );
     });
