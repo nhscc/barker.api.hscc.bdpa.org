@@ -1,22 +1,23 @@
 // import 'expect-puppeteer'
 import { name as pkgName, version as pkgVersion } from '../package.json';
 import { verifyEnvironment } from '../expect-env';
+import { AppError } from 'universe/backend/error';
+import { sendHttpErrorResponse } from 'multiverse/next-respond';
+import { handleError } from 'universe/backend/middleware';
 import { tmpdir } from 'os';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
+import { toss } from 'toss-expression';
 import execa from 'execa';
 import uniqueFilename from 'unique-filename';
 import debugFactory from 'debug';
 import gitFactory from 'simple-git';
-import { toss } from 'toss-expression';
-import { AppError } from 'universe/backend/error';
 import 'jest-extended';
 
 import type { ExecaReturnValue } from 'execa';
 import type { AnyFunction, AnyVoid, HttpStatusCode } from '@ergodark/types';
 import type { Debugger } from 'debug';
 import type { SimpleGit } from 'simple-git';
-import { sendHttpErrorResponse } from 'multiverse/next-respond';
 
 const { writeFile, access: accessFile } = fs;
 const debug = debugFactory(`${pkgName}:jest-setup`);
@@ -66,6 +67,8 @@ export function asMockedNextApiMiddleware(
 
     try {
       fn && (await fn({ req, res }));
+    } catch (error) {
+      await handleError(res, error);
     } finally {
       // ! This must happen or jest tests will hang and mongomemserv will choke.
       // ! Also note that this isn't a NextApiResponse but a ServerResponse!
