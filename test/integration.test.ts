@@ -1,4 +1,5 @@
 import { testApiHandler } from 'next-test-api-route-handler';
+import { get as dotPath } from 'dot-prop';
 import { mockEnvFactory } from 'testverse/setup';
 import { setupTestDb } from 'testverse/db';
 import { getFixtures } from 'testverse/integration.fixtures';
@@ -180,15 +181,29 @@ describe('generic correctness tests', () => {
 
 getFixtures(api).forEach(async (expected, ndx) => {
   // eslint-disable-next-line jest/prefer-expect-assertions
-  it(`#${ndx + 1} [${expected.method}] ${expected.handler.url}${
+  it(`#${expected.displayIndex} [${expected.method}] ${expected.handler.url}${
     expected.subject ? ` ${expected.subject}` : ''
   }`, async () => {
-    if (!lastRunSuccess) return;
+    if (!lastRunSuccess && process.env.FAIL_FAST) return;
 
     expect.hasAssertions();
     lastRunSuccess = false;
 
-    memory.getResultAt = (index: number) => memory[1 + index + (index < 0 ? ndx : 0)];
+    memory.getResultAt = <T = unknown>(
+      index: number,
+      prop?: string
+    ): TestResult<T> | T => {
+      const result: TestResult<T> = memory[1 + index + (index < 0 ? ndx : 0)];
+      const retval = prop ? dotPath<T>(result.json, prop) : result;
+
+      if (retval === undefined) {
+        throw new Error(
+          `${prop ? 'prop path "' + prop + '" ' : ''}return value cannot be undefined`
+        );
+      }
+
+      return retval;
+    };
 
     const requestParams =
       typeof expected.params == 'function' ? expected.params(memory) : expected.params;
