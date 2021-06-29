@@ -3,7 +3,6 @@ import { name as pkgName, version as pkgVersion } from '../package.json';
 import { verifyEnvironment } from '../expect-env';
 import { AppError } from 'universe/backend/error';
 import { sendHttpErrorResponse } from 'multiverse/next-respond';
-import { handleError } from 'universe/backend/middleware';
 import { tmpdir } from 'os';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
@@ -68,7 +67,8 @@ export function asMockedNextApiMiddleware(
     try {
       fn && (await fn({ req, res }));
     } catch (error) {
-      await handleError(res, error);
+      // ! This must be imported dynamically or jest will hang and mocking fail
+      await (await import('universe/backend/middleware')).handleError(res, error);
     } finally {
       // ! This must happen or jest tests will hang and mongomemserv will choke.
       // ! Also note that this isn't a NextApiResponse but a ServerResponse!
