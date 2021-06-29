@@ -229,10 +229,6 @@ export async function deleteBarks({ bark_ids }: { bark_ids: ObjectId[] }): Promi
     await db
       .collection<InternalInfo>('info')
       .updateOne({}, { $inc: { totalBarks: -numUpdated } });
-
-    if (numUpdated != bark_ids.length) {
-      throw new NotFoundError('some or all bark_ids were not deleted');
-    }
   }
 }
 
