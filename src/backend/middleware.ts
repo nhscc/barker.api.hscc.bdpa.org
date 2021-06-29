@@ -55,6 +55,30 @@ export const defaultConfig: PageConfig = {
   }
 };
 
+export async function handleError(res: NextApiResponse, error: { message: string }) {
+  const errorJson = error?.message ? { error: error.message } : {};
+
+  if (error instanceof GuruMeditationError) {
+    sendHttpError(res, {
+      error: 'sanity check failed: please report exactly what you did just now!'
+    });
+  } else if (
+    error instanceof InvalidIdError ||
+    error instanceof InvalidKeyError ||
+    error instanceof ValidationError
+  ) {
+    sendHttpBadRequest(res, errorJson);
+  } else if (error instanceof NotAuthorizedError) {
+    sendHttpUnauthorized(res, errorJson);
+  } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
+    sendHttpNotFound(res, errorJson);
+  } else if (error instanceof AppError) {
+    sendHttpError(res, errorJson);
+  } else {
+    sendHttpError(res);
+  }
+}
+
 /**
  * Generic middleware "glue" to handle api endpoints with consistent behavior
  * like safe exception handling.
@@ -123,26 +147,6 @@ export async function wrapHandler(
       }
     }
   } catch (error) {
-    const errorJson = error?.message ? { error: error.message } : {};
-
-    if (error instanceof GuruMeditationError) {
-      sendHttpError(finalRes, {
-        error: 'sanity check failed: please report exactly what you did just now!'
-      });
-    } else if (
-      error instanceof InvalidIdError ||
-      error instanceof InvalidKeyError ||
-      error instanceof ValidationError
-    ) {
-      sendHttpBadRequest(finalRes, errorJson);
-    } else if (error instanceof NotAuthorizedError) {
-      sendHttpUnauthorized(finalRes, errorJson);
-    } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
-      sendHttpNotFound(finalRes, errorJson);
-    } else if (error instanceof AppError) {
-      sendHttpError(finalRes, errorJson);
-    } else {
-      sendHttpError(finalRes);
-    }
+    await handleError(res, error);
   }
 }
