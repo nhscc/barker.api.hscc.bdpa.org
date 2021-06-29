@@ -779,7 +779,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'like new bark',
+      subject: 'like bark',
+      handler: api.barksIdLikesId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: getResultAt<string>('bark-user-test-1', 'bark.bark_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'like liked bark (noop)',
       handler: api.barksIdLikesId,
       method: 'PUT',
       params: ({ getResultAt }) => ({
@@ -875,16 +885,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'unlike bark',
-      handler: api.barksIdLikesId,
-      method: 'DELETE',
-      params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
-        bark_id: getResultAt<string>('bark-user-test-1', 'bark.bark_id')
-      }),
-      response: { status: 200 }
-    },
-    {
       // * #50
       subject: 'handle contrived',
       handler: api.users,
@@ -894,6 +894,16 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 555,
         json: { error: expect.stringContaining('contrived') }
       }
+    },
+    {
+      subject: 'unlike bark',
+      handler: api.barksIdLikesId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: getResultAt<string>('bark-user-test-1', 'bark.bark_id')
+      }),
+      response: { status: 200 }
     },
     {
       subject: 'unlike unliked bark (noop)',
@@ -994,6 +1004,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       response: { status: 200 }
     },
     {
+      // * #60
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'get deleted barks',
       handler: api.barksIds,
       method: 'GET',
@@ -1010,17 +1031,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
             expect.objectContaining({ deleted: true })
           )
         }
-      }
-    },
-    {
-      // * #60
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
       }
     },
     {
@@ -1043,181 +1053,262 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 200,
         json: { totalBarks: initialBarkCount - 10, totalUsers: initialUserCount + 2 }
       }
+    },
+    {
+      subject: 'get following users'
+    },
+    {
+      subject: 'get following count'
+    },
+    {
+      subject: 'is-following endpoint 404s'
+    },
+    {
+      subject: 'follow user'
+    },
+    {
+      subject: 'follow followed user (noop)'
+    },
+    {
+      subject: 'is-following endpoint 200s'
+    },
+    {
+      // * #70
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'confirm following count'
+    },
+    {
+      subject: 'get following users'
+    },
+    {
+      subject: 'get following with includeIndirect'
+    },
+    {
+      subject: 'unfollow user'
+    },
+    {
+      subject: 'unfollow unfollowed user (noop)',
+      handler: api.usersId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'is-following endpoint 404s'
+    },
+    {
+      subject: 'confirm following count'
+    },
+    {
+      subject: 'get following users'
+    },
+    {
+      subject: 'get packmates'
+    },
+    {
+      // * #80
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'get packmate count'
+    },
+    {
+      subject: 'is-packmate endpoint 404s'
+    },
+    {
+      subject: 'add packmate'
+    },
+    {
+      subject: 'add added packmate (noop)'
+    },
+    {
+      subject: 'is-packmate endpoint 200s'
+    },
+    {
+      subject: 'confirm packmate count'
+    },
+    {
+      subject: 'get packmates'
+    },
+    {
+      subject: 'remove packmate'
+    },
+    {
+      subject: 'remove removed packmate (noop)',
+      handler: api.usersId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'is-packmate endpoint 404s'
+    },
+    {
+      // * #90
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'confirm packmate count'
+    },
+    {
+      subject: 'get packmates'
+    },
+    {
+      subject: 'get bookmarked barks'
+    },
+    {
+      subject: 'get bookmarked count'
+    },
+    {
+      subject: 'is-bookmarked endpoint 404s'
+    },
+    {
+      subject: 'bookmark bark'
+    },
+    {
+      subject: 'bookmark bookmarked bark (noop)'
+    },
+    {
+      subject: 'is-bookmarked endpoint 200s'
+    },
+    {
+      subject: 'confirm bookmarked count'
+    },
+    {
+      subject: 'get bookmarked barks'
+    },
+    {
+      // * #100
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'unbookmark bark'
+    },
+    {
+      subject: 'unbookmark unbookmarked bark (noop)',
+      handler: api.usersId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'is-bookmarked endpoint 404s'
+    },
+    {
+      subject: 'confirm bookmarked count'
+    },
+    {
+      subject: 'get bookmarked barks'
+    },
+    {
+      subject: 'pagination',
+      handler: api.barks
+    },
+    {
+      subject: 'page size = max id count',
+      handler: api.barksIds
+    },
+    {
+      subject: 'pagination',
+      handler: api.barksIdLikes
+    },
+    {
+      subject: 'pagination',
+      handler: api.users
+    },
+    {
+      // * #110
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdLiked
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdFollowing
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdPack
+    },
+    {
+      subject: 'pagination',
+      handler: api.usersIdBookmarks
+    },
+    {
+      subject: 'pagination',
+      handler: api.barksSearch
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      // * #120
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
     }
-    // {
-    //   subject: 'get following users'
-    // },
-    // {
-    //   subject: 'get following count'
-    // },
-    // {
-    //   subject: 'is-following endpoint 404s'
-    // },
-    // {
-    //   subject: 'follow user'
-    // },
-    // {
-    //   subject: 'is-following endpoint 200s'
-    // },
-    // {
-    //   subject: 'confirm following count'
-    // },
-    // {
-    //   subject: 'get following users'
-    // },
-    // {
-    //   subject: 'get following with includeIndirect'
-    // },
-    // {
-    //   subject: 'unfollow user'
-    // },
-    // {
-    //   subject: 'unfollow unfollowed user (noop)',
-    //   handler: api.usersId,
-    //   method: 'DELETE',
-    //   params: ({ getResultAt }) => ({ user_id: getResultAt<string>('user-hillary', 'user.user_id') }),
-    //   response: { status: 200 }
-    // },
-    // {
-    //   subject: 'is-following endpoint 404s'
-    // },
-    // {
-    //   subject: 'confirm following count'
-    // },
-    // {
-    //   subject: 'get following users'
-    // },
-    // {
-    //   subject: 'get packmates'
-    // },
-    // {
-    //   subject: 'get packmate count'
-    // },
-    // {
-    //   subject: 'is-packmate endpoint 404s'
-    // },
-    // {
-    //   subject: 'add packmate'
-    // },
-    // {
-    //   subject: 'is-packmate endpoint 200s'
-    // },
-    // {
-    //   subject: 'confirm packmate count'
-    // },
-    // {
-    //   subject: 'get packmates'
-    // },
-    // {
-    //   subject: 'remove packmate'
-    // },
-    // {
-    //   subject: 'remove removed packmate (noop)',
-    //   handler: api.usersId,
-    //   method: 'DELETE',
-    //   params: ({ getResultAt }) => ({ user_id: getResultAt<string>('user-hillary', 'user.user_id') }),
-    //   response: { status: 200 }
-    // },
-    // {
-    //   subject: 'is-packmate endpoint 404s'
-    // },
-    // {
-    //   subject: 'confirm packmate count'
-    // },
-    // {
-    //   subject: 'get packmates'
-    // },
-    // {
-    //   subject: 'get bookmarked barks'
-    // },
-    // {
-    //   subject: 'get bookmarked count'
-    // },
-    // {
-    //   subject: 'is-bookmarked endpoint 404s'
-    // },
-    // {
-    //   subject: 'bookmark bark'
-    // },
-    // {
-    //   subject: 'is-bookmarked endpoint 200s'
-    // },
-    // {
-    //   subject: 'confirm bookmarked count'
-    // },
-    // {
-    //   subject: 'get bookmarked barks'
-    // },
-    // {
-    //   subject: 'unbookmark bark'
-    // },
-    // {
-    //   subject: 'unbookmark unbookmarked bark (noop)',
-    //   handler: api.usersId,
-    //   method: 'DELETE',
-    //   params: ({ getResultAt }) => ({ user_id: getResultAt<string>('user-hillary', 'user.user_id') }),
-    //   response: { status: 200 }
-    // },
-    // {
-    //   subject: 'is-bookmarked endpoint 404s'
-    // },
-    // {
-    //   subject: 'confirm bookmarked count'
-    // },
-    // {
-    //   subject: 'get bookmarked barks'
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.barks
-    // },
-    // {
-    //   subject: 'page size = max id count',
-    //   handler: api.barksIds
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.barksIdLikes
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.users
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.usersIdLiked
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.usersIdFollowing
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.usersIdPack
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.usersIdBookmarks
-    // },
-    // {
-    //   subject: 'pagination',
-    //   handler: api.barksSearch
-    // },
-    // {
-    //   subject: 'search returns expected barks'
-    // },
-    // {
-    //   subject: 'search returns expected barks'
-    // },
-    // {
-    //   subject: 'search returns expected barks'
-    // },
-    // {
-    //   subject: 'search returns expected barks'
-    // },
-    // {
-    //   subject: 'search returns expected barks'
-    // }
   ];
 
   return fixtures.filter<TestFixture>((test, ndx): test is TestFixture => {
