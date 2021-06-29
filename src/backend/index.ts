@@ -660,7 +660,7 @@ export async function followUser({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, following: { $nin: [followed_id] } },
       { $push: { following: { $each: [followed_id], $position: 0 } } }
     );
   }
@@ -778,7 +778,7 @@ export async function addPackmate({
     if (!(await itemExists(users, user_id))) throw new ItemNotFoundError(user_id);
 
     await users.updateOne(
-      { _id: user_id },
+      { _id: user_id, packmates: { $nin: [packmate_id] } },
       { $push: { packmates: { $each: [packmate_id], $position: 0 } } }
     );
   }

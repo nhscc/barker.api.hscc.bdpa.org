@@ -1051,26 +1051,81 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       method: 'GET',
       response: {
         status: 200,
-        json: { totalBarks: initialBarkCount - 10, totalUsers: initialUserCount + 2 }
+        json: {
+          totalBarks: initialBarkCount - targetedForDeletion.length,
+          totalUsers: initialUserCount + 2
+        }
       }
     },
     {
-      subject: 'get following users'
+      subject: 'is-following endpoint 404s',
+      handler: api.usersIdFollowingId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 404 }
     },
     {
-      subject: 'get following count'
+      subject: 'follow user',
+      handler: api.usersIdFollowingId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'is-following endpoint 404s'
+      subject: 'follow followed user (noop)',
+      handler: api.usersIdFollowingId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'follow user'
+      subject: 'cannot follow self',
+      handler: api.usersIdFollowingId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 400,
+        json: {
+          error: expect.stringContaining('cannot follow themselves')
+        }
+      }
     },
     {
-      subject: 'follow followed user (noop)'
+      subject: 'is-following endpoint 200s',
+      handler: api.usersIdFollowingId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'is-following endpoint 200s'
+      subject: 'confirm following count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).following).toBe(1);
+          return undefined;
+        }
+      }
     },
     {
       // * #70
@@ -1084,37 +1139,121 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'confirm following count'
+      subject: 'get following users',
+      handler: api.usersIdFollowing,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect(json?.users as string[]).toStrictEqual([
+            getResultAt<string>('user-test-2', 'user.user_id')
+          ]);
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'get following users'
+      subject: 'get following with includeIndirect',
+      handler: api.usersIdFollowing,
+      method: 'GET',
+      params: {
+        user_id: dummyDbData.users[0]._id.toHexString(),
+        includeIndirect: ''
+      },
+      response: {
+        status: 200,
+        json: (json) => {
+          expect(json?.users).toIncludeSameMembers(
+            Array.from(
+              new Set([
+                ...dummyDbData.users[1].following.map((id) => id.toHexString()),
+                ...dummyDbData.users[0].following.map((id) => id.toHexString())
+              ])
+            )
+          );
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'get following with includeIndirect'
-    },
-    {
-      subject: 'unfollow user'
-    },
-    {
-      subject: 'unfollow unfollowed user (noop)',
-      handler: api.usersId,
+      subject: 'unfollow user',
+      handler: api.usersIdFollowingId,
       method: 'DELETE',
       params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
       }),
       response: { status: 200 }
     },
     {
-      subject: 'is-following endpoint 404s'
+      subject: 'unfollow unfollowed user (noop)',
+      handler: api.usersIdFollowingId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
-      subject: 'confirm following count'
+      subject: 'is-following endpoint 404s',
+      handler: api.usersIdFollowingId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        followed_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 404 }
     },
     {
-      subject: 'get following users'
+      subject: 'confirm following count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).following).toBe(0);
+          return undefined;
+        }
+      }
     },
     {
-      subject: 'get packmates'
+      subject: 'get following users',
+      handler: api.usersIdFollowing,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: { users: [] }
+      }
+    },
+    {
+      subject: 'is-packmate endpoint 404s',
+      handler: api.usersIdPackId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 404 }
+    },
+    {
+      subject: 'add packmate',
+      handler: api.usersIdPackId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
     },
     {
       // * #80
@@ -1128,40 +1267,116 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'get packmate count'
-    },
-    {
-      subject: 'is-packmate endpoint 404s'
-    },
-    {
-      subject: 'add packmate'
-    },
-    {
-      subject: 'add added packmate (noop)'
-    },
-    {
-      subject: 'is-packmate endpoint 200s'
-    },
-    {
-      subject: 'confirm packmate count'
-    },
-    {
-      subject: 'get packmates'
-    },
-    {
-      subject: 'remove packmate'
-    },
-    {
-      subject: 'remove removed packmate (noop)',
-      handler: api.usersId,
-      method: 'DELETE',
+      subject: 'add added packmate (noop)',
+      handler: api.usersIdPackId,
+      method: 'PUT',
       params: ({ getResultAt }) => ({
-        user_id: getResultAt<string>('user-hillary', 'user.user_id')
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
       }),
       response: { status: 200 }
     },
     {
-      subject: 'is-packmate endpoint 404s'
+      subject: 'cannot be in own pack',
+      handler: api.usersIdPackId,
+      method: 'PUT',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 400,
+        json: {
+          error: expect.stringContaining('own pack')
+        }
+      }
+    },
+    {
+      subject: 'is-packmate endpoint 200s',
+      handler: api.usersIdPackId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'confirm packmate count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).packmates).toBe(1);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'get packmates',
+      handler: api.usersIdPack,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json, { getResultAt }) => {
+          expect(json?.users as string[]).toStrictEqual([
+            getResultAt<string>('user-test-2', 'user.user_id')
+          ]);
+          return undefined;
+        }
+      }
+    },
+    {
+      subject: 'remove packmate',
+      handler: api.usersIdPackId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'remove removed packmate (noop)',
+      handler: api.usersIdPackId,
+      method: 'DELETE',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 200 }
+    },
+    {
+      subject: 'is-packmate endpoint 404s',
+      handler: api.usersIdPackId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        packmate_id: getResultAt<string>('user-test-2', 'user.user_id')
+      }),
+      response: { status: 404 }
+    },
+    {
+      subject: 'confirm packmate count',
+      handler: api.usersId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: (json) => {
+          expect((json?.user as PublicUser).packmates).toBe(0);
+          return undefined;
+        }
+      }
     },
     {
       // * #90
@@ -1175,19 +1390,26 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
-      subject: 'confirm packmate count'
+      subject: 'get packmates',
+      handler: api.usersIdPack,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      response: {
+        status: 200,
+        json: { users: [] }
+      }
     },
     {
-      subject: 'get packmates'
-    },
-    {
-      subject: 'get bookmarked barks'
-    },
-    {
-      subject: 'get bookmarked count'
-    },
-    {
-      subject: 'is-bookmarked endpoint 404s'
+      subject: 'is-bookmarked endpoint 404s',
+      handler: api.usersIdBookmarksId,
+      method: 'GET',
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id'),
+        bark_id: dummyDbData.barks[0]._id.toHexString()
+      }),
+      response: { status: 404 }
     },
     {
       subject: 'bookmark bark'
@@ -1203,17 +1425,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     },
     {
       subject: 'get bookmarked barks'
-    },
-    {
-      // * #100
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
-      }
     },
     {
       subject: 'unbookmark bark'
@@ -1237,6 +1448,17 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       subject: 'get bookmarked barks'
     },
     {
+      // * #100
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
       subject: 'pagination',
       handler: api.barks
     },
@@ -1251,17 +1473,6 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     {
       subject: 'pagination',
       handler: api.users
-    },
-    {
-      // * #110
-      subject: 'handle contrived',
-      handler: api.users,
-      method: 'POST',
-      body: {},
-      response: {
-        status: 555,
-        json: { error: expect.stringContaining('contrived') }
-      }
     },
     {
       subject: 'pagination',
@@ -1284,22 +1495,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       handler: api.barksSearch
     },
     {
-      subject: 'search returns expected barks'
-    },
-    {
-      subject: 'search returns expected barks'
-    },
-    {
-      subject: 'search returns expected barks'
-    },
-    {
-      subject: 'search returns expected barks'
-    },
-    {
-      subject: 'search returns expected barks'
-    },
-    {
-      // * #120
+      // * #110
       subject: 'handle contrived',
       handler: api.users,
       method: 'POST',
@@ -1308,6 +1504,21 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 555,
         json: { error: expect.stringContaining('contrived') }
       }
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
+    },
+    {
+      subject: 'search returns expected barks'
     }
   ];
 
