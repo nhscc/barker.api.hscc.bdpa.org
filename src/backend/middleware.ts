@@ -117,6 +117,8 @@ export async function wrapHandler(
       }
     }
   } catch (error) {
+    const errorJson = error?.message ? { error: error.message } : {};
+
     if (error instanceof GuruMeditationError) {
       sendHttpError(finalRes, {
         error: 'sanity check failed: please report exactly what you did just now!'
@@ -126,13 +128,13 @@ export async function wrapHandler(
       error instanceof InvalidKeyError ||
       error instanceof ValidationError
     ) {
-      sendHttpBadRequest(finalRes, error.message ? { error: error.message } : {});
+      sendHttpBadRequest(finalRes, errorJson);
     } else if (error instanceof NotAuthorizedError) {
-      sendHttpUnauthorized(finalRes);
+      sendHttpUnauthorized(finalRes, errorJson);
     } else if (error instanceof NotFoundError || error instanceof ItemNotFoundError) {
-      sendHttpNotFound(finalRes);
+      sendHttpNotFound(finalRes, errorJson);
     } else if (error instanceof AppError) {
-      sendHttpError(finalRes, error.message ? { error: error.message } : {});
+      sendHttpError(finalRes, errorJson);
     } else {
       sendHttpError(finalRes);
     }
