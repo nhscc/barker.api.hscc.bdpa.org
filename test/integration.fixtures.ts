@@ -1960,7 +1960,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }),
       response: {
         status: 400,
-        json: { error: expect.stringContaining('illegal X_id') }
+        json: { error: expect.stringContaining('illegal id-related specifier') }
       }
     },
     {
@@ -1974,7 +1974,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }),
       response: {
         status: 400,
-        json: { error: expect.stringContaining('illegal X_id') }
+        json: { error: expect.stringContaining('illegal id-related specifier') }
       }
     },
     {

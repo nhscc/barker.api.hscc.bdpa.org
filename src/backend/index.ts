@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { getClientIp } from 'request-ip';
-import isPlainObject from 'is-plain-object';
+import { isPlainObject } from 'is-plain-object';
 import { getEnv } from 'universe/backend/env';
 import { getDb, itemExists, itemToObjectId, itemToStringId } from 'universe/backend/db';
 
