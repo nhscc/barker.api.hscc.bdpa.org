@@ -414,7 +414,8 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
         status: 200,
         json: (json, { getResultAt }) => {
           const users =
-            (json?.users as PublicUser[]) || toss(new Error('missing "users" in result'));
+            (json?.users as PublicUser[]) ||
+            toss(new GuruMeditationError('missing "users" in result'));
 
           expect(users[0]).toStrictEqual({
             user_id: getResultAt<string>('user-test-2', 'user.user_id'),
@@ -2036,7 +2037,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
     if (runOnly && !runOnly.includes(displayIndex)) return false;
     (test as TestFixture).displayIndex = !runOnly
       ? displayIndex
-      : runOnly.shift() ?? toss(new Error('ran out of RUN_ONLY indices'));
+      : runOnly.shift() ?? toss(new GuruMeditationError('ran out of RUN_ONLY indices'));
     return true;
   });
 }
