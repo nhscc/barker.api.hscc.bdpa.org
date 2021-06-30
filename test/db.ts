@@ -6,7 +6,7 @@ import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { usernames } from '../data/corpus.json';
 import { getEnv } from 'universe/backend/env';
-import { GuruMeditationError } from 'universe/backend/error';
+import { ActivityGenerationError, GuruMeditationError } from 'universe/backend/error';
 
 import {
   getDb,
@@ -122,7 +122,7 @@ dummyDbData.users.forEach((user, ndx, arr) => {
 
   user.packmates = user.following[0]
     ? [user.following[0]]
-    : toss(new Error('failed to generate any followers and packmates'));
+    : toss(new ActivityGenerationError('failed to generate followers/packmates'));
 
   user.liked = dummyDbData.barks
     .slice(
@@ -137,7 +137,7 @@ dummyDbData.users.forEach((user, ndx, arr) => {
 
   user.bookmarked = user.liked[5]
     ? [user.liked[5]]
-    : toss(new Error('failed to generate any bookmarks'));
+    : toss(new ActivityGenerationError('failed to generate bookmarks'));
 });
 
 export async function hydrateDb(db: Db, data: DummyDbData) {

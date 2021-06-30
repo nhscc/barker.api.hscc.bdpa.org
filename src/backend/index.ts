@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { randomInt } from 'crypto';
 import { toss } from 'toss-expression';
 import { getClientIp } from 'request-ip';
+import isPlainObject from 'is-plain-object';
 import { getEnv } from 'universe/backend/env';
 import { getDb, itemExists, itemToObjectId, itemToStringId } from 'universe/backend/db';
 
@@ -33,9 +34,6 @@ import type {
   InternalUser,
   UserId
 } from 'types/global';
-
-const isObject = (object: unknown) =>
-  !Array.isArray(object) && object !== null && typeof object == 'object';
 
 const nameRegex = /^[a-zA-Z0-9 -]+$/;
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -73,7 +71,7 @@ const matchableStrings = [
   'private',
   'barkbackTo',
   'rebarkOf'
-];
+]; /* as const */
 
 /**
  * Whitelisted MongoDB sub-matchers that can be used with `searchBarks()`
@@ -411,7 +409,7 @@ export async function createBark({
   key: string;
   data: Partial<NewBark>;
 }): Promise<PublicBark> {
-  if (!isObject(data)) {
+  if (!isPlainObject(data)) {
     throw new ValidationError('only JSON content is allowed');
   } else if (
     typeof data.content != 'string' ||
@@ -933,7 +931,7 @@ export async function createUser({
   key: string;
   data: Partial<NewUser>;
 }): Promise<PublicUser> {
-  if (!isObject(data)) {
+  if (!isPlainObject(data)) {
     throw new ValidationError('only JSON content is allowed');
   } else if (
     typeof data.name != 'string' ||
@@ -1015,7 +1013,7 @@ export async function updateUser({
 }): Promise<void> {
   if (!(user_id instanceof ObjectId)) {
     throw new InvalidIdError(user_id);
-  } else if (!isObject(data)) {
+  } else if (!isPlainObject(data)) {
     throw new ValidationError('only JSON content is allowed');
   } else if (
     typeof data.name != 'string' ||
@@ -1073,6 +1071,7 @@ export async function searchBarks({
     [specifier: string]:
       | string
       | number
+      | boolean
       | {
           [subspecifier in '$gt' | '$lt' | '$gte' | '$lte']?: number;
         };
@@ -1085,105 +1084,121 @@ export async function searchBarks({
 
   if (after !== null && !(after instanceof ObjectId)) {
     throw new InvalidIdError(after);
-  } else if (!isObject(match) || !isObject(regexMatch)) {
-    throw new ValidationError('missing match and/or regexMatch');
+  } else if (!isPlainObject(match) || !isPlainObject(regexMatch)) {
+    throw new ValidationError('match and regexMatch must be objects');
   } else if (match._id || match.bark_id || match.user_id) {
-    throw new ValidationError('match object has an illegal X_id property');
+    throw new ValidationError('match object has illegal id-related specifier');
   } else if (regexMatch._id || regexMatch.bark_id || regexMatch.user_id) {
-    throw new ValidationError('regexMatch object has an illegal X_id property');
+    throw new ValidationError('regexMatch object has illegal id-related specifier');
   }
 
-  // ? Handle aliasing/proxying
+  const matchIds: {
+    owner?: ObjectId[];
+    barkbackTo?: ObjectId[];
+    rebarkOf?: ObjectId[];
+  } = {};
 
-  const enableProxyMatches = (m: typeof regexMatch | typeof match) => {
-    if (m.likes) {
-      m.totalLikes = m.likes;
-      delete m.likes;
-    }
-
-    if (m.rebarks) {
-      m.totalRebarks = m.rebarks;
-      delete m.rebarks;
-    }
-
-    if (m.barkbacks) {
-      m.totalBarkbacks = m.barkbacks;
-      delete m.barkbacks;
-    }
-  };
-
-  enableProxyMatches(match);
-  enableProxyMatches(regexMatch);
-
-  // ? Transform all the "or" queries that might appear in regular expressions
-
-  type ValidMatchId = 'owner' | 'barkbackTo' | 'rebarkOf';
-  const matchIds = {} as Record<ValidMatchId, ObjectId[]>;
   const split = (str: string) => str.toString().split('|');
 
-  if (regexMatch.owner) {
-    matchIds['owner'] = itemToObjectId(split(regexMatch.owner));
-    delete regexMatch.owner;
-  }
+  [regexMatch, match].forEach((matchSpec) => {
+    // ? Transform all the "or" queries that might appear in the match objects
 
-  if (regexMatch.barkbackTo) {
-    matchIds['barkbackTo'] = itemToObjectId(split(regexMatch.barkbackTo));
-    delete regexMatch.barkbackTo;
-  }
+    if (matchSpec.owner) {
+      matchIds.owner = itemToObjectId(split(matchSpec.owner.toString()));
+      delete matchSpec.owner;
+    }
 
-  if (regexMatch.rebarkOf) {
-    matchIds['rebarkOf'] = itemToObjectId(split(regexMatch.rebarkOf));
-    delete regexMatch.rebarkOf;
-  }
+    if (matchSpec.barkbackTo) {
+      matchIds.barkbackTo = itemToObjectId(split(matchSpec.barkbackTo.toString()));
+      delete matchSpec.barkbackTo;
+    }
+
+    if (matchSpec.rebarkOf) {
+      matchIds.rebarkOf = itemToObjectId(split(matchSpec.rebarkOf.toString()));
+      delete matchSpec.rebarkOf;
+    }
+
+    // ? Handle aliasing/proxying
+
+    if (matchSpec.likes) {
+      matchSpec.totalLikes = matchSpec.likes;
+      delete matchSpec.likes;
+    }
+
+    if (matchSpec.rebarks) {
+      matchSpec.totalRebarks = matchSpec.rebarks;
+      delete matchSpec.rebarks;
+    }
+
+    if (matchSpec.barkbacks) {
+      matchSpec.totalBarkbacks = matchSpec.barkbacks;
+      delete matchSpec.barkbacks;
+    }
+  });
 
   // ? Next, we validate everything
 
-  const matchKeys = Object.keys(match);
-  const regexMatchKeys = Object.keys(regexMatch);
+  // * Validate id matchers
 
-  const matchKeysAreValid = () =>
-    matchKeys.every((ki) => {
-      const val = match[ki];
+  if ((matchIds.owner?.length || 0) > getEnv().RESULTS_PER_PAGE) {
+    throw new ValidationError(`match object validation failed on "owner": too many ids`);
+  }
+
+  if ((matchIds.barkbackTo?.length || 0) > getEnv().RESULTS_PER_PAGE) {
+    throw new ValidationError(
+      `match object validation failed on "barkbackTo": too many ids`
+    );
+  }
+
+  if ((matchIds.rebarkOf?.length || 0) > getEnv().RESULTS_PER_PAGE) {
+    throw new ValidationError(
+      `match object validation failed on "rebarkOf": too many ids`
+    );
+  }
+
+  // * Validate the match object
+  for (const [key, val] of Object.entries(match)) {
+    const err = (error?: string) => {
+      throw new ValidationError(`match object validation failed on "${key}": ${error}`);
+    };
+
+    if (!matchableStrings.includes(key)) err('invalid specifier');
+    if (Array.isArray(val)) err('invalid value type: cannot be array');
+
+    if (isPlainObject(val)) {
       let valNotEmpty = false;
 
-      const test = () => {
-        return Object.keys(val).every(
-          (subki) =>
-            (valNotEmpty = true) &&
-            matchableSubStrings.includes(subki) &&
-            typeof (val as Record<string, unknown>)[subki] == 'number'
-        );
-      };
+      for (const [subkey, subval] of Object.entries(val)) {
+        valNotEmpty = true;
+        if (!matchableSubStrings.includes(subkey)) err('invalid sub-specifier');
+        if (typeof subval != 'number') err('invalid sub-value type');
+      }
 
-      return (
-        !Array.isArray(val) &&
-        matchableStrings.includes(ki) &&
-        (val instanceof ObjectId ||
-          ['number', 'string', 'boolean'].includes(typeof val) ||
-          (isObject(val) && test() && valNotEmpty))
+      if (!valNotEmpty) err('invalid value type: cannot be empty object');
+    } else if (val !== null && !['number', 'string', 'boolean'].includes(typeof val)) {
+      err('invalid value type; must be number, string, or boolean');
+    }
+  }
+
+  // * Validate the regexMatch object
+  for (const [key, val] of Object.entries(regexMatch)) {
+    const err = (error?: string) => {
+      throw new ValidationError(
+        `regexMatch object validation failed on "${key}": ${error}`
       );
-    });
+    };
 
-  const regexMatchKeysAreValid = () =>
-    regexMatchKeys.every((ki) => {
-      return (
-        matchableStrings.includes(ki) &&
-        ((regexMatch[ki] as unknown) instanceof ObjectId ||
-          typeof regexMatch[ki] == 'string')
-      );
-    });
-
-  if (matchKeys.length && !matchKeysAreValid())
-    throw new ValidationError('match object validation failed');
-
-  if (regexMatchKeys.length && !regexMatchKeysAreValid())
-    throw new ValidationError('regexMatch object validation failed');
+    if (!matchableStrings.includes(key)) err('invalid specifier');
+    if (!val || typeof val != 'string') {
+      err('invalid value type; must be non-empty (regex) string');
+    }
+  }
 
   // ? Finally, we construct the pristine params objects and perform the search
 
   const finalRegexMatch = {} as Record<string, unknown>;
 
-  Object.entries(regexMatch).map(([k, v]) => {
+  Object.entries(regexMatch).forEach(([k, v]) => {
     finalRegexMatch[k] = { $regex: v, $options: 'i' };
   });
 
@@ -1195,15 +1210,17 @@ export async function searchBarks({
     }
   };
 
+  const aggregation = [
+    ...(Object.keys(primaryMatchStage).length ? [primaryMatchStage] : []),
+    ...Object.entries(matchIds).map(([k, v]) => ({ $match: { [k]: { $in: v } } })),
+    { $sort: { _id: -1 } },
+    { $limit: getEnv().RESULTS_PER_PAGE },
+    { $project: publicBarkProjection }
+  ];
+
   return (await getDb())
     .collection<InternalBark>('barks')
-    .aggregate<PublicBark>([
-      ...(Object.keys(primaryMatchStage).length ? [primaryMatchStage] : []),
-      ...Object.entries(matchIds).map(([k, v]) => ({ $match: { [k]: { $in: v } } })),
-      { $sort: { _id: -1 } },
-      { $limit: getEnv().RESULTS_PER_PAGE },
-      { $project: publicBarkProjection }
-    ])
+    .aggregate<PublicBark>(aggregation)
     .toArray();
 }
 
