@@ -21,6 +21,7 @@ import {
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { itemToObjectId, itemToStringId } from 'universe/backend/db';
 import { toss } from 'toss-expression';
+import { GuruMeditationError } from 'universe/backend/error';
 
 const { getDb } = setupTestDb();
 
@@ -335,7 +336,7 @@ describe('::unlikeBark', () => {
         .find({ _id: testBarks[0] })
         .project<{ totalLikes: number }>({ totalLikes: true })
         .next()
-        .then((r) => r?.totalLikes)) || toss(new Error('totalLikes was undefined'));
+        .then((r) => r?.totalLikes)) ?? toss(new GuruMeditationError());
 
     await Promise.all(
       testBarks.map((id) =>
@@ -421,7 +422,7 @@ describe('::likeBark', () => {
         .find({ _id: newlyLikedBarks[0] })
         .project<{ totalLikes: number }>({ totalLikes: true })
         .next()
-        .then((r) => r?.totalLikes)) || toss(new Error('totalLikes was undefined'));
+        .then((r) => r?.totalLikes)) ?? toss(new GuruMeditationError());
 
     await Promise.all(
       newlyLikedBarks.map((id) =>
@@ -841,7 +842,7 @@ describe('::getFollowingUserIds', () => {
   const getAllFollowers = async (id: UserId, recurse = false) => {
     const findUser = (uid: UserId) =>
       dummyDbData.users.find((user) => user._id.equals(uid)) ||
-      toss(new Error('could not find user'));
+      toss(new GuruMeditationError('could not find user'));
 
     const user = findUser(id);
 
@@ -2199,6 +2200,29 @@ describe('::searchBarks', () => {
         regexMatch: {
           owner: `${dummyDbData.users[0]._id}|${dummyDbData.users[1]._id}`
         }
+      }).then((r) => r.map((b) => b.bark_id.toString()))
+    ).toIncludeSameMembers(
+      itemToStringId(
+        dummyDbData.barks.filter(
+          (b) =>
+            [dummyDbData.users[0]._id, dummyDbData.users[1]._id].includes(b.owner) &&
+            b.totalLikes < 100
+        )
+      )
+    );
+  });
+
+  it('returns expected barks when using match for ID search', async () => {
+    expect.hasAssertions();
+
+    expect(
+      await Backend.searchBarks({
+        after: null,
+        match: {
+          likes: { $lt: 100 },
+          owner: `${dummyDbData.users[0]._id}|${dummyDbData.users[1]._id}`
+        },
+        regexMatch: {}
       }).then((r) => r.map((b) => b.bark_id.toString()))
     ).toIncludeSameMembers(
       itemToStringId(
