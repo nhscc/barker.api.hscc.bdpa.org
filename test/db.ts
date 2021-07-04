@@ -34,6 +34,9 @@ export type DummyDbData = {
   info: WithId<InternalInfo>;
 };
 
+// TODO: use ghostmeme's seeding process (i.e. remove all the randomness)
+// TODO: also, generate higher quality seed data
+
 export const dummyDbData: DummyDbData = {
   keys: [
     {
@@ -180,7 +183,7 @@ export async function hydrateDb(db: Db, data: DummyDbData) {
  * are run. **In this mode, all tests will share the same database state!**
  */
 export function setupTestDb(defer = false) {
-  const port = getEnv().DEBUG_INSPECTING ? getEnv().MONGODB_MS_PORT : undefined;
+  const port = (getEnv().DEBUG_INSPECTING && getEnv().MONGODB_MS_PORT) || undefined;
 
   const server = new MongoMemoryServer({
     instance: {

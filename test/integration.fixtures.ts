@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { toss } from 'toss-expression';
-import { toPublicBark } from './setup';
+import { toPublicBark } from 'testverse/setup';
 import { dummyDbData } from 'testverse/db';
 import { getEnv } from 'universe/backend/env';
 import { GuruMeditationError } from 'universe/backend/error';
@@ -138,11 +138,8 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
   const initialBarkCount = dummyDbData.barks.length;
   const initialUserCount = dummyDbData.users.length;
 
-  const stringifyIds = (bark: PublicBark) => ({
+  const addUnknownDelete = (bark: PublicBark) => ({
     ...bark,
-    owner: bark.owner.toHexString(),
-    barkbackTo: bark.barkbackTo?.toHexString() || null,
-    rebarkOf: bark.rebarkOf?.toHexString() || null,
     deleted: expect.any(Boolean)
   });
 
@@ -1840,6 +1837,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
       }
     },
     {
+      // TODO: with @xunnamius/fable, have an "every X" type construct
       // * #120
       subject: 'handle contrived',
       handler: api.users,
@@ -1905,7 +1903,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
             { ...getResultAt<PublicBark>('bark-user-test-1', 'bark'), deleted: true },
             ...dummyDbData.barks
               .filter((bark) => bark.owner.equals(dummyDbData.users[0]._id))
-              .map((bark) => stringifyIds(toPublicBark(bark)))
+              .map((bark) => addUnknownDelete(toPublicBark(bark)))
           ]);
           return undefined;
         }
@@ -1924,7 +1922,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           expect(json?.barks as PublicBark[]).toStrictEqual(
             dummyDbData.barks
               .filter((bark) => bark.barkbackTo == targetWithBarkbackTo)
-              .map((bark) => stringifyIds(toPublicBark(bark)))
+              .map((bark) => addUnknownDelete(toPublicBark(bark)))
           );
           return undefined;
         }
@@ -1943,7 +1941,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           expect(json?.barks as PublicBark[]).toStrictEqual(
             dummyDbData.barks
               .filter((bark) => bark.rebarkOf == targetWithRebarkOf)
-              .map((bark) => stringifyIds(toPublicBark(bark)))
+              .map((bark) => addUnknownDelete(toPublicBark(bark)))
           );
           return undefined;
         }
@@ -2001,7 +1999,7 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
                   !bark.deleted &&
                   /\d\d/.test(bark.content)
               )
-              .map((bark) => stringifyIds(toPublicBark(bark)))
+              .map((bark) => addUnknownDelete(toPublicBark(bark)))
           );
           return undefined;
         }
@@ -2029,8 +2027,67 @@ export function getFixtures(api: Record<string, NextApiHandlerMixin>): TestFixtu
           return undefined;
         }
       }
+    },
+    {
+      // TODO: with @xunnamius/fable, have an "every X" type construct
+      // * #130
+      subject: 'handle contrived',
+      handler: api.users,
+      method: 'POST',
+      body: {},
+      response: {
+        status: 555,
+        json: { error: expect.stringContaining('contrived') }
+      }
+    },
+    {
+      subject: 'not tripped up by uniqueness constraint when trying to modify self (1)',
+      handler: api.usersId,
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      method: 'PUT',
+      body: {
+        email: 'liz@ewarren.com',
+        name: 'Elizabeth Warren II',
+        phone: '978-555-5555'
+      },
+      response: { status: 200 }
+    },
+    {
+      subject: 'not tripped up by uniqueness constraint when trying to modify self (2)',
+      handler: api.usersId,
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      method: 'PUT',
+      body: {
+        email: 'liz3@ewarren.com',
+        name: 'Elizabeth Warren III',
+        phone: '978-555-5555'
+      },
+      response: { status: 200 }
+    },
+    {
+      subject: 'still catches uniqueness constraint violations',
+      handler: api.usersId,
+      params: ({ getResultAt }) => ({
+        user_id: getResultAt<string>('user-test-1', 'user.user_id')
+      }),
+      method: 'PUT',
+      body: {
+        email: 'test2@test.com',
+        name: 'Elizabeth Warren III',
+        phone: '978-555-5555'
+      },
+      response: {
+        status: 400,
+        json: { error: expect.stringContaining('with that email') }
+      }
     }
   ];
+
+  // TODO: ability to specify "depends" via index or name/id
 
   return fixtures.filter<TestFixture>((test, ndx): test is TestFixture => {
     const displayIndex = ndx + 1;

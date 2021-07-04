@@ -193,9 +193,12 @@ export type InternalUser = {
  */
 export type PublicBark = Pick<
   InternalBark,
-  'owner' | 'content' | 'createdAt' | 'deleted' | 'private' | 'barkbackTo' | 'rebarkOf'
+  'content' | 'createdAt' | 'deleted' | 'private'
 > & {
   bark_id: string;
+  owner: string;
+  barkbackTo: string | null;
+  rebarkOf: string | null;
   likes: InternalBark['totalLikes'];
   rebarks: InternalBark['totalRebarks'];
   barkbacks: InternalBark['totalBarkbacks'];
