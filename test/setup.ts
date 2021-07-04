@@ -59,13 +59,13 @@ export function toPublicBark(internal: WithId<InternalBark>): PublicBark {
     likes: internal.totalLikes,
     rebarks: internal.totalRebarks,
     barkbacks: internal.totalBarkbacks,
-    owner: internal.owner,
+    owner: internal.owner.toString(),
     content: internal.content,
     createdAt: internal.createdAt,
     deleted: internal.deleted,
     private: internal.private,
-    barkbackTo: internal.barkbackTo,
-    rebarkOf: internal.rebarkOf
+    barkbackTo: internal.barkbackTo?.toString() || null,
+    rebarkOf: internal.rebarkOf?.toString() || null
   };
 }
 

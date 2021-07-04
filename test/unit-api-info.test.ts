@@ -3,6 +3,7 @@ import { asMockedFunction, asMockedNextApiMiddleware } from 'testverse/setup';
 import { DUMMY_KEY as KEY, getSystemInfo } from 'universe/backend';
 import { wrapHandler } from 'universe/backend/middleware';
 import EndpointInfo, { config as ConfigInfo } from 'universe/pages/api/v1/info';
+import { dummyDbData } from 'testverse/db';
 
 jest.mock('universe/backend');
 jest.mock('universe/backend/middleware');
@@ -16,7 +17,10 @@ api.info.config = ConfigInfo;
 beforeEach(() => {
   asMockedNextApiMiddleware(wrapHandler);
   asMockedFunction(getSystemInfo).mockReturnValue(
-    Promise.resolve({ totalBarks: 0, totalUsers: 0 })
+    Promise.resolve({
+      totalBarks: dummyDbData.barks.length,
+      totalUsers: dummyDbData.users.length
+    })
   );
 });
 
@@ -30,20 +34,9 @@ describe('api/v1/info', () => {
         test: async ({ fetch }) => {
           expect(await fetch({ headers: { KEY } }).then((r) => r.json())).toStrictEqual({
             success: true,
-            totalBarks: expect.any(Number),
-            totalUsers: expect.any(Number)
+            totalBarks: dummyDbData.barks.length,
+            totalUsers: dummyDbData.users.length
           });
-        }
-      });
-    });
-
-    it('handles missing headers', async () => {
-      expect.hasAssertions();
-
-      await testApiHandler({
-        handler: api.info,
-        test: async ({ fetch }) => {
-          expect(await fetch().then((r) => r.status)).toStrictEqual(200);
         }
       });
     });

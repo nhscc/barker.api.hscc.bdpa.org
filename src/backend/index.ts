@@ -84,13 +84,13 @@ export const publicBarkProjection = {
   likes: '$totalLikes',
   rebarks: '$totalRebarks',
   barkbacks: '$totalBarkbacks',
-  owner: true,
+  owner: { $toString: '$owner' },
   content: true,
   createdAt: true,
   deleted: true,
   private: true,
-  barkbackTo: true,
-  rebarkOf: true
+  barkbackTo: { $toString: '$barkbackTo' },
+  rebarkOf: { $toString: '$rebarkOf' }
 };
 
 export const publicUserProjection = {
@@ -1048,9 +1048,12 @@ export async function updateUser({
   const db = await getDb();
   const users = db.collection<InternalUser>('users');
 
-  if (await itemExists(users, email, 'email')) {
+  if (await itemExists(users, email, 'email', { exclude_id: user_id })) {
     throw new ValidationError('a user with that email address already exists');
-  } else if (phone && (await itemExists(users, phone, 'phone'))) {
+  } else if (
+    phone &&
+    (await itemExists(users, phone, 'phone', { exclude_id: user_id }))
+  ) {
     throw new ValidationError('a user with that phone number already exists');
   }
 

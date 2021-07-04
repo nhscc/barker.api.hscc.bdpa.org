@@ -34,6 +34,9 @@ export type DummyDbData = {
   info: WithId<InternalInfo>;
 };
 
+// TODO: use ghostmeme's seeding process (i.e. remove all the randomness)
+// TODO: also, generate higher quality seed data
+
 export const dummyDbData: DummyDbData = {
   keys: [
     {
