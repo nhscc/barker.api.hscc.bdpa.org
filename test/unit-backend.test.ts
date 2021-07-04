@@ -455,7 +455,7 @@ describe('::likeBark', () => {
     expect.hasAssertions();
 
     await expect(
-      Backend.unlikeBark({
+      Backend.likeBark({
         user_id: dummyDbData.users[0]._id,
         bark_id: dummyDbData.users[0].liked[0]
       })
@@ -546,7 +546,14 @@ describe('::createBark', () => {
     }));
 
     expect(newBarks).toIncludeSameMembers(
-      items.map((item) => expect.objectContaining(item))
+      items.map((item) =>
+        expect.objectContaining({
+          ...item,
+          owner: item.owner.toString(),
+          barkbackTo: item.barkbackTo?.toString() || null,
+          rebarkOf: item.rebarkOf?.toString() || null
+        })
+      )
     );
 
     expect(
