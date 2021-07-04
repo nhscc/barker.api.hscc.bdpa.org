@@ -646,16 +646,6 @@ describe('::createBark', () => {
         } as unknown as NewBark,
         'not found'
       ],
-      // [                  // OK
-      //   {
-      //     owner: dummyDbData.users[0]._id,
-      //     content: 'rst',
-      //     private: false,
-      //     barkbackTo: false,
-      //     rebarkOf: null
-      //   } as unknown as NewBark,
-      //   'invalid'
-      // ],
       [
         {
           owner: dummyDbData.users[0]._id,
