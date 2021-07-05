@@ -8,7 +8,7 @@
 
 - `ObjectId`
 
-  ↳ **UserId**
+  ↳ **`UserId`**
 
 ## Table of contents
 

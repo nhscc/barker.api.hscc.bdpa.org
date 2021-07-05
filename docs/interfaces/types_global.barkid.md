@@ -8,11 +8,11 @@
 
 - `ObjectId`
 
-  ↳ **BarkId**
+  ↳ **`BarkId`**
 
-  ↳↳ [PackmateId][3]
+  ↳↳ [`PackmateId`][3]
 
-  ↳↳ [FollowedId][4]
+  ↳↳ [`FollowedId`][4]
 
 ## Table of contents
 

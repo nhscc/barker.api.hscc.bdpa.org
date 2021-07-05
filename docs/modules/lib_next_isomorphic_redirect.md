@@ -25,10 +25,10 @@ ending further processing of the response. It is false by default.
 
 #### Parameters
 
-| Name             | Type                       |
-| :--------------- | :------------------------- |
-| `location`       | `string`                   |
-| `(destructured)` | [BackendRedirectConfig][5] |
+| Name             | Type                         |
+| :--------------- | :--------------------------- |
+| `location`       | `string`                     |
+| `(destructured)` | [`BackendRedirectConfig`][5] |
 
 #### Returns
 
@@ -56,10 +56,10 @@ Router is bypassed and window\.location will be used for a "hard" redirect.
 
 #### Parameters
 
-| Name       | Type                        |
-| :--------- | :-------------------------- |
-| `location` | `string`                    |
-| `config?`  | [FrontendRedirectConfig][7] |
+| Name       | Type                          |
+| :--------- | :---------------------------- |
+| `location` | `string`                      |
+| `config?`  | [`FrontendRedirectConfig`][7] |
 
 #### Returns
 
@@ -84,10 +84,10 @@ executing on the frontend. An Error will be thrown if this is not the case.
 
 #### Parameters
 
-| Name             | Type                          |
-| :--------------- | :---------------------------- |
-| `location`       | `string`                      |
-| `(destructured)` | [IsomorphicRedirectConfig][9] |
+| Name             | Type                            |
+| :--------------- | :------------------------------ |
+| `location`       | `string`                        |
+| `(destructured)` | [`IsomorphicRedirectConfig`][9] |
 
 #### Returns
 
@@ -103,10 +103,10 @@ executing on the frontend. An Error will be thrown if this is not the case.
 [4]: lib_next_isomorphic_redirect.md#isomorphicredirect
 [5]: lib_next_isomorphic_redirect_types.md#backendredirectconfig
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/index.ts#L40
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/index.ts#L40
 [7]: lib_next_isomorphic_redirect_types.md#frontendredirectconfig
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/index.ts#L24
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/index.ts#L24
 [9]: lib_next_isomorphic_redirect_types.md#isomorphicredirectconfig
 [10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/index.ts#L58
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/index.ts#L58

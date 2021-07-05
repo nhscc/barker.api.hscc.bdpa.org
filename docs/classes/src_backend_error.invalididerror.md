@@ -6,15 +6,15 @@
 
 ## Type parameters
 
-| Name | Type                       |
-| :--- | :------------------------- |
-| `T`  | `T` = `string` \| `number` |
+| Name | Type                 |
+| :--- | :------------------- |
+| `T`  | `string` \| `number` |
 
 ## Hierarchy
 
-- [AppError][3]
+- [`AppError`][3]
 
-  ↳ **InvalidIdError**
+  ↳ **`InvalidIdError`**
 
 ## Table of contents
 
@@ -38,13 +38,13 @@
 
 ### constructor
 
-• **new InvalidIdError**\<T>(`id?`)
+• **new InvalidIdError**<`T`>(`id?`)
 
 #### Type parameters
 
-| Name | Type                       |
-| :--- | :------------------------- |
-| `T`  | `T` = `string` \| `number` |
+| Name | Type                 |
+| :--- | :------------------- |
+| `T`  | `string` \| `number` |
 
 #### Parameters
 
@@ -111,11 +111,11 @@ node_modules/typescript/lib/lib.es5.d.ts:975
 
 Optional override for formatting stack traces
 
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][16]
-
 #### Type declaration
 
 ▸ (`err`, `stackTraces`): `any`
+
+Optional override for formatting stack traces
 
 ##### Parameters
 
@@ -130,7 +130,7 @@ Optional override for formatting stack traces
 
 #### Inherited from
 
-[AppError][3].[prepareStackTrace][17]
+[AppError][3].[prepareStackTrace][16]
 
 #### Defined in
 
@@ -144,7 +144,7 @@ node_modules/@types/node/globals.d.ts:11
 
 #### Inherited from
 
-[AppError][3].[stackTraceLimit][18]
+[AppError][3].[stackTraceLimit][17]
 
 #### Defined in
 
@@ -171,7 +171,7 @@ Create .stack property on a target object
 
 #### Inherited from
 
-[AppError][3].[captureStackTrace][19]
+[AppError][3].[captureStackTrace][18]
 
 #### Defined in
 
@@ -189,11 +189,10 @@ node_modules/@types/node/globals.d.ts:4
 [10]: src_backend_error.invalididerror.md#capturestacktrace
 [11]: src_backend_error.apperror.md#constructor
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/error.ts#L50
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/error.ts#L50
 [13]: src_backend_error.apperror.md#message
 [14]: src_backend_error.apperror.md#name
 [15]: src_backend_error.apperror.md#stack
-[16]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-[17]: src_backend_error.apperror.md#preparestacktrace
-[18]: src_backend_error.apperror.md#stacktracelimit
-[19]: src_backend_error.apperror.md#capturestacktrace
+[16]: src_backend_error.apperror.md#preparestacktrace
+[17]: src_backend_error.apperror.md#stacktracelimit
+[18]: src_backend_error.apperror.md#capturestacktrace

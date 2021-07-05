@@ -6,9 +6,9 @@
 
 ## Hierarchy
 
-- [BarkId][3]
+- [`BarkId`][3]
 
-  ↳ **PackmateId**
+  ↳ **`PackmateId`**
 
 ## Table of contents
 

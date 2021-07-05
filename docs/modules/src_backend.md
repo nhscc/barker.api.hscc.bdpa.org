@@ -57,7 +57,7 @@ This key is only valid when running in a Jest test environment.
 
 #### Defined in
 
-[src/backend/index.ts:62][39]
+[src/backend/index.ts:58][39]
 
 ---
 
@@ -69,7 +69,7 @@ This key is guaranteed never to appear in the system and can be checked against.
 
 #### Defined in
 
-[src/backend/index.ts:57][40]
+[src/backend/index.ts:53][40]
 
 ---
 
@@ -79,25 +79,28 @@ This key is guaranteed never to appear in the system and can be checked against.
 
 #### Type declaration
 
-| Name                | Type      |
-| :------------------ | :-------- |
-| `_id`               | `boolean` |
-| `bark_id`           | `Object`  |
-| `bark_id.$toString` | `string`  |
-| `barkbackTo`        | `boolean` |
-| `barkbacks`         | `string`  |
-| `content`           | `boolean` |
-| `createdAt`         | `boolean` |
-| `deleted`           | `boolean` |
-| `likes`             | `string`  |
-| `owner`             | `boolean` |
-| `private`           | `boolean` |
-| `rebarkOf`          | `boolean` |
-| `rebarks`           | `string`  |
+| Name                   | Type      |
+| :--------------------- | :-------- |
+| `_id`                  | `boolean` |
+| `bark_id`              | `Object`  |
+| `bark_id.$toString`    | `string`  |
+| `barkbackTo`           | `Object`  |
+| `barkbackTo.$toString` | `string`  |
+| `barkbacks`            | `string`  |
+| `content`              | `boolean` |
+| `createdAt`            | `boolean` |
+| `deleted`              | `boolean` |
+| `likes`                | `string`  |
+| `owner`                | `Object`  |
+| `owner.$toString`      | `string`  |
+| `private`              | `boolean` |
+| `rebarkOf`             | `Object`  |
+| `rebarkOf.$toString`   | `string`  |
+| `rebarks`              | `string`  |
 
 #### Defined in
 
-[src/backend/index.ts:85][41]
+[src/backend/index.ts:81][41]
 
 ---
 
@@ -128,13 +131,13 @@ This key is guaranteed never to appear in the system and can be checked against.
 
 #### Defined in
 
-[src/backend/index.ts:100][42]
+[src/backend/index.ts:96][42]
 
 ## Functions
 
 ### addPackmate
 
-▸ **addPackmate**(`(destructured)`): `Promise`\<void>
+▸ **addPackmate**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -146,39 +149,39 @@ This key is guaranteed never to appear in the system and can be checked against.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:744][43]
+[src/backend/index.ts:758][43]
 
 ---
 
 ### addToRequestLog
 
-▸ **addToRequestLog**(`(destructured)`): `Promise`\<void>
+▸ **addToRequestLog**(`(destructured)`): `Promise`<`void`>
 
 Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Parameters
 
-| Name             | Type               |
-| :--------------- | :----------------- |
-| `(destructured)` | [NextApiState][44] |
+| Name             | Type                 |
+| :--------------- | :------------------- |
+| `(destructured)` | [`NextApiState`][44] |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:1190][45]
+[src/backend/index.ts:1243][45]
 
 ---
 
 ### bookmarkBark
 
-▸ **bookmarkBark**(`(destructured)`): `Promise`\<void>
+▸ **bookmarkBark**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -190,61 +193,61 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:864][46]
+[src/backend/index.ts:878][46]
 
 ---
 
 ### createBark
 
-▸ **createBark**(`(destructured)`): `Promise`<[PublicBark][47]>
+▸ **createBark**(`(destructured)`): `Promise`<[`PublicBark`][47]>
 
 #### Parameters
 
-| Name             | Type                     |
-| :--------------- | :----------------------- |
-| `(destructured)` | `Object`                 |
-| ▶ `({ data })`   | `Partial`<[NewBark][48]> |
-| ▶ `({ key })`    | `string`                 |
+| Name             | Type                       |
+| :--------------- | :------------------------- |
+| `(destructured)` | `Object`                   |
+| ▶ `({ data })`   | `Partial`<[`NewBark`][48]> |
+| ▶ `({ key })`    | `string`                   |
 
 #### Returns
 
-`Promise`<[PublicBark][47]>
+`Promise`<[`PublicBark`][47]>
 
 #### Defined in
 
-[src/backend/index.ts:413][49]
+[src/backend/index.ts:405][49]
 
 ---
 
 ### createUser
 
-▸ **createUser**(`(destructured)`): `Promise`<[PublicUser][50]>
+▸ **createUser**(`(destructured)`): `Promise`<[`PublicUser`][50]>
 
 #### Parameters
 
-| Name             | Type                     |
-| :--------------- | :----------------------- |
-| `(destructured)` | `Object`                 |
-| ▶ `({ data })`   | `Partial`<[NewUser][51]> |
-| ▶ `({ key })`    | `string`                 |
+| Name             | Type                       |
+| :--------------- | :------------------------- |
+| `(destructured)` | `Object`                   |
+| ▶ `({ data })`   | `Partial`<[`NewUser`][51]> |
+| ▶ `({ key })`    | `string`                   |
 
 #### Returns
 
-`Promise`<[PublicUser][50]>
+`Promise`<[`PublicUser`][50]>
 
 #### Defined in
 
-[src/backend/index.ts:913][52]
+[src/backend/index.ts:927][52]
 
 ---
 
 ### deleteBarks
 
-▸ **deleteBarks**(`(destructured)`): `Promise`\<void>
+▸ **deleteBarks**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -255,17 +258,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:217][53]
+[src/backend/index.ts:213][53]
 
 ---
 
 ### deleteUser
 
-▸ **deleteUser**(`(destructured)`): `Promise`\<void>
+▸ **deleteUser**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -276,17 +279,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:535][54]
+[src/backend/index.ts:543][54]
 
 ---
 
 ### followUser
 
-▸ **followUser**(`(destructured)`): `Promise`\<void>
+▸ **followUser**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -298,17 +301,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:626][55]
+[src/backend/index.ts:640][55]
 
 ---
 
 ### getAllUsers
 
-▸ **getAllUsers**(`(destructured)`): `Promise`<[PublicUser][50]\[]>
+▸ **getAllUsers**(`(destructured)`): `Promise`<[`PublicUser`][50]\[]>
 
 #### Parameters
 
@@ -319,11 +322,11 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`<[PublicUser][50]\[]>
+`Promise`<[`PublicUser`][50]\[]>
 
 #### Defined in
 
-[src/backend/index.ts:495][56]
+[src/backend/index.ts:503][56]
 
 ---
 
@@ -337,13 +340,13 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Defined in
 
-[src/backend/index.ts:1238][57]
+[src/backend/index.ts:1291][57]
 
 ---
 
 ### getBarkLikesUserIds
 
-▸ **getBarkLikesUserIds**(`(destructured)`): `Promise`\<string\[]>
+▸ **getBarkLikesUserIds**(`(destructured)`): `Promise`<`string`\[]>
 
 #### Parameters
 
@@ -355,17 +358,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<string\[]>
+`Promise`<`string`\[]>
 
 #### Defined in
 
-[src/backend/index.ts:241][58]
+[src/backend/index.ts:233][58]
 
 ---
 
 ### getBarks
 
-▸ **getBarks**(`(destructured)`): `Promise`<[PublicBark][47]\[]>
+▸ **getBarks**(`(destructured)`): `Promise`<[`PublicBark`][47]\[]>
 
 #### Parameters
 
@@ -376,17 +379,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`<[PublicBark][47]\[]>
+`Promise`<[`PublicBark`][47]\[]>
 
 #### Defined in
 
-[src/backend/index.ts:187][59]
+[src/backend/index.ts:183][59]
 
 ---
 
 ### getBookmarkedBarkIds
 
-▸ **getBookmarkedBarkIds**(`(destructured)`): `Promise`\<string\[]>
+▸ **getBookmarkedBarkIds**(`(destructured)`): `Promise`<`string`\[]>
 
 #### Parameters
 
@@ -398,17 +401,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<string\[]>
+`Promise`<`string`\[]>
 
 #### Defined in
 
-[src/backend/index.ts:793][60]
+[src/backend/index.ts:807][60]
 
 ---
 
 ### getFollowingUserIds
 
-▸ **getFollowingUserIds**(`(destructured)`): `Promise`\<string\[]>
+▸ **getFollowingUserIds**(`(destructured)`): `Promise`<`string`\[]>
 
 #### Parameters
 
@@ -421,17 +424,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<string\[]>
+`Promise`<`string`\[]>
 
 #### Defined in
 
-[src/backend/index.ts:548][61]
+[src/backend/index.ts:562][61]
 
 ---
 
 ### getPackmateUserIds
 
-▸ **getPackmateUserIds**(`(destructured)`): `Promise`\<string\[]>
+▸ **getPackmateUserIds**(`(destructured)`): `Promise`<`string`\[]>
 
 #### Parameters
 
@@ -443,31 +446,31 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<string\[]>
+`Promise`<`string`\[]>
 
 #### Defined in
 
-[src/backend/index.ts:675][62]
+[src/backend/index.ts:689][62]
 
 ---
 
 ### getSystemInfo
 
-▸ **getSystemInfo**(): `Promise`<[InternalInfo][63]>
+▸ **getSystemInfo**(): `Promise`<[`InternalInfo`][63]>
 
 #### Returns
 
-`Promise`<[InternalInfo][63]>
+`Promise`<[`InternalInfo`][63]>
 
 #### Defined in
 
-[src/backend/index.ts:177][64]
+[src/backend/index.ts:173][64]
 
 ---
 
 ### getUser
 
-▸ **getUser**(`(destructured)`): `Promise`<[PublicUser][50]>
+▸ **getUser**(`(destructured)`): `Promise`<[`PublicUser`][50]>
 
 #### Parameters
 
@@ -478,17 +481,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`<[PublicUser][50]>
+`Promise`<[`PublicUser`][50]>
 
 #### Defined in
 
-[src/backend/index.ts:519][65]
+[src/backend/index.ts:527][65]
 
 ---
 
 ### getUserLikedBarkIds
 
-▸ **getUserLikedBarkIds**(`(destructured)`): `Promise`\<string\[]>
+▸ **getUserLikedBarkIds**(`(destructured)`): `Promise`<`string`\[]>
 
 #### Parameters
 
@@ -500,18 +503,18 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<string\[]>
+`Promise`<`string`\[]>
 
 #### Defined in
 
-[src/backend/index.ts:281][66]
+[src/backend/index.ts:273][66]
 
 ---
 
 ### indirectFollowersAggregation
 
 ▸ `Const` **indirectFollowersAggregation**(`user_id`, `after`): ({ `$limit`:
-`undefined` ; `$lookup`: `undefined` ; `$match`: { `_id`: [UserId][67] } ;
+`undefined` ; `$lookup`: `undefined` ; `$match`: { `_id`: [`UserId`][67] } ;
 `$project`: `undefined` ; `$replaceRoot`: `undefined` ; `$sort`: `undefined` ;
 `$unwind`: `undefined` } | { `$limit`: `undefined` ; `$lookup`: { `as`: `string`
 = 'following_ids'; `foreignField`: `string` = '\_id'; `from`: `string` =
@@ -524,20 +527,20 @@ Note that this async function does not have to be awaited. It's fire and forget!
 '$following_ids.following' } ; `$setUnion`: `undefined` } } ;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: { `_id`: `boolean` = false; `following`: `undefined` = true; `following_ids`: { `$reduce`: `undefined`;`$setUnion`: `string`\[]  }  } ; `$replaceRoot`: `undefined`;`$sort`: `undefined` ; `$unwind`: `undefined` } | {`$limit`: `undefined` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: { `path`: `string` = '$following_ids'
 } } | { `$limit`: `undefined` ; `$lookup`: `undefined` ; `$match`: `undefined` ;
 `$project`: `undefined` ; `$replaceRoot`: { `newRoot`: { `_id`: `string` =
-'$following_ids' }  } ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: { `\_id`: { `$lt`: [UserId][67]  }  } ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: `undefined` ; `$replaceRoot`: `undefined`;`$sort`: { `_id`: `number` = -1 } ; `$unwind`: `undefined` } | {`$limit`: `number` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`
+'$following_ids' }  } ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: { `\_id`: { `$lt`: [`UserId`][67]  }  } ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: `undefined` ; `$replaceRoot`: `undefined`;`$sort`: { `_id`: `number` = -1 } ; `$unwind`: `undefined` } | {`$limit`: `number` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`
 })\[]
 
 #### Parameters
 
-| Name      | Type                   |
-| :-------- | :--------------------- |
-| `user_id` | [UserId][67]           |
-| `after`   | `null` \| [UserId][67] |
+| Name      | Type                     |
+| :-------- | :----------------------- |
+| `user_id` | [`UserId`][67]           |
+| `after`   | `null` \| [`UserId`][67] |
 
 #### Returns
 
 ({ `$limit`: `undefined` ; `$lookup`: `undefined` ; `$match`: { `_id`:
-[UserId][67] } ; `$project`: `undefined` ; `$replaceRoot`: `undefined` ;
+[`UserId`][67] } ; `$project`: `undefined` ; `$replaceRoot`: `undefined` ;
 `$sort`: `undefined` ; `$unwind`: `undefined` } | { `$limit`: `undefined` ;
 `$lookup`: { `as`: `string` = 'following_ids'; `foreignField`: `string` =
 '\_id'; `from`: `string` = 'users'; `localField`: `string` = 'following' } ;
@@ -550,18 +553,18 @@ Note that this async function does not have to be awaited. It's fire and forget!
 '$following_ids.following' } ; `$setUnion`: `undefined` } } ;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: { `_id`: `boolean` = false; `following`: `undefined` = true; `following_ids`: { `$reduce`: `undefined`;`$setUnion`: `string`\[]  }  } ; `$replaceRoot`: `undefined`;`$sort`: `undefined` ; `$unwind`: `undefined` } | {`$limit`: `undefined` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: { `path`: `string` = '$following_ids'
 } } | { `$limit`: `undefined` ; `$lookup`: `undefined` ; `$match`: `undefined` ;
 `$project`: `undefined` ; `$replaceRoot`: { `newRoot`: { `_id`: `string` =
-'$following_ids' }  } ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: { `\_id`: { `$lt`: [UserId][67]  }  } ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: `undefined` ; `$replaceRoot`: `undefined`;`$sort`: { `_id`: `number` = -1 } ; `$unwind`: `undefined` } | {`$limit`: `number` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`
+'$following_ids' }  } ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: { `\_id`: { `$lt`: [`UserId`][67]  }  } ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`  } | { `$limit`: `undefined`;`$lookup`: `undefined` ; `$match`: `undefined`;`$project`: `undefined` ; `$replaceRoot`: `undefined`;`$sort`: { `_id`: `number` = -1 } ; `$unwind`: `undefined` } | {`$limit`: `number` ; `$lookup`: `undefined`;`$match`: `undefined` ; `$project`: `undefined`;`$replaceRoot`: `undefined` ; `$sort`: `undefined`;`$unwind`: `undefined`
 })\[]
 
 #### Defined in
 
-[src/backend/index.ts:114][68]
+[src/backend/index.ts:110][68]
 
 ---
 
 ### isBarkBookmarked
 
-▸ **isBarkBookmarked**(`(destructured)`): `Promise`\<boolean>
+▸ **isBarkBookmarked**(`(destructured)`): `Promise`<`boolean`>
 
 #### Parameters
 
@@ -573,17 +576,17 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<boolean>
+`Promise`<`boolean`>
 
 #### Defined in
 
-[src/backend/index.ts:833][69]
+[src/backend/index.ts:847][69]
 
 ---
 
 ### isBarkLiked
 
-▸ **isBarkLiked**(`(destructured)`): `Promise`\<boolean>
+▸ **isBarkLiked**(`(destructured)`): `Promise`<`boolean`>
 
 #### Parameters
 
@@ -595,11 +598,11 @@ Note that this async function does not have to be awaited. It's fire and forget!
 
 #### Returns
 
-`Promise`\<boolean>
+`Promise`<`boolean`>
 
 #### Defined in
 
-[src/backend/index.ts:321][70]
+[src/backend/index.ts:313][70]
 
 ---
 
@@ -616,13 +619,13 @@ across all Vercel virtual machines.
 
 #### Defined in
 
-[src/backend/index.ts:1227][71]
+[src/backend/index.ts:1280][71]
 
 ---
 
 ### isKeyAuthentic
 
-▸ **isKeyAuthentic**(`key`): `Promise`\<boolean>
+▸ **isKeyAuthentic**(`key`): `Promise`<`boolean`>
 
 #### Parameters
 
@@ -632,11 +635,11 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<boolean>
+`Promise`<`boolean`>
 
 #### Defined in
 
-[src/backend/index.ts:1177][72]
+[src/backend/index.ts:1230][72]
 
 ---
 
@@ -656,13 +659,13 @@ across all Vercel virtual machines.
 
 #### Defined in
 
-[src/backend/index.ts:1201][73]
+[src/backend/index.ts:1254][73]
 
 ---
 
 ### isUserFollowing
 
-▸ **isUserFollowing**(`(destructured)`): `Promise`\<boolean>
+▸ **isUserFollowing**(`(destructured)`): `Promise`<`boolean`>
 
 #### Parameters
 
@@ -674,17 +677,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<boolean>
+`Promise`<`boolean`>
 
 #### Defined in
 
-[src/backend/index.ts:596][74]
+[src/backend/index.ts:610][74]
 
 ---
 
 ### isUserPackmate
 
-▸ **isUserPackmate**(`(destructured)`): `Promise`\<boolean>
+▸ **isUserPackmate**(`(destructured)`): `Promise`<`boolean`>
 
 #### Parameters
 
@@ -696,17 +699,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<boolean>
+`Promise`<`boolean`>
 
 #### Defined in
 
-[src/backend/index.ts:714][75]
+[src/backend/index.ts:728][75]
 
 ---
 
 ### likeBark
 
-▸ **likeBark**(`(destructured)`): `Promise`\<void>
+▸ **likeBark**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -718,17 +721,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:381][76]
+[src/backend/index.ts:373][76]
 
 ---
 
 ### removePackmate
 
-▸ **removePackmate**(`(destructured)`): `Promise`\<void>
+▸ **removePackmate**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -740,17 +743,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:771][77]
+[src/backend/index.ts:785][77]
 
 ---
 
 ### searchBarks
 
-▸ **searchBarks**(`(destructured)`): `Promise`<[PublicBark][47]\[]>
+▸ **searchBarks**(`(destructured)`): `Promise`<[`PublicBark`][47]\[]>
 
 #### Parameters
 
@@ -763,17 +766,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`<[PublicBark][47]\[]>
+`Promise`<[`PublicBark`][47]\[]>
 
 #### Defined in
 
-[src/backend/index.ts:1033][78]
+[src/backend/index.ts:1067][78]
 
 ---
 
 ### unbookmarkBark
 
-▸ **unbookmarkBark**(`(destructured)`): `Promise`\<void>
+▸ **unbookmarkBark**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -785,17 +788,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:890][79]
+[src/backend/index.ts:904][79]
 
 ---
 
 ### unfollowUser
 
-▸ **unfollowUser**(`(destructured)`): `Promise`\<void>
+▸ **unfollowUser**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -807,17 +810,17 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:653][80]
+[src/backend/index.ts:667][80]
 
 ---
 
 ### unlikeBark
 
-▸ **unlikeBark**(`(destructured)`): `Promise`\<void>
+▸ **unlikeBark**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
@@ -829,33 +832,33 @@ across all Vercel virtual machines.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:352][81]
+[src/backend/index.ts:344][81]
 
 ---
 
 ### updateUser
 
-▸ **updateUser**(`(destructured)`): `Promise`\<void>
+▸ **updateUser**(`(destructured)`): `Promise`<`void`>
 
 #### Parameters
 
-| Name              | Type                       |
-| :---------------- | :------------------------- |
-| `(destructured)`  | `Object`                   |
-| ▶ `({ data })`    | `Partial`<[PatchUser][82]> |
-| ▶ `({ user_id })` | `ObjectId`                 |
+| Name              | Type                         |
+| :---------------- | :--------------------------- |
+| `(destructured)`  | `Object`                     |
+| ▶ `({ data })`    | `Partial`<[`PatchUser`][82]> |
+| ▶ `({ user_id })` | `ObjectId`                   |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/index.ts:982][83]
+[src/backend/index.ts:1007][83]
 
 [1]: ../README.md
 [2]: src_backend.md#dummy_key
@@ -896,84 +899,84 @@ across all Vercel virtual machines.
 [37]: src_backend.md#unlikebark
 [38]: src_backend.md#updateuser
 [39]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L62
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L58
 [40]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L57
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L53
 [41]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L85
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L81
 [42]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L100
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L96
 [43]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L744
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L758
 [44]: types_global.md#nextapistate
 [45]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1190
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1243
 [46]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L864
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L878
 [47]: types_global.md#publicbark
 [48]: types_global.md#newbark
 [49]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L413
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L405
 [50]: types_global.md#publicuser
 [51]: types_global.md#newuser
 [52]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L913
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L927
 [53]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L217
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L213
 [54]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L535
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L543
 [55]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L626
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L640
 [56]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L495
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L503
 [57]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1238
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1291
 [58]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L241
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L233
 [59]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L187
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L183
 [60]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L793
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L807
 [61]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L548
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L562
 [62]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L675
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L689
 [63]: types_global.md#internalinfo
 [64]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L177
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L173
 [65]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L519
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L527
 [66]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L281
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L273
 [67]: ../interfaces/types_global.userid.md
 [68]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L114
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L110
 [69]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L833
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L847
 [70]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L321
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L313
 [71]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1227
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1280
 [72]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1177
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1230
 [73]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1201
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1254
 [74]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L596
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L610
 [75]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L714
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L728
 [76]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L381
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L373
 [77]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L771
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L785
 [78]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L1033
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1067
 [79]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L890
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L904
 [80]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L653
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L667
 [81]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L352
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L344
 [82]: types_global.md#patchuser
 [83]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/index.ts#L982
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/index.ts#L1007

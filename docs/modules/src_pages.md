@@ -17,9 +17,9 @@
 
 #### Parameters
 
-| Name             | Type                                                             |
-| :--------------- | :--------------------------------------------------------------- |
-| `(destructured)` | `Awaited`<ReturnType<typeof [getServerSideProps][3]>>[`"props"`] |
+| Name             | Type                                                                 |
+| :--------------- | :------------------------------------------------------------------- |
+| `(destructured)` | `Awaited`<`ReturnType`<typeof [`getServerSideProps`][3]>>[`"props"`] |
 
 #### Returns
 
@@ -53,6 +53,6 @@
 [2]: src_pages.md#default
 [3]: src_pages.md#getserversideprops
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/index.tsx#L39
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/pages/index.tsx#L39
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/index.tsx#L13
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/pages/index.tsx#L13

@@ -18,10 +18,10 @@
 
 #### Defined in
 
-[test/setup.ts:374][4]
+[test/setup.ts:413][4]
 
 [1]: ../README.md
 [2]: ../modules/test_setup.md
 [3]: test_setup.webpacktestfixtureoptions.md#webpackversion
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L374
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L413

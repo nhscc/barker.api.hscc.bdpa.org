@@ -22,7 +22,7 @@ Renames and exports: [defaultConfig][4]
 
 ### default
 
-▸ **default**(`req`, `res`): `Promise`\<void>
+▸ **default**(`req`, `res`): `Promise`<`void`>
 
 #### Parameters
 
@@ -33,7 +33,7 @@ Renames and exports: [defaultConfig][4]
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
@@ -44,4 +44,4 @@ Renames and exports: [defaultConfig][4]
 [3]: src_pages_api_v1_info.md#default
 [4]: src_backend_middleware.md#defaultconfig
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/api/v1/info.ts#L8
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/pages/api/v1/info.ts#L8

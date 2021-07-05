@@ -49,28 +49,30 @@
 - [rootFixture][33]
 - [run][34]
 - [runnerFactory][35]
-- [webpackTestFixture][36]
-- [withMockedArgv][37]
-- [withMockedEnv][38]
-- [withMockedExit][39]
-- [withMockedFixture][40]
-- [withMockedOutput][41]
+- [toPublicBark][36]
+- [toPublicUser][37]
+- [webpackTestFixture][38]
+- [withMockedArgv][39]
+- [withMockedEnv][40]
+- [withMockedExit][41]
+- [withMockedFixture][42]
+- [withMockedOutput][43]
 
 ## Type aliases
 
 ### FixtureAction
 
-Ƭ **FixtureAction**\<Context>: (`ctx`: `Context`) => `Promise`\<unknown>
+Ƭ **FixtureAction**<`Context`>: (`ctx`: `Context`) => `Promise`<`unknown`>
 
 #### Type parameters
 
-| Name      | Type                            |
-| :-------- | :------------------------------ |
-| `Context` | `Context` = [FixtureContext][4] |
+| Name      | Type                  |
+| :-------- | :-------------------- |
+| `Context` | [`FixtureContext`][4] |
 
 #### Type declaration
 
-▸ (`ctx`): `Promise`\<unknown>
+▸ (`ctx`): `Promise`<`unknown`>
 
 ##### Parameters
 
@@ -80,11 +82,11 @@
 
 ##### Returns
 
-`Promise`\<unknown>
+`Promise`<`unknown`>
 
 #### Defined in
 
-[test/setup.ts:418][42]
+[test/setup.ts:457][44]
 
 ---
 
@@ -100,7 +102,7 @@
 
 #### Defined in
 
-[test/setup.ts:139][43]
+[test/setup.ts:178][45]
 
 ---
 
@@ -116,24 +118,24 @@
 
 #### Defined in
 
-[test/setup.ts:149][44]
+[test/setup.ts:188][46]
 
 ---
 
 ### ReturnsString
 
-Ƭ **ReturnsString**\<Context>: (`ctx`: `Context`) => `Promise`\<string> |
+Ƭ **ReturnsString**<`Context`>: (`ctx`: `Context`) => `Promise`<`string`> |
 `string`
 
 #### Type parameters
 
-| Name      | Type                            |
-| :-------- | :------------------------------ |
-| `Context` | `Context` = [FixtureContext][4] |
+| Name      | Type                  |
+| :-------- | :-------------------- |
+| `Context` | [`FixtureContext`][4] |
 
 #### Type declaration
 
-▸ (`ctx`): `Promise`\<string> | `string`
+▸ (`ctx`): `Promise`<`string`> | `string`
 
 ##### Parameters
 
@@ -143,39 +145,39 @@
 
 ##### Returns
 
-`Promise`\<string> | `string`
+`Promise`<`string`> | `string`
 
 #### Defined in
 
-[test/setup.ts:421][45]
+[test/setup.ts:460][47]
 
 ## Functions
 
 ### asMockedFunction
 
-▸ **asMockedFunction**\<T>(): `jest.MockedFunction`\<T>
+▸ **asMockedFunction**<`T`>(): `jest.MockedFunction`<`T`>
 
 #### Type parameters
 
-| Name | Type                         |
-| :--- | :--------------------------- |
-| `T`  | `T`: `AnyFunction` = `never` |
+| Name | Type                           |
+| :--- | :----------------------------- |
+| `T`  | extends ` AnyFunction``never ` |
 
 #### Returns
 
-`jest.MockedFunction`\<T>
+`jest.MockedFunction`<`T`>
 
 #### Defined in
 
-[test/setup.ts:130][46]
+[test/setup.ts:169][48]
 
-▸ **asMockedFunction**\<T>(`fn`): `jest.MockedFunction`\<T>
+▸ **asMockedFunction**<`T`>(`fn`): `jest.MockedFunction`<`T`>
 
 #### Type parameters
 
-| Name | Type               |
-| :--- | :----------------- |
-| `T`  | `T`: `AnyFunction` |
+| Name | Type                  |
+| :--- | :-------------------- |
+| `T`  | extends `AnyFunction` |
 
 #### Parameters
 
@@ -185,11 +187,11 @@
 
 #### Returns
 
-`jest.MockedFunction`\<T>
+`jest.MockedFunction`<`T`>
 
 #### Defined in
 
-[test/setup.ts:131][47]
+[test/setup.ts:170][49]
 
 ---
 
@@ -199,9 +201,9 @@
 
 #### Parameters
 
-| Name          | Type                                          |
-| :------------ | :-------------------------------------------- |
-| `wrapHandler` | [src/backend/middleware][48][`"wrapHandler"`] |
+| Name          | Type                                            |
+| :------------ | :---------------------------------------------- |
+| `wrapHandler` | [`src/backend/middleware`][50][`"wrapHandler"`] |
 
 #### Returns
 
@@ -209,83 +211,83 @@
 
 #### Defined in
 
-[test/setup.ts:61][49]
+[test/setup.ts:95][51]
 
 ---
 
 ### describeRootFixture
 
-▸ **describeRootFixture**(): [MockFixture][8]
+▸ **describeRootFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:644][50]
+[test/setup.ts:695][52]
 
 ---
 
 ### dummyDirectoriesFixture
 
-▸ **dummyDirectoriesFixture**(): [MockFixture][8]
+▸ **dummyDirectoriesFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:600][51]
+[test/setup.ts:649][53]
 
 ---
 
 ### dummyFilesFixture
 
-▸ **dummyFilesFixture**(): [MockFixture][8]
+▸ **dummyFilesFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:619][52]
+[test/setup.ts:670][54]
 
 ---
 
 ### dummyNpmPackageFixture
 
-▸ **dummyNpmPackageFixture**(): [MockFixture][8]
+▸ **dummyNpmPackageFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:453][53]
+[test/setup.ts:492][55]
 
 ---
 
 ### gitRepositoryFixture
 
-▸ **gitRepositoryFixture**(): [MockFixture][8]
+▸ **gitRepositoryFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:578][54]
+[test/setup.ts:625][56]
 
 ---
 
 ### isolatedImport
 
-▸ **isolatedImport**(`path`): `Promise`\<unknown>
+▸ **isolatedImport**(`path`): `Promise`<`unknown`>
 
 #### Parameters
 
@@ -295,17 +297,17 @@
 
 #### Returns
 
-`Promise`\<unknown>
+`Promise`<`unknown`>
 
 #### Defined in
 
-[test/setup.ts:234][55]
+[test/setup.ts:273][57]
 
 ---
 
 ### isolatedImportFactory
 
-▸ **isolatedImportFactory**(`path`): () => `Promise`\<unknown>
+▸ **isolatedImportFactory**(`path`): () => `Promise`<`unknown`>
 
 #### Parameters
 
@@ -317,24 +319,24 @@
 
 `fn`
 
-▸ (): `Promise`\<unknown>
+▸ (): `Promise`<`unknown`>
 
 ##### Returns
 
-`Promise`\<unknown>
+`Promise`<`unknown`>
 
 #### Defined in
 
-[test/setup.ts:258][56]
+[test/setup.ts:297][58]
 
 ---
 
 ### itemFactory
 
-▸ **itemFactory**\<T>(`testItems`): () => `T` & { `$iter`:
-`IterableIterator`\<T> ; `count`: `number` ; `items`: `T`\[] ;
-`[Symbol.asyncIterator]`: () => `AsyncGenerator`\<T, void, unknown> ;
-`[Symbol.iterator]`: () => `Generator`\<T, void, unknown> }
+▸ **itemFactory**<`T`>(`testItems`): () => `T` & { `$iter`:
+`IterableIterator`<`T`> ; `count`: `number` ; `items`: `T`\[] ;
+`[asyncIterator]`: () => `AsyncGenerator`<`T`, `void`, `unknown`> ;
+`[iterator]`: () => `Generator`<`T`, `void`, `unknown`> }
 
 #### Type parameters
 
@@ -350,163 +352,166 @@
 
 #### Returns
 
-() => `T` & { `$iter`: `IterableIterator`\<T> ; `count`: `number` ; `items`:
-`T`\[] ; `[Symbol.asyncIterator]`: () => `AsyncGenerator`\<T, void, unknown> ;
-`[Symbol.iterator]`: () => `Generator`\<T, void, unknown> }
+() => `T` & { `$iter`: `IterableIterator`<`T`> ; `count`: `number` ; `items`:
+`T`\[] ; `[asyncIterator]`: () => `AsyncGenerator`<`T`, `void`, `unknown`> ;
+`[iterator]`: () => `Generator`<`T`, `void`, `unknown`> }
 
 #### Defined in
 
-[test/setup.ts:82][57]
+[test/setup.ts:121][59]
 
 ---
 
 ### mockArgvFactory
 
 ▸ **mockArgvFactory**(`newArgv`, `options?`): (`fn`: () => `AnyVoid`,
-`newArgv?`: `string`\[], `options?`: [MockArgvOptions][14]) => `Promise`\<void>
+`newArgv?`: `string`\[], `options?`: [`MockArgvOptions`][14]) =>
+`Promise`<`void`>
 
 #### Parameters
 
-| Name      | Type                  |
-| :-------- | :-------------------- |
-| `newArgv` | typeof `process.argv` |
-| `options` | [MockArgvOptions][14] |
+| Name      | Type                    |
+| :-------- | :---------------------- |
+| `newArgv` | typeof `process.argv`   |
+| `options` | [`MockArgvOptions`][14] |
 
 #### Returns
 
 `fn`
 
-▸ (`fn`, `newArgv?`, `options?`): `Promise`\<void>
+▸ (`fn`, `newArgv?`, `options?`): `Promise`<`void`>
 
 ##### Parameters
 
-| Name       | Type                  |
-| :--------- | :-------------------- |
-| `fn`       | () => `AnyVoid`       |
-| `newArgv?` | `string`[]            |
-| `options?` | [MockArgvOptions][14] |
+| Name       | Type                    |
+| :--------- | :---------------------- |
+| `fn`       | () => `AnyVoid`         |
+| `newArgv?` | `string`[]              |
+| `options?` | [`MockArgvOptions`][14] |
 
 ##### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:176][58]
+[test/setup.ts:215][60]
 
 ---
 
 ### mockEnvFactory
 
 ▸ **mockEnvFactory**(`newEnv`, `options?`): (`fn`: () => `AnyVoid`, `newEnv?`:
-`Record`\<string, string>, `options?`: [MockEnvOptions][15]) => `Promise`\<void>
+`Record`<`string`, `string`>, `options?`: [`MockEnvOptions`][15]) =>
+`Promise`<`void`>
 
 #### Parameters
 
-| Name      | Type                     |
-| :-------- | :----------------------- |
-| `newEnv`  | `Record`<string, string> |
-| `options` | [MockEnvOptions][15]     |
+| Name      | Type                         |
+| :-------- | :--------------------------- |
+| `newEnv`  | `Record`<`string`, `string`> |
+| `options` | [`MockEnvOptions`][15]       |
 
 #### Returns
 
 `fn`
 
-▸ (`fn`, `newEnv?`, `options?`): `Promise`\<void>
+▸ (`fn`, `newEnv?`, `options?`): `Promise`<`void`>
 
 ##### Parameters
 
-| Name       | Type                     |
-| :--------- | :----------------------- |
-| `fn`       | () => `AnyVoid`          |
-| `newEnv?`  | `Record`<string, string> |
-| `options?` | [MockEnvOptions][15]     |
+| Name       | Type                         |
+| :--------- | :--------------------------- |
+| `fn`       | () => `AnyVoid`              |
+| `newEnv?`  | `Record`<`string`, `string`> |
+| `options?` | [`MockEnvOptions`][15]       |
 
 ##### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:213][59]
+[test/setup.ts:252][61]
 
 ---
 
 ### mockFixtureFactory
 
-▸ **mockFixtureFactory**\<CustomOptions, CustomContext>(`testIdentifier`,
-`options?`): (`fn`: [FixtureAction][13]<[FixtureContext][4]<[FixtureOptions][5]
-& `Partial`<`Record`\<string, unknown> & `CustomOptions`>> & `CustomContext`>)
-=> `Promise`\<void>
+▸ **mockFixtureFactory**<`CustomOptions`, `CustomContext`>(`testIdentifier`,
+`options?`): (`fn`:
+[`FixtureAction`][13]<[`FixtureContext`][4]<[`FixtureOptions`][5] &
+`Partial`<`Record`<`string`, `unknown`> & `CustomOptions`>> & `CustomContext`>)
+=> `Promise`<`void`>
 
 #### Type parameters
 
-| Name            | Type                                            |
-| :-------------- | :---------------------------------------------- |
-| `CustomOptions` | `CustomOptions`: `Record`<string, unknown> = {} |
-| `CustomContext` | `CustomContext`: `Record`<string, unknown> = {} |
+| Name            | Type                                    |
+| :-------------- | :-------------------------------------- |
+| `CustomOptions` | extends `Record`<`string`, `unknown`>{} |
+| `CustomContext` | extends `Record`<`string`, `unknown`>{} |
 
 #### Parameters
 
-| Name             | Type                                             |
-| :--------------- | :----------------------------------------------- |
-| `testIdentifier` | `string`                                         |
-| `options?`       | `Partial`<[FixtureOptions][5] & `CustomOptions`> |
+| Name             | Type                                               |
+| :--------------- | :------------------------------------------------- |
+| `testIdentifier` | `string`                                           |
+| `options?`       | `Partial`<[`FixtureOptions`][5] & `CustomOptions`> |
 
 #### Returns
 
 `fn`
 
-▸ (`fn`): `Promise`\<void>
+▸ (`fn`): `Promise`<`void`>
 
 ##### Parameters
 
-| Name | Type                                                                                                                                     |
-| :--- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| `fn` | [FixtureAction][13]<[FixtureContext][4]<[FixtureOptions][5] & `Partial`<`Record`<string, unknown> & `CustomOptions`>> & `CustomContext`> |
+| Name | Type                                                                                                                                               |
+| :--- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fn` | [`FixtureAction`][13]<[`FixtureContext`][4]<[`FixtureOptions`][5] & `Partial`<`Record`<`string`, `unknown`> & `CustomOptions`>> & `CustomContext`> |
 
 ##### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:770][60]
+[test/setup.ts:821][62]
 
 ---
 
 ### nodeImportTestFixture
 
-▸ **nodeImportTestFixture**(): [MockFixture][8]
+▸ **nodeImportTestFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:546][61]
+[test/setup.ts:591][63]
 
 ---
 
 ### npmLinkSelfFixture
 
-▸ **npmLinkSelfFixture**(): [MockFixture][8]
+▸ **npmLinkSelfFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:478][62]
+[test/setup.ts:517][64]
 
 ---
 
 ### protectedImportFactory
 
 ▸ **protectedImportFactory**(`path`): (`params?`: { `expectedExitCode?`:
-`number` }) => `Promise`\<unknown>
+`number` }) => `Promise`<`unknown`>
 
 #### Parameters
 
@@ -518,7 +523,7 @@
 
 `fn`
 
-▸ (`params?`): `Promise`\<unknown>
+▸ (`params?`): `Promise`<`unknown`>
 
 ##### Parameters
 
@@ -529,150 +534,190 @@
 
 ##### Returns
 
-`Promise`\<unknown>
+`Promise`<`unknown`>
 
 #### Defined in
 
-[test/setup.ts:278][63]
+[test/setup.ts:317][65]
 
 ---
 
 ### rootFixture
 
-▸ **rootFixture**(): [MockFixture][8]
+▸ **rootFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:434][64]
+[test/setup.ts:473][66]
 
 ---
 
 ### run
 
-▸ **run**(`file`, `args?`, `options?`): `Promise`<`ExecaReturnValue`\<string> &
+▸ **run**(`file`, `args?`, `options?`): `Promise`<`ExecaReturnValue`<`string`> &
 { `code`: `number` }>
 
 #### Parameters
 
-| Name       | Type            |
-| :--------- | :-------------- |
-| `file`     | `string`        |
-| `args?`    | `string`[]      |
-| `options?` | [RunOptions][9] |
+| Name       | Type              |
+| :--------- | :---------------- |
+| `file`     | `string`          |
+| `args?`    | `string`[]        |
+| `options?` | [`RunOptions`][9] |
 
 #### Returns
 
-`Promise`<`ExecaReturnValue`\<string> & { `code`: `number` }>
+`Promise`<`ExecaReturnValue`<`string`> & { `code`: `number` }>
 
 #### Defined in
 
-[test/setup.ts:342][65]
+[test/setup.ts:381][67]
 
 ---
 
 ### runnerFactory
 
 ▸ **runnerFactory**(`file`, `args?`, `options?`): (`args?`: `string`\[],
-`options?`: [RunOptions][9]) => `Promise`<`ExecaReturnValue`\<string> & {
+`options?`: [`RunOptions`][9]) => `Promise`<`ExecaReturnValue`<`string`> & {
 `code`: `number` }>
 
 #### Parameters
 
-| Name       | Type            |
-| :--------- | :-------------- |
-| `file`     | `string`        |
-| `args?`    | `string`[]      |
-| `options?` | [RunOptions][9] |
+| Name       | Type              |
+| :--------- | :---------------- |
+| `file`     | `string`          |
+| `args?`    | `string`[]        |
+| `options?` | [`RunOptions`][9] |
 
 #### Returns
 
 `fn`
 
-▸ (`args?`, `options?`): `Promise`<`ExecaReturnValue`\<string> & { `code`:
+▸ (`args?`, `options?`): `Promise`<`ExecaReturnValue`<`string`> & { `code`:
 `number` }>
 
 ##### Parameters
 
-| Name       | Type            |
-| :--------- | :-------------- |
-| `args?`    | `string`[]      |
-| `options?` | [RunOptions][9] |
+| Name       | Type              |
+| :--------- | :---------------- |
+| `args?`    | `string`[]        |
+| `options?` | [`RunOptions`][9] |
 
 ##### Returns
 
-`Promise`<`ExecaReturnValue`\<string> & { `code`: `number` }>
+`Promise`<`ExecaReturnValue`<`string`> & { `code`: `number` }>
 
 #### Defined in
 
-[test/setup.ts:354][66]
+[test/setup.ts:393][68]
+
+---
+
+### toPublicBark
+
+▸ **toPublicBark**(`internal`): [`PublicBark`][69]
+
+#### Parameters
+
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `internal` | `WithId`<[`InternalBark`][70]> |
+
+#### Returns
+
+[`PublicBark`][69]
+
+#### Defined in
+
+[test/setup.ts:56][71]
+
+---
+
+### toPublicUser
+
+▸ **toPublicUser**(`internal`): [`PublicUser`][72]
+
+#### Parameters
+
+| Name       | Type                           |
+| :--------- | :----------------------------- |
+| `internal` | `WithId`<[`InternalUser`][73]> |
+
+#### Returns
+
+[`PublicUser`][72]
+
+#### Defined in
+
+[test/setup.ts:41][74]
 
 ---
 
 ### webpackTestFixture
 
-▸ **webpackTestFixture**(): [MockFixture][8]
+▸ **webpackTestFixture**(): [`MockFixture`][8]
 
 #### Returns
 
-[MockFixture][8]
+[`MockFixture`][8]
 
 #### Defined in
 
-[test/setup.ts:493][67]
+[test/setup.ts:532][75]
 
 ---
 
 ### withMockedArgv
 
-▸ **withMockedArgv**(`fn`, `newArgv`, `options?`): `Promise`\<void>
+▸ **withMockedArgv**(`fn`, `newArgv`, `options?`): `Promise`<`void`>
 
 #### Parameters
 
-| Name      | Type                  |
-| :-------- | :-------------------- |
-| `fn`      | () => `AnyVoid`       |
-| `newArgv` | `string`[]            |
-| `options` | [MockArgvOptions][14] |
+| Name      | Type                    |
+| :-------- | :---------------------- |
+| `fn`      | () => `AnyVoid`         |
+| `newArgv` | `string`[]              |
+| `options` | [`MockArgvOptions`][14] |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:160][68]
+[test/setup.ts:199][76]
 
 ---
 
 ### withMockedEnv
 
-▸ **withMockedEnv**(`fn`, `newEnv`, `options?`): `Promise`\<void>
+▸ **withMockedEnv**(`fn`, `newEnv`, `options?`): `Promise`<`void`>
 
 #### Parameters
 
-| Name      | Type                     |
-| :-------- | :----------------------- |
-| `fn`      | () => `AnyVoid`          |
-| `newEnv`  | `Record`<string, string> |
-| `options` | [MockEnvOptions][15]     |
+| Name      | Type                         |
+| :-------- | :--------------------------- |
+| `fn`      | () => `AnyVoid`              |
+| `newEnv`  | `Record`<`string`, `string`> |
+| `options` | [`MockEnvOptions`][15]       |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:193][69]
+[test/setup.ts:232][77]
 
 ---
 
 ### withMockedExit
 
-▸ **withMockedExit**(`fn`): `Promise`\<void>
+▸ **withMockedExit**(`fn`): `Promise`<`void`>
 
 #### Parameters
 
@@ -682,48 +727,48 @@
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:263][70]
+[test/setup.ts:302][78]
 
 ---
 
 ### withMockedFixture
 
-▸ **withMockedFixture**\<CustomOptions, CustomContext>(`(destructured)`):
-`Promise`\<void>
+▸ **withMockedFixture**<`CustomOptions`, `CustomContext`>(`(destructured)`):
+`Promise`<`void`>
 
 #### Type parameters
 
-| Name            | Type                                            |
-| :-------------- | :---------------------------------------------- |
-| `CustomOptions` | `CustomOptions`: `Record`<string, unknown> = {} |
-| `CustomContext` | `CustomContext`: `Record`<string, unknown> = {} |
+| Name            | Type                                    |
+| :-------------- | :-------------------------------------- |
+| `CustomOptions` | extends `Record`<`string`, `unknown`>{} |
+| `CustomContext` | extends `Record`<`string`, `unknown`>{} |
 
 #### Parameters
 
-| Name                     | Type                                                                                                                                     |
-| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| `(destructured)`         | `Object`                                                                                                                                 |
-| ▶ `({ fn })`             | [FixtureAction][13]<[FixtureContext][4]<[FixtureOptions][5] & `Partial`<`Record`<string, unknown> & `CustomOptions`>> & `CustomContext`> |
-| ▶ `({ options? })`       | `Partial`<[FixtureOptions][5] & `CustomOptions`>                                                                                         |
-| ▶ `({ testIdentifier })` | `string`                                                                                                                                 |
+| Name                     | Type                                                                                                                                               |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `(destructured)`         | `Object`                                                                                                                                           |
+| ▶ `({ fn })`             | [`FixtureAction`][13]<[`FixtureContext`][4]<[`FixtureOptions`][5] & `Partial`<`Record`<`string`, `unknown`> & `CustomOptions`>> & `CustomContext`> |
+| ▶ `({ options? })`       | `Partial`<[`FixtureOptions`][5] & `CustomOptions`>                                                                                                 |
+| ▶ `({ testIdentifier })` | `string`                                                                                                                                           |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:658][71]
+[test/setup.ts:709][79]
 
 ---
 
 ### withMockedOutput
 
-▸ **withMockedOutput**(`fn`): `Promise`\<void>
+▸ **withMockedOutput**(`fn`): `Promise`<`void`>
 
 #### Parameters
 
@@ -733,11 +778,11 @@
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[test/setup.ts:295][72]
+[test/setup.ts:334][80]
 
 [1]: ../README.md
 [2]: ../classes/test_setup.factoryexhaustionerror.md
@@ -774,70 +819,80 @@
 [33]: test_setup.md#rootfixture
 [34]: test_setup.md#run
 [35]: test_setup.md#runnerfactory
-[36]: test_setup.md#webpacktestfixture
-[37]: test_setup.md#withmockedargv
-[38]: test_setup.md#withmockedenv
-[39]: test_setup.md#withmockedexit
-[40]: test_setup.md#withmockedfixture
-[41]: test_setup.md#withmockedoutput
-[42]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L418
-[43]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L139
+[36]: test_setup.md#topublicbark
+[37]: test_setup.md#topublicuser
+[38]: test_setup.md#webpacktestfixture
+[39]: test_setup.md#withmockedargv
+[40]: test_setup.md#withmockedenv
+[41]: test_setup.md#withmockedexit
+[42]: test_setup.md#withmockedfixture
+[43]: test_setup.md#withmockedoutput
 [44]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L149
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L457
 [45]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L421
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L178
 [46]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L130
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L188
 [47]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L131
-[48]: src_backend_middleware.md
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L460
+[48]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L169
 [49]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L61
-[50]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L644
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L170
+[50]: src_backend_middleware.md
 [51]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L600
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L95
 [52]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L619
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L695
 [53]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L453
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L649
 [54]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L578
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L670
 [55]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L234
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L492
 [56]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L258
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L625
 [57]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L82
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L273
 [58]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L176
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L297
 [59]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L213
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L121
 [60]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L770
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L215
 [61]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L546
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L252
 [62]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L478
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L821
 [63]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L278
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L591
 [64]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L434
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L517
 [65]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L342
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L317
 [66]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L354
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L473
 [67]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L493
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L381
 [68]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L160
-[69]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L193
-[70]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L263
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L393
+[69]: types_global.md#publicbark
+[70]: types_global.md#internalbark
 [71]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L658
-[72]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L295
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L56
+[72]: types_global.md#publicuser
+[73]: types_global.md#internaluser
+[74]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L41
+[75]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L532
+[76]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L199
+[77]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L232
+[78]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L302
+[79]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L709
+[80]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L334

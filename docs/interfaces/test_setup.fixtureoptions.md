@@ -6,20 +6,24 @@
 
 ## Hierarchy
 
-- `Partial`<[WebpackTestFixtureOptions][3]>
+- `Partial`<[`WebpackTestFixtureOptions`][3]>
 
-  ↳ **FixtureOptions**
+- `Partial`<[`GitRepositoryFixtureOptions`][4]>
+
+- `Partial`<[`DummyDirectoriesFixtureOptions`][5]>
+
+  ↳ **`FixtureOptions`**
 
 ## Table of contents
 
 ### Properties
 
-- [directoryPaths][4]
-- [initialFileContents][5]
-- [performCleanup][6]
-- [setupGit][7]
-- [use][8]
-- [webpackVersion][9]
+- [directoryPaths][6]
+- [initialFileContents][7]
+- [performCleanup][8]
+- [setupGit][9]
+- [use][10]
+- [webpackVersion][11]
 
 ## Properties
 
@@ -33,7 +37,7 @@ Partial.directoryPaths
 
 #### Defined in
 
-[test/setup.ts:384][10]
+[test/setup.ts:423][12]
 
 ---
 
@@ -47,7 +51,7 @@ Partial.directoryPaths
 
 #### Defined in
 
-[test/setup.ts:369][11]
+[test/setup.ts:408][13]
 
 ---
 
@@ -57,7 +61,7 @@ Partial.directoryPaths
 
 #### Defined in
 
-[test/setup.ts:367][12]
+[test/setup.ts:406][14]
 
 ---
 
@@ -85,17 +89,17 @@ Partial.setupGit
 
 #### Defined in
 
-[test/setup.ts:379][13]
+[test/setup.ts:418][15]
 
 ---
 
 ### use
 
-• **use**: [MockFixture][14]<[FixtureContext][15]<`Object`>>\[]
+• **use**: [`MockFixture`][16]<[`FixtureContext`][17]<`Object`>>\[]
 
 #### Defined in
 
-[test/setup.ts:368][16]
+[test/setup.ts:407][18]
 
 ---
 
@@ -109,28 +113,30 @@ Partial.webpackVersion
 
 #### Defined in
 
-[test/setup.ts:374][17]
+[test/setup.ts:413][19]
 
 [1]: ../README.md
 [2]: ../modules/test_setup.md
 [3]: test_setup.webpacktestfixtureoptions.md
-[4]: test_setup.fixtureoptions.md#directorypaths
-[5]: test_setup.fixtureoptions.md#initialfilecontents
-[6]: test_setup.fixtureoptions.md#performcleanup
-[7]: test_setup.fixtureoptions.md#setupgit
-[8]: test_setup.fixtureoptions.md#use
-[9]: test_setup.fixtureoptions.md#webpackversion
-[10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L384
-[11]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L369
+[4]: test_setup.gitrepositoryfixtureoptions.md
+[5]: test_setup.dummydirectoriesfixtureoptions.md
+[6]: test_setup.fixtureoptions.md#directorypaths
+[7]: test_setup.fixtureoptions.md#initialfilecontents
+[8]: test_setup.fixtureoptions.md#performcleanup
+[9]: test_setup.fixtureoptions.md#setupgit
+[10]: test_setup.fixtureoptions.md#use
+[11]: test_setup.fixtureoptions.md#webpackversion
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L367
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L423
 [13]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L379
-[14]: test_setup.mockfixture.md
-[15]: test_setup.fixturecontext.md
-[16]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L368
-[17]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L374
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L408
+[14]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L406
+[15]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L418
+[16]: test_setup.mockfixture.md
+[17]: test_setup.fixturecontext.md
+[18]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L407
+[19]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L413

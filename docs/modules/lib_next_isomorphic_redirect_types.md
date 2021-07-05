@@ -19,11 +19,11 @@
 
 #### Type declaration
 
-| Name         | Type                |
-| :----------- | :------------------ |
-| `immediate?` | `boolean`           |
-| `res`        | `NextApiResponse`   |
-| `status?`    | [HttpStatusCode][4] |
+| Name         | Type                  |
+| :----------- | :-------------------- |
+| `immediate?` | `boolean`             |
+| `res`        | `NextApiResponse`     |
+| `status?`    | [`HttpStatusCode`][4] |
 
 #### Defined in
 
@@ -68,8 +68,8 @@ node_modules/@ergodark/types/dist/modules/index.d.ts:21
 
 ### IsomorphicRedirectConfig
 
-Ƭ **IsomorphicRedirectConfig**: [FrontendRedirectConfig][3] &
-[BackendRedirectConfig][2]
+Ƭ **IsomorphicRedirectConfig**: [`FrontendRedirectConfig`][3] &
+[`BackendRedirectConfig`][2]
 
 #### Defined in
 
@@ -81,8 +81,8 @@ node_modules/@ergodark/types/dist/modules/index.d.ts:21
 [4]: lib_next_isomorphic_redirect_types.md#httpstatuscode
 [5]: lib_next_isomorphic_redirect_types.md#isomorphicredirectconfig
 [6]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/types.ts#L9
 [7]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L4
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/types.ts#L4
 [8]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-isomorphic-redirect/types.ts#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-isomorphic-redirect/types.ts#L15

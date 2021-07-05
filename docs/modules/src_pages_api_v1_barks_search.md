@@ -22,7 +22,7 @@ Renames and exports: [defaultConfig][4]
 
 ### default
 
-▸ **default**(`req`, `res`): `Promise`\<void>
+▸ **default**(`req`, `res`): `Promise`<`void`>
 
 #### Parameters
 
@@ -33,15 +33,15 @@ Renames and exports: [defaultConfig][4]
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/pages/api/v1/barks/search.ts:9][5]
+[src/pages/api/v1/barks/search.ts:10][5]
 
 [1]: ../README.md
 [2]: src_pages_api_v1_barks_search.md#config
 [3]: src_pages_api_v1_barks_search.md#default
 [4]: src_backend_middleware.md#defaultconfig
 [5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/pages/api/v1/barks/search.ts#L9
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/pages/api/v1/barks/search.ts#L10

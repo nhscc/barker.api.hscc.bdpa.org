@@ -18,7 +18,7 @@
 
 | Name   | Type      | Default value |
 | :----- | :-------- | :------------ |
-| `loud` | `boolean` | false         |
+| `loud` | `boolean` | `false`       |
 
 #### Returns
 
@@ -55,4 +55,4 @@
 [1]: ../README.md
 [2]: src_backend_env.md#getenv
 [3]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/env.ts#L27
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/env.ts#L27
