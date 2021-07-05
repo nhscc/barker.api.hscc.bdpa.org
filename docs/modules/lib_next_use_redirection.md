@@ -12,7 +12,7 @@
 
 ### useRedirection
 
-▸ **useRedirection**\<T>(`(destructured)`): `Object`
+▸ **useRedirection**<`T`>(`(destructured)`): `Object`
 
 Redirects to another location when configurable conditions are met.
 
@@ -27,24 +27,24 @@ false - not redirecting error is defined - error occurred
 
 #### Parameters
 
-| Name                      | Type                        |
-| :------------------------ | :-------------------------- |
-| `(destructured)`          | `Object`                    |
-| ▶ `({ fetchConfig? })`    | `FetchConfig`               |
-| ▶ `({ redirectConfig? })` | [FrontendRedirectConfig][3] |
-| ▶ `({ redirectIf? })`     | (`data`: `T`) => `boolean`  |
-| ▶ `({ redirectTo? })`     | `string`                    |
-| ▶ `({ uri })`             | `string`                    |
+| Name                      | Type                          |
+| :------------------------ | :---------------------------- |
+| `(destructured)`          | `Object`                      |
+| ▶ `({ fetchConfig? })`    | `FetchConfig`                 |
+| ▶ `({ redirectConfig? })` | [`FrontendRedirectConfig`][3] |
+| ▶ `({ redirectIf? })`     | (`data`: `T`) => `boolean`    |
+| ▶ `({ redirectTo? })`     | `string`                      |
+| ▶ `({ uri })`             | `string`                      |
 
 #### Returns
 
 `Object`
 
-| Name          | Type                                                                                                                                                                                                                                  |
-| :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `error`       | `any`                                                                                                                                                                                                                                 |
-| `mutate`      | (`data?`: `Record`<string, unknown> \| `Promise`<undefined \| Record<string, unknown>> \| `MutatorCallback`<undefined \| Record<string, unknown>>, `shouldRevalidate?`: `boolean`) => `Promise`<undefined \| Record<string, unknown>> |
-| `redirecting` | `null` \| `boolean`                                                                                                                                                                                                                   |
+| Name          | Type                                                                                                                                                                                                                                                              |
+| :------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `error`       | `any`                                                                                                                                                                                                                                                             |
+| `mutate`      | (`data?`: `Record`<`string`, `unknown`> \| `Promise`<`undefined` \| `Record`<`string`, `unknown`>> \| `MutatorCallback`<`undefined` \| `Record`<`string`, `unknown`>>, `shouldRevalidate?`: `boolean`) => `Promise`<`undefined` \| `Record`<`string`, `unknown`>> |
+| `redirecting` | `null` \| `boolean`                                                                                                                                                                                                                                               |
 
 #### Defined in
 
@@ -54,4 +54,4 @@ false - not redirecting error is defined - error occurred
 [2]: lib_next_use_redirection.md#useredirection
 [3]: lib_next_isomorphic_redirect_types.md#frontendredirectconfig
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/lib/next-use-redirection/index.ts#L18
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/lib/next-use-redirection/index.ts#L18

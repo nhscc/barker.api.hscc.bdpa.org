@@ -10,7 +10,8 @@
 
 ### Functions
 
-- [wrapHandler][3]
+- [handleError][3]
+- [wrapHandler][4]
 
 ## Variables
 
@@ -18,17 +19,39 @@
 
 • `Const` **defaultConfig**: `PageConfig`
 
-**`see`** [https://nextjs.org/docs/api-routes/api-middlewares#custom-config][4]
+**`see`** [https://nextjs.org/docs/api-routes/api-middlewares#custom-config][5]
 
 #### Defined in
 
-[src/backend/middleware.ts:48][5]
+[src/backend/middleware.ts:48][6]
 
 ## Functions
 
+### handleError
+
+▸ **handleError**(`res`, `error`): `Promise`<`void`>
+
+#### Parameters
+
+| Name            | Type              |
+| :-------------- | :---------------- |
+| `res`           | `NextApiResponse` |
+| `error`         | `Object`          |
+| `error.message` | `string`          |
+
+#### Returns
+
+`Promise`<`void`>
+
+#### Defined in
+
+[src/backend/middleware.ts:58][7]
+
+---
+
 ### wrapHandler
 
-▸ **wrapHandler**(`handler`, `(destructured)`): `Promise`\<void>
+▸ **wrapHandler**(`handler`, `(destructured)`): `Promise`<`void`>
 
 Generic middleware "glue" to handle api endpoints with consistent behavior like
 safe exception handling.
@@ -39,25 +62,28 @@ out endpoints for later implementation.
 
 #### Parameters
 
-| Name             | Type                                                                    |
-| :--------------- | :---------------------------------------------------------------------- |
-| `handler`        | `undefined` \| (`params`: [NextApiState][6]) => `Promise`<void>         |
-| `(destructured)` | [NextApiState][6] & { `apiVersion?`: `number` ; `methods`: `string`[] } |
+| Name             | Type                                                                      |
+| :--------------- | :------------------------------------------------------------------------ |
+| `handler`        | `undefined` \| (`params`: [`NextApiState`][8]) => `Promise`<`void`>       |
+| `(destructured)` | [`NextApiState`][8] & { `apiVersion?`: `number` ; `methods`: `string`[] } |
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/middleware.ts:60][7]
+[src/backend/middleware.ts:90][9]
 
 [1]: ../README.md
 [2]: src_backend_middleware.md#defaultconfig
-[3]: src_backend_middleware.md#wraphandler
-[4]: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
-[5]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/middleware.ts#L48
-[6]: types_global.md#nextapistate
+[3]: src_backend_middleware.md#handleerror
+[4]: src_backend_middleware.md#wraphandler
+[5]: https://nextjs.org/docs/api-routes/api-middlewares#custom-config
+[6]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/middleware.ts#L48
 [7]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/middleware.ts#L60
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/middleware.ts#L58
+[8]: types_global.md#nextapistate
+[9]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/middleware.ts#L90

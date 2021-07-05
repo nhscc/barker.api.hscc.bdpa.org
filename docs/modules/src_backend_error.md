@@ -31,7 +31,7 @@
 
 ### InvalidKeyError
 
-• `Const` **InvalidKeyError**: typeof [KeyError][10]
+• `Const` **InvalidKeyError**: typeof [`KeyError`][10]
 
 An alias of KeyError.
 

@@ -6,9 +6,9 @@
 
 ## Type parameters
 
-| Name      | Type                            |
-| :-------- | :------------------------------ |
-| `Context` | `Context` = [FixtureContext][3] |
+| Name      | Type                  |
+| :-------- | :-------------------- |
+| `Context` | [`FixtureContext`][3] |
 
 ## Table of contents
 
@@ -23,41 +23,41 @@
 
 ### description
 
-• **description**: `string` | [ReturnsString][8]\<Context>
+• **description**: `string` | [`ReturnsString`][8]<`Context`>
 
 #### Defined in
 
-[test/setup.ts:428][9]
+[test/setup.ts:467][9]
 
 ---
 
 ### name
 
-• **name**: `string` | `symbol` | [ReturnsString][8]\<Context>
+• **name**: `string` | `symbol` | [`ReturnsString`][8]<`Context`>
 
 #### Defined in
 
-[test/setup.ts:427][10]
+[test/setup.ts:466][10]
 
 ---
 
 ### setup
 
-• `Optional` **setup**: [FixtureAction][11]\<Context>
+• `Optional` **setup**: [`FixtureAction`][11]<`Context`>
 
 #### Defined in
 
-[test/setup.ts:429][12]
+[test/setup.ts:468][12]
 
 ---
 
 ### teardown
 
-• `Optional` **teardown**: [FixtureAction][11]\<Context>
+• `Optional` **teardown**: [`FixtureAction`][11]<`Context`>
 
 #### Defined in
 
-[test/setup.ts:430][13]
+[test/setup.ts:469][13]
 
 [1]: ../README.md
 [2]: ../modules/test_setup.md
@@ -68,11 +68,11 @@
 [7]: test_setup.mockfixture.md#teardown
 [8]: ../modules/test_setup.md#returnsstring
 [9]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L428
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L467
 [10]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L427
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L466
 [11]: ../modules/test_setup.md#fixtureaction
 [12]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L429
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L468
 [13]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L430
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L469

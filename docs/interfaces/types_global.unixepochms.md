@@ -8,7 +8,7 @@
 
 - `any`
 
-  ↳ **UnixEpochMs**
+  ↳ **`UnixEpochMs`**
 
 [1]: ../README.md
 [2]: ../modules/types_global.md

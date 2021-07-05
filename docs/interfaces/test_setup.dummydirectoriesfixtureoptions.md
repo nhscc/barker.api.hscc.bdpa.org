@@ -18,10 +18,10 @@
 
 #### Defined in
 
-[test/setup.ts:384][4]
+[test/setup.ts:423][4]
 
 [1]: ../README.md
 [2]: ../modules/test_setup.md
 [3]: test_setup.dummydirectoriesfixtureoptions.md#directorypaths
 [4]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L384
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L423

@@ -6,15 +6,15 @@
 
 ## Type parameters
 
-| Name | Type           |
-| :--- | :------------- |
-| `T`  | `T` = `string` |
+| Name | Type     |
+| :--- | :------- |
+| `T`  | `string` |
 
 ## Hierarchy
 
-- [AppError][3]
+- [`AppError`][3]
 
-  ↳ **ItemNotFoundError**
+  ↳ **`ItemNotFoundError`**
 
 ## Table of contents
 
@@ -38,13 +38,13 @@
 
 ### constructor
 
-• **new ItemNotFoundError**\<T>(`reference?`)
+• **new ItemNotFoundError**<`T`>(`reference?`)
 
 #### Type parameters
 
-| Name | Type           |
-| :--- | :------------- |
-| `T`  | `T` = `string` |
+| Name | Type     |
+| :--- | :------- |
+| `T`  | `string` |
 
 #### Parameters
 
@@ -109,13 +109,11 @@ node_modules/typescript/lib/lib.es5.d.ts:975
 ▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`:
 `CallSite`\[]) => `any`
 
-Optional override for formatting stack traces
-
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][15]
-
 #### Type declaration
 
 ▸ (`err`, `stackTraces`): `any`
+
+Optional override for formatting stack traces
 
 ##### Parameters
 
@@ -130,7 +128,7 @@ Optional override for formatting stack traces
 
 #### Inherited from
 
-[AppError][3].[prepareStackTrace][16]
+[AppError][3].[prepareStackTrace][15]
 
 #### Defined in
 
@@ -144,7 +142,7 @@ node_modules/@types/node/globals.d.ts:11
 
 #### Inherited from
 
-[AppError][3].[stackTraceLimit][17]
+[AppError][3].[stackTraceLimit][16]
 
 #### Defined in
 
@@ -171,7 +169,7 @@ Create .stack property on a target object
 
 #### Inherited from
 
-[AppError][3].[captureStackTrace][18]
+[AppError][3].[captureStackTrace][17]
 
 #### Defined in
 
@@ -191,7 +189,6 @@ node_modules/@types/node/globals.d.ts:4
 [12]: src_backend_error.apperror.md#message
 [13]: src_backend_error.apperror.md#name
 [14]: src_backend_error.apperror.md#stack
-[15]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-[16]: src_backend_error.apperror.md#preparestacktrace
-[17]: src_backend_error.apperror.md#stacktracelimit
-[18]: src_backend_error.apperror.md#capturestacktrace
+[15]: src_backend_error.apperror.md#preparestacktrace
+[16]: src_backend_error.apperror.md#stacktracelimit
+[17]: src_backend_error.apperror.md#capturestacktrace

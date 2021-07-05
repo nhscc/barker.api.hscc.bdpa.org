@@ -6,9 +6,9 @@
 
 ## Hierarchy
 
-- [BarkId][3]
+- [`BarkId`][3]
 
-  ↳ **FollowedId**
+  ↳ **`FollowedId`**
 
 ## Table of contents
 

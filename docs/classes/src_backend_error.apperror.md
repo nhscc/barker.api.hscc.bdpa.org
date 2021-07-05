@@ -8,31 +8,31 @@
 
 - `Error`
 
-  ↳ **AppError**
+  ↳ **`AppError`**
 
-  ↳↳ [NotFoundError][3]
+  ↳↳ [`NotFoundError`][3]
 
-  ↳↳ [ActivityGenerationError][4]
+  ↳↳ [`ActivityGenerationError`][4]
 
-  ↳↳ [ActivitySimulationError][5]
+  ↳↳ [`ActivitySimulationError`][5]
 
-  ↳↳ [InvalidIdError][6]
+  ↳↳ [`InvalidIdError`][6]
 
-  ↳↳ [FactoryExhaustionError][7]
+  ↳↳ [`FactoryExhaustionError`][7]
 
-  ↳↳ [FetchError][8]
+  ↳↳ [`FetchError`][8]
 
-  ↳↳ [GuruMeditationError][9]
+  ↳↳ [`GuruMeditationError`][9]
 
-  ↳↳ [HookError][10]
+  ↳↳ [`HookError`][10]
 
-  ↳↳ [KeyError][11]
+  ↳↳ [`KeyError`][11]
 
-  ↳↳ [NotAuthorizedError][12]
+  ↳↳ [`NotAuthorizedError`][12]
 
-  ↳↳ [ValidationError][13]
+  ↳↳ [`ValidationError`][13]
 
-  ↳↳ [ItemNotFoundError][14]
+  ↳↳ [`ItemNotFoundError`][14]
 
 ## Table of contents
 
@@ -121,13 +121,11 @@ node_modules/typescript/lib/lib.es5.d.ts:975
 ▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`:
 `CallSite`\[]) => `any`
 
-Optional override for formatting stack traces
-
-**`see`** [https://v8.dev/docs/stack-trace-api#customizing-stack-traces][22]
-
 #### Type declaration
 
 ▸ (`err`, `stackTraces`): `any`
+
+Optional override for formatting stack traces
 
 ##### Parameters
 
@@ -210,4 +208,3 @@ node_modules/@types/node/globals.d.ts:4
 [19]: src_backend_error.apperror.md#preparestacktrace
 [20]: src_backend_error.apperror.md#stacktracelimit
 [21]: src_backend_error.apperror.md#capturestacktrace
-[22]: https://v8.dev/docs/stack-trace-api#customizing-stack-traces

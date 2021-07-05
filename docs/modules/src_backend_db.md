@@ -15,8 +15,8 @@
 - [destroyDb][5]
 - [getDb][6]
 - [getDbClient][7]
-- [idExists][8]
-- [initializeDb][9]
+- [initializeDb][8]
+- [itemExists][9]
 - [itemToObjectId][10]
 - [itemToStringId][11]
 - [setClientAndDb][12]
@@ -25,45 +25,46 @@
 
 ### IdItem
 
-Ƭ **IdItem**\<T>: `WithId`\<unknown> | `string` | `T` | `Nullish`
+Ƭ **IdItem**<`T`>: `WithId`<`unknown`> | `string` | `T` | `Nullish`
 
 #### Type parameters
 
-| Name | Type            |
-| :--- | :-------------- |
-| `T`  | `T`: `ObjectId` |
+| Name | Type               |
+| :--- | :----------------- |
+| `T`  | extends `ObjectId` |
 
 #### Defined in
 
-[src/backend/db.ts:108][13]
+[src/backend/db.ts:143][13]
 
 ---
 
 ### IdItemArray
 
-Ƭ **IdItemArray**\<T>: `WithId`\<unknown>\[] | `string`\[] | `T`\[] | `Nullish`
+Ƭ **IdItemArray**<`T`>: `WithId`<`unknown`>\[] | `string`\[] | `T`\[] |
+`Nullish`
 
 #### Type parameters
 
-| Name | Type            |
-| :--- | :-------------- |
-| `T`  | `T`: `ObjectId` |
+| Name | Type               |
+| :--- | :----------------- |
+| `T`  | extends `ObjectId` |
 
 #### Defined in
 
-[src/backend/db.ts:109][14]
+[src/backend/db.ts:144][14]
 
 ## Functions
 
 ### closeDb
 
-▸ **closeDb**(): `Promise`\<void>
+▸ **closeDb**(): `Promise`<`void`>
 
 Kills the MongoClient and closes any lingering database connections.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
@@ -73,7 +74,7 @@ Kills the MongoClient and closes any lingering database connections.
 
 ### destroyDb
 
-▸ **destroyDb**(`db`): `Promise`\<void>
+▸ **destroyDb**(`db`): `Promise`<`void`>
 
 Destroys all collections in the database. Can be called multiple times safely.
 Used primarily for testing purposes.
@@ -86,7 +87,7 @@ Used primarily for testing purposes.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
@@ -96,7 +97,7 @@ Used primarily for testing purposes.
 
 ### getDb
 
-▸ **getDb**(`params?`): `Promise`\<Db>
+▸ **getDb**(`params?`): `Promise`<`Db`>
 
 Lazily connects to the database once on-demand instead of immediately when the
 app runs.
@@ -110,7 +111,7 @@ app runs.
 
 #### Returns
 
-`Promise`\<Db>
+`Promise`<`Db`>
 
 #### Defined in
 
@@ -120,7 +121,7 @@ app runs.
 
 ### getDbClient
 
-▸ **getDbClient**(`params?`): `Promise`\<MongoClient>
+▸ **getDbClient**(`params?`): `Promise`<`MongoClient`>
 
 Returns the MongoClient instance used to connect to the database.
 
@@ -133,7 +134,7 @@ Returns the MongoClient instance used to connect to the database.
 
 #### Returns
 
-`Promise`\<MongoClient>
+`Promise`<`MongoClient`>
 
 #### Defined in
 
@@ -141,32 +142,9 @@ Returns the MongoClient instance used to connect to the database.
 
 ---
 
-### idExists
-
-▸ **idExists**(`collection`, `id`): `Promise`\<boolean>
-
-Checks if an item with `id` exists within `collection`.
-
-#### Parameters
-
-| Name         | Type         |
-| :----------- | :----------- |
-| `collection` | `Collection` |
-| `id`         | `ObjectId`   |
-
-#### Returns
-
-`Promise`\<boolean>
-
-#### Defined in
-
-[src/backend/db.ts:104][19]
-
----
-
 ### initializeDb
 
-▸ **initializeDb**(`db`): `Promise`\<void>
+▸ **initializeDb**(`db`): `Promise`<`void`>
 
 Initializes the database collections and indices. This function is idempotent
 and can be called without worry of data loss.
@@ -179,31 +157,76 @@ and can be called without worry of data loss.
 
 #### Returns
 
-`Promise`\<void>
+`Promise`<`void`>
 
 #### Defined in
 
-[src/backend/db.ts:83][20]
+[src/backend/db.ts:83][19]
+
+---
+
+### itemExists
+
+▸ **itemExists**(`collection`, `id`, `key?`, `options?`): `Promise`<`boolean`>
+
+Checks if an item identified by some `key` (default identifier is `"_id"`)
+exists within `collection`.
+
+#### Parameters
+
+| Name         | Type                                                |
+| :----------- | :-------------------------------------------------- |
+| `collection` | `Collection`                                        |
+| `id`         | `ObjectId`                                          |
+| `key?`       | `"_id"` \| `"owner"` \| `"receiver"` \| `"replyTo"` |
+| `options?`   | `ItemExistsOptions`                                 |
+
+#### Returns
+
+`Promise`<`boolean`>
+
+#### Defined in
+
+[src/backend/db.ts:107][20]
+
+▸ **itemExists**(`collection`, `id`, `key`, `options?`): `Promise`<`boolean`>
+
+#### Parameters
+
+| Name         | Type                |
+| :----------- | :------------------ |
+| `collection` | `Collection`        |
+| `id`         | `string`            |
+| `key`        | `string`            |
+| `options?`   | `ItemExistsOptions` |
+
+#### Returns
+
+`Promise`<`boolean`>
+
+#### Defined in
+
+[src/backend/db.ts:113][21]
 
 ---
 
 ### itemToObjectId
 
-▸ **itemToObjectId**\<T>(`item`): `T`
+▸ **itemToObjectId**<`T`>(`item`): `T`
 
 Reduces an `item` down to its `ObjectId` instance.
 
 #### Type parameters
 
-| Name | Type               |
-| :--- | :----------------- |
-| `T`  | `T`: `ObjectId`<T> |
+| Name | Type                    |
+| :--- | :---------------------- |
+| `T`  | extends `ObjectId`<`T`> |
 
 #### Parameters
 
-| Name   | Type           |
-| :----- | :------------- |
-| `item` | [IdItem][2]<T> |
+| Name   | Type               |
+| :----- | :----------------- |
+| `item` | [`IdItem`][2]<`T`> |
 
 #### Returns
 
@@ -211,23 +234,23 @@ Reduces an `item` down to its `ObjectId` instance.
 
 #### Defined in
 
-[src/backend/db.ts:118][21]
+[src/backend/db.ts:153][22]
 
-▸ **itemToObjectId**\<T>(`item`): `T`\[]
+▸ **itemToObjectId**<`T`>(`item`): `T`\[]
 
 Reduces an array of `item`s down to its `ObjectId` instances.
 
 #### Type parameters
 
-| Name | Type               |
-| :--- | :----------------- |
-| `T`  | `T`: `ObjectId`<T> |
+| Name | Type                    |
+| :--- | :---------------------- |
+| `T`  | extends `ObjectId`<`T`> |
 
 #### Parameters
 
-| Name   | Type                |
-| :----- | :------------------ |
-| `item` | [IdItemArray][3]<T> |
+| Name   | Type                    |
+| :----- | :---------------------- |
+| `item` | [`IdItemArray`][3]<`T`> |
 
 #### Returns
 
@@ -235,27 +258,27 @@ Reduces an array of `item`s down to its `ObjectId` instances.
 
 #### Defined in
 
-[src/backend/db.ts:122][22]
+[src/backend/db.ts:157][23]
 
 ---
 
 ### itemToStringId
 
-▸ **itemToStringId**\<T>(`item`): `string`
+▸ **itemToStringId**<`T`>(`item`): `string`
 
 Reduces an `item` down to the string representation of its `ObjectId` instance.
 
 #### Type parameters
 
-| Name | Type               |
-| :--- | :----------------- |
-| `T`  | `T`: `ObjectId`<T> |
+| Name | Type                    |
+| :--- | :---------------------- |
+| `T`  | extends `ObjectId`<`T`> |
 
 #### Parameters
 
-| Name   | Type           |
-| :----- | :------------- |
-| `item` | [IdItem][2]<T> |
+| Name   | Type               |
+| :----- | :----------------- |
+| `item` | [`IdItem`][2]<`T`> |
 
 #### Returns
 
@@ -263,24 +286,24 @@ Reduces an `item` down to the string representation of its `ObjectId` instance.
 
 #### Defined in
 
-[src/backend/db.ts:153][23]
+[src/backend/db.ts:188][24]
 
-▸ **itemToStringId**\<T>(`item`): `string`\[]
+▸ **itemToStringId**<`T`>(`item`): `string`\[]
 
 Reduces an array of `item`s down to the string representations of their
 respective `ObjectId` instances.
 
 #### Type parameters
 
-| Name | Type               |
-| :--- | :----------------- |
-| `T`  | `T`: `ObjectId`<T> |
+| Name | Type                    |
+| :--- | :---------------------- |
+| `T`  | extends `ObjectId`<`T`> |
 
 #### Parameters
 
-| Name   | Type                |
-| :----- | :------------------ |
-| `item` | [IdItemArray][3]<T> |
+| Name   | Type                    |
+| :----- | :---------------------- |
+| `item` | [`IdItemArray`][3]<`T`> |
 
 #### Returns
 
@@ -288,7 +311,7 @@ respective `ObjectId` instances.
 
 #### Defined in
 
-[src/backend/db.ts:158][24]
+[src/backend/db.ts:193][25]
 
 ---
 
@@ -313,7 +336,7 @@ purposes.
 
 #### Defined in
 
-[src/backend/db.ts:58][25]
+[src/backend/db.ts:58][26]
 
 [1]: ../README.md
 [2]: src_backend_db.md#iditem
@@ -322,34 +345,36 @@ purposes.
 [5]: src_backend_db.md#destroydb
 [6]: src_backend_db.md#getdb
 [7]: src_backend_db.md#getdbclient
-[8]: src_backend_db.md#idexists
-[9]: src_backend_db.md#initializedb
+[8]: src_backend_db.md#initializedb
+[9]: src_backend_db.md#itemexists
 [10]: src_backend_db.md#itemtoobjectid
 [11]: src_backend_db.md#itemtostringid
 [12]: src_backend_db.md#setclientanddb
 [13]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L108
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L143
 [14]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L109
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L144
 [15]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L49
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L49
 [16]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L68
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L68
 [17]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L15
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L15
 [18]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L40
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L40
 [19]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L104
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L83
 [20]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L83
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L107
 [21]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L118
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L113
 [22]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L122
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L153
 [23]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L153
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L157
 [24]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L158
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L188
 [25]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/src/backend/db.ts#L58
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L193
+[26]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/src/backend/db.ts#L58

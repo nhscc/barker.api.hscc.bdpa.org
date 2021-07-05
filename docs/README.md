@@ -39,11 +39,10 @@ barker.api.hscc.bdpa.org
 - [src/pages/api/v1/users/\[user_id\]/pack][31]
 - [src/pages/api/v1/users/\[user_id\]/pack/\[packmate_id\]][32]
 - [test/db][33]
-- [test/setup][34]
-- [types/global][35]
-- [types/next-env][36]
-- [types/next\_\_bundle-analyzer][37]
-- [types/unique-filename][38]
+- [test/integration.fixtures][34]
+- [test/setup][35]
+- [types/global][36]
+- [types/unique-filename][37]
 
 [1]: modules/external_scripts_ban_hammer.md
 [2]: modules/external_scripts_generate_activity.md
@@ -78,8 +77,7 @@ barker.api.hscc.bdpa.org
 [31]: modules/src_pages_api_v1_users__user_id__pack.md
 [32]: modules/src_pages_api_v1_users__user_id__pack__packmate_id_.md
 [33]: modules/test_db.md
-[34]: modules/test_setup.md
-[35]: modules/types_global.md
-[36]: modules/types_next_env.md
-[37]: modules/types_next__bundle_analyzer.md
-[38]: modules/types_unique_filename.md
+[34]: modules/test_integration_fixtures.md
+[35]: modules/test_setup.md
+[36]: modules/types_global.md
+[37]: modules/types_unique_filename.md

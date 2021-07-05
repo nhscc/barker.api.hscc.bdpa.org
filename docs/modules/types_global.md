@@ -39,14 +39,14 @@ The shape of precomputed conversation corpus data.
 
 #### Type declaration
 
-| Name        | Type                      |
-| :---------- | :------------------------ |
-| `dialogs`   | [CorpusDialogLine][8][][] |
-| `usernames` | `string`[]                |
+| Name        | Type                        |
+| :---------- | :-------------------------- |
+| `dialogs`   | [`CorpusDialogLine`][8][][] |
+| `usernames` | `string`[]                  |
 
 #### Defined in
 
-[types/global.d.ts:239][21]
+[types/global.d.ts:242][21]
 
 ---
 
@@ -65,7 +65,7 @@ The shape of a single line of precomputed conversation corpus data.
 
 #### Defined in
 
-[types/global.d.ts:247][22]
+[types/global.d.ts:250][22]
 
 ---
 
@@ -84,7 +84,7 @@ The shape of an API key.
 
 #### Defined in
 
-[types/global.d.ts:255][23]
+[types/global.d.ts:258][23]
 
 ---
 
@@ -96,24 +96,24 @@ The shape of a Bark stored in MongoDb.
 
 #### Type declaration
 
-| Name                   | Type                  | Description                                                                                                                                            |
-| :--------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `barkbackTo`           | [BarkId][2] \| `null` | The ID of the Bark this Bark was created in response to.                                                                                               |
-| `content`              | `string`              | The utf-8 content of this Bark.                                                                                                                        |
-| `createdAt`            | [UnixEpochMs][5]      | When this bark was created creation (milliseconds since unix epoch).                                                                                   |
-| `deleted`              | `boolean`             | If `true`, the user is for all intents and purposes non-existent in the system. **`default`** false                                                    |
-| `likes`                | [UserId][6][]         | A list of user IDs that liked this Bark.                                                                                                               |
-| `meta`                 | `Object`              | Metadata information only relevant to the server runtime and completely opaque to API consumers.                                                       |
-| `meta.barkbackability` | `number`              | User Influence × 0.10 + Bark "Barkbackability" × 0.15 + .15 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user. |
-| `meta.creator`         | `string`              | The API key responsible for creating this Bark.                                                                                                        |
-| `meta.likeability`     | `number`              | User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user.        |
-| `meta.rebarkability`   | `number`              | User Influence × 0.10 + Bark "Rebarkability" × 0.20 + .1 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user.    |
-| `owner`                | [UserId][6]           | The ID of the user that created and owns this Bark.                                                                                                    |
-| `private`              | `boolean`             | If `true`, this Bark should only be visible to authorized users. **`default`** false                                                                   |
-| `rebarkOf`             | [BarkId][2] \| `null` | The ID of the Bark this Bark was copied ("rebarked") from.                                                                                             |
-| `totalBarkbacks`       | `number`              | Integer number of barkbacks this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.       |
-| `totalLikes`           | `number`              | Integer number of likes this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.           |
-| `totalRebarks`         | `number`              | Integer number of rebarks this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.         |
+| Name                   | Type                    | Description                                                                                                                                            |
+| :--------------------- | :---------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `barkbackTo`           | [`BarkId`][2] \| `null` | The ID of the Bark this Bark was created in response to.                                                                                               |
+| `content`              | `string`                | The utf-8 content of this Bark.                                                                                                                        |
+| `createdAt`            | [`UnixEpochMs`][5]      | When this bark was created creation (milliseconds since unix epoch).                                                                                   |
+| `deleted`              | `boolean`               | If `true`, the user is for all intents and purposes non-existent in the system. **`default`** false                                                    |
+| `likes`                | [`UserId`][6][]         | A list of user IDs that liked this Bark.                                                                                                               |
+| `meta`                 | `Object`                | Metadata information only relevant to the server runtime and completely opaque to API consumers.                                                       |
+| `meta.barkbackability` | `number`                | User Influence × 0.10 + Bark "Barkbackability" × 0.15 + .15 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user. |
+| `meta.creator`         | `string`                | The API key responsible for creating this Bark.                                                                                                        |
+| `meta.likeability`     | `number`                | User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user.        |
+| `meta.rebarkability`   | `number`                | User Influence × 0.10 + Bark "Rebarkability" × 0.20 + .1 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user.    |
+| `owner`                | [`UserId`][6]           | The ID of the user that created and owns this Bark.                                                                                                    |
+| `private`              | `boolean`               | If `true`, this Bark should only be visible to authorized users. **`default`** false                                                                   |
+| `rebarkOf`             | [`BarkId`][2] \| `null` | The ID of the Bark this Bark was copied ("rebarked") from.                                                                                             |
+| `totalBarkbacks`       | `number`                | Integer number of barkbacks this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.       |
+| `totalLikes`           | `number`                | Integer number of likes this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.           |
+| `totalRebarks`         | `number`                | Integer number of rebarks this Bark has received. We'll cache this data instead of calculating it via the aggregation for performance reasons.         |
 
 #### Defined in
 
@@ -150,7 +150,7 @@ The shape of a limited log entry.
 
 #### Defined in
 
-[types/global.d.ts:275][26]
+[types/global.d.ts:278][26]
 
 ---
 
@@ -173,7 +173,7 @@ The shape of a request log entry.
 
 #### Defined in
 
-[types/global.d.ts:263][27]
+[types/global.d.ts:266][27]
 
 ---
 
@@ -187,17 +187,17 @@ The shape of a user stored in MongoDb.
 
 | Name                 | Type               | Description                                                                                                                                     |
 | :------------------- | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bookmarked`         | [BarkId][2][]      | A list of Bark IDs bookmarked by this user.                                                                                                     |
+| `bookmarked`         | [`BarkId`][2][]    | A list of Bark IDs bookmarked by this user.                                                                                                     |
 | `deleted`            | `boolean`          | If `true`, the user is for all intents and purposes non-existent in the system. **`default`** false                                             |
 | `email`              | `string`           | Email address                                                                                                                                   |
-| `following`          | [UserId][6][]      | A list of user IDs this user is following.                                                                                                      |
-| `liked`              | [BarkId][2][]      | A list of Bark IDs that this user has liked.                                                                                                    |
+| `following`          | [`UserId`][6][]    | A list of user IDs this user is following.                                                                                                      |
+| `liked`              | [`BarkId`][2][]    | A list of Bark IDs that this user has liked.                                                                                                    |
 | `meta`               | `Object`           | Metadata information only relevant to the server runtime and completely opaque to API consumers.                                                |
 | `meta.creator`       | `string`           | The API key responsible for creating this Bark.                                                                                                 |
 | `meta.followability` | `number`           | Max percentage of the generated user base that will _eventually_ follow this user.                                                              |
 | `meta.influence`     | `number`           | User Influence × 0.15 + Bark Likeability × 0.25 + .1 Pack Bonus = percent chance of a generated follower liking a specific Bark from this user. |
 | `name`               | `string`           | User first, full, etc name                                                                                                                      |
-| `packmates`          | [UserId][6][]      | A list of user IDs in this user's pack.                                                                                                         |
+| `packmates`          | [`UserId`][6][]    | A list of user IDs in this user's pack.                                                                                                         |
 | `phone`              | `string` \| `null` | Phone number                                                                                                                                    |
 | `username`           | `string`           | Username. Must be unique in the system.                                                                                                         |
 
@@ -209,48 +209,48 @@ The shape of a user stored in MongoDb.
 
 ### NewBark
 
-Ƭ **NewBark**: `Pick`<[InternalBark][10], `"owner"` | `"content"` | `"private"`
-| `"barkbackTo"` | `"rebarkOf"`>
+Ƭ **NewBark**: `Pick`<[`InternalBark`][10], `"owner"` | `"content"` |
+`"private"` | `"barkbackTo"` | `"rebarkOf"`>
 
 The shape of a newly received Bark.
 
 #### Defined in
 
-[types/global.d.ts:221][29]
+[types/global.d.ts:224][29]
 
 ---
 
 ### NewUser
 
-Ƭ **NewUser**: `Pick`<[InternalUser][14], `"name"` | `"email"` | `"phone"` |
+Ƭ **NewUser**: `Pick`<[`InternalUser`][14], `"name"` | `"email"` | `"phone"` |
 `"username"`>
 
 The shape of a newly received user.
 
 #### Defined in
 
-[types/global.d.ts:229][30]
+[types/global.d.ts:232][30]
 
 ---
 
 ### NextApiState
 
-Ƭ **NextApiState**\<T>: `Object`
+Ƭ **NextApiState**<`T`>: `Object`
 
 A type combining NextApiRequest and NextApiResponse.
 
 #### Type parameters
 
-| Name | Type            |
-| :--- | :-------------- |
-| `T`  | `T` = `unknown` |
+| Name | Type      |
+| :--- | :-------- |
+| `T`  | `unknown` |
 
 #### Type declaration
 
-| Name  | Type                 |
-| :---- | :------------------- |
-| `req` | `NextApiRequest`     |
-| `res` | `NextApiResponse`<T> |
+| Name  | Type                   |
+| :---- | :--------------------- |
+| `req` | `NextApiRequest`       |
+| `res` | `NextApiResponse`<`T`> |
 
 #### Defined in
 
@@ -260,23 +260,23 @@ A type combining NextApiRequest and NextApiResponse.
 
 ### PatchUser
 
-Ƭ **PatchUser**: `Pick`<[InternalUser][14], `"name"` | `"email"` | `"phone"`>
+Ƭ **PatchUser**: `Pick`<[`InternalUser`][14], `"name"` | `"email"` | `"phone"`>
 
 The shape of a received update to an existing user.
 
 #### Defined in
 
-[types/global.d.ts:234][32]
+[types/global.d.ts:237][32]
 
 ---
 
 ### PublicBark
 
-Ƭ **PublicBark**: `Pick`<[InternalBark][10], `"owner"` | `"content"` |
-`"createdAt"` | `"deleted"` | `"private"` | `"barkbackTo"` | `"rebarkOf"`> & {
-`bark_id`: `string` ; `barkbacks`: [InternalBark][10]\[`"totalBarkbacks"`] ;
-`likes`: [InternalBark][10]\[`"totalLikes"`] ; `rebarks`:
-[InternalBark][10]\[`"totalRebarks"`] }
+Ƭ **PublicBark**: `Pick`<[`InternalBark`][10], `"content"` | `"createdAt"` |
+`"deleted"` | `"private"`> & { `bark_id`: `string` ; `barkbackTo`: `string` |
+`null` ; `barkbacks`: [`InternalBark`][10]\[`"totalBarkbacks"`] ; `likes`:
+[`InternalBark`][10]\[`"totalLikes"`] ; `owner`: `string` ; `rebarkOf`: `string`
+| `null` ; `rebarks`: [`InternalBark`][10]\[`"totalRebarks"`] }
 
 The shape of a publicly available Bark.
 
@@ -288,15 +288,15 @@ The shape of a publicly available Bark.
 
 ### PublicUser
 
-Ƭ **PublicUser**: `Pick`<[InternalUser][14], `"name"` | `"email"` | `"phone"` |
-`"username"` | `"deleted"`> & { `bookmarked`: `number` ; `following`: `number` ;
-`liked`: `number` ; `packmates`: `number` ; `user_id`: `string` }
+Ƭ **PublicUser**: `Pick`<[`InternalUser`][14], `"name"` | `"email"` | `"phone"`
+| `"username"` | `"deleted"`> & { `bookmarked`: `number` ; `following`: `number`
+; `liked`: `number` ; `packmates`: `number` ; `user_id`: `string` }
 
 The shape of a publicly available user.
 
 #### Defined in
 
-[types/global.d.ts:207][34]
+[types/global.d.ts:210][34]
 
 [1]: ../README.md
 [2]: ../interfaces/types_global.barkid.md
@@ -319,30 +319,30 @@ The shape of a publicly available user.
 [19]: types_global.md#publicbark
 [20]: types_global.md#publicuser
 [21]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L239
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L242
 [22]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L247
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L250
 [23]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L255
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L258
 [24]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L34
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L34
 [25]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L26
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L26
 [26]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L275
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L278
 [27]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L263
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L266
 [28]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L125
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L125
 [29]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L221
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L224
 [30]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L229
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L232
 [31]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L18
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L18
 [32]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L234
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L237
 [33]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L194
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L194
 [34]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/types/global.d.ts#L207
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/types/global.d.ts#L210

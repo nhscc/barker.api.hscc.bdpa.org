@@ -8,7 +8,7 @@
 
 - `Options`
 
-  ↳ **RunOptions**
+  ↳ **`RunOptions`**
 
 ## Table of contents
 
@@ -368,7 +368,7 @@ execa.Options.reject
 
 #### Defined in
 
-[test/setup.ts:337][33]
+[test/setup.ts:376][33]
 
 ---
 
@@ -621,7 +621,7 @@ node_modules/execa/index.d.ts:213
 [31]: https://nodejs.org/api/child_process.html#child_process_options_detached
 [32]: https://github.com/ehmicky/get-node
 [33]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L337
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L376
 [34]: https://nodejs.org/api/v8.html#v8_v8_serialize_value
 [35]:
   https://nodejs.org/api/child_process.html#child_process_advanced_serialization

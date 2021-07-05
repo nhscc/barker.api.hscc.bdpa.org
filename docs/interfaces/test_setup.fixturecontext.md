@@ -6,29 +6,33 @@
 
 ## Type parameters
 
-| Name            | Type                                            |
-| :-------------- | :---------------------------------------------- |
-| `CustomOptions` | `CustomOptions`: `Record`<string, unknown> = {} |
+| Name            | Type                                    |
+| :-------------- | :-------------------------------------- |
+| `CustomOptions` | extends `Record`<`string`, `unknown`>{} |
 
 ## Hierarchy
 
-- `Partial`<[TestResultProvider][3]>
+- `Partial`<[`TestResultProvider`][3]>
 
-  ↳ **FixtureContext**
+- `Partial`<[`TreeOutputProvider`][4]>
+
+- `Partial`<[`GitProvider`][5]>
+
+  ↳ **`FixtureContext`**
 
 ## Table of contents
 
 ### Properties
 
-- [debug][4]
-- [fileContents][5]
-- [git][6]
-- [options][7]
-- [root][8]
-- [testIdentifier][9]
-- [testResult][10]
-- [treeOutput][11]
-- [using][12]
+- [debug][6]
+- [fileContents][7]
+- [git][8]
+- [options][9]
+- [root][10]
+- [testIdentifier][11]
+- [testResult][12]
+- [treeOutput][13]
+- [using][14]
 
 ## Properties
 
@@ -38,7 +42,7 @@
 
 #### Defined in
 
-[test/setup.ts:398][13]
+[test/setup.ts:437][15]
 
 ---
 
@@ -52,7 +56,7 @@
 
 #### Defined in
 
-[test/setup.ts:397][14]
+[test/setup.ts:436][16]
 
 ---
 
@@ -66,17 +70,17 @@ Partial.git
 
 #### Defined in
 
-[test/setup.ts:413][15]
+[test/setup.ts:452][17]
 
 ---
 
 ### options
 
-• **options**: [FixtureOptions][16] & `CustomOptions`
+• **options**: [`FixtureOptions`][18] & `CustomOptions`
 
 #### Defined in
 
-[test/setup.ts:395][17]
+[test/setup.ts:434][19]
 
 ---
 
@@ -86,7 +90,7 @@ Partial.git
 
 #### Defined in
 
-[test/setup.ts:393][18]
+[test/setup.ts:432][20]
 
 ---
 
@@ -96,7 +100,7 @@ Partial.git
 
 #### Defined in
 
-[test/setup.ts:394][19]
+[test/setup.ts:433][21]
 
 ---
 
@@ -118,7 +122,7 @@ Partial.testResult
 
 #### Defined in
 
-[test/setup.ts:403][20]
+[test/setup.ts:442][22]
 
 ---
 
@@ -132,48 +136,50 @@ Partial.treeOutput
 
 #### Defined in
 
-[test/setup.ts:408][21]
+[test/setup.ts:447][23]
 
 ---
 
 ### using
 
-• **using**: [MockFixture][22]<[FixtureContext][23]<`Object`>>\[]
+• **using**: [`MockFixture`][24]<[`FixtureContext`][25]<`Object`>>\[]
 
 #### Defined in
 
-[test/setup.ts:396][24]
+[test/setup.ts:435][26]
 
 [1]: ../README.md
 [2]: ../modules/test_setup.md
 [3]: test_setup.testresultprovider.md
-[4]: test_setup.fixturecontext.md#debug
-[5]: test_setup.fixturecontext.md#filecontents
-[6]: test_setup.fixturecontext.md#git
-[7]: test_setup.fixturecontext.md#options
-[8]: test_setup.fixturecontext.md#root
-[9]: test_setup.fixturecontext.md#testidentifier
-[10]: test_setup.fixturecontext.md#testresult
-[11]: test_setup.fixturecontext.md#treeoutput
-[12]: test_setup.fixturecontext.md#using
-[13]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L398
-[14]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L397
+[4]: test_setup.treeoutputprovider.md
+[5]: test_setup.gitprovider.md
+[6]: test_setup.fixturecontext.md#debug
+[7]: test_setup.fixturecontext.md#filecontents
+[8]: test_setup.fixturecontext.md#git
+[9]: test_setup.fixturecontext.md#options
+[10]: test_setup.fixturecontext.md#root
+[11]: test_setup.fixturecontext.md#testidentifier
+[12]: test_setup.fixturecontext.md#testresult
+[13]: test_setup.fixturecontext.md#treeoutput
+[14]: test_setup.fixturecontext.md#using
 [15]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L413
-[16]: test_setup.fixtureoptions.md
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L437
+[16]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L436
 [17]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L395
-[18]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L393
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L452
+[18]: test_setup.fixtureoptions.md
 [19]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L394
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L434
 [20]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L403
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L432
 [21]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L408
-[22]: test_setup.mockfixture.md
-[23]: test_setup.fixturecontext.md
-[24]:
-  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/b8087e9/test/setup.ts#L396
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L433
+[22]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L442
+[23]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L447
+[24]: test_setup.mockfixture.md
+[25]: test_setup.fixturecontext.md
+[26]:
+  https://github.com/nhscc/barker.api.hscc.bdpa.org/blob/86fb7f5/test/setup.ts#L435
