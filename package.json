@@ -119,7 +119,7 @@
     "mongodb-memory-server": "^7.3.1",
     "named-app-errors": "^1.0.5",
     "next": "^11.0.1",
-    "next-test-api-route-handler": "^2.0.1",
+    "next-test-api-route-handler": "^2.1.2",
     "next-transpile-modules": "^8.0.0",
     "prettier": "^2.3.2",
     "random-int": "^3.0.0",
